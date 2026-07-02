@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\User\Auth\AuthController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -14,5 +15,14 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/', function () {
-    return view('welcome');
+    return view('user.default.index');
+});
+Route::get('giris-yap',[AuthController::class,'loginPage'])->name('loginPage');
+Route::get('admin/login',[App\Http\Controllers\Admin\Auth\AuthController::class,'loginPage'])->name('admin.loginPage');
+Route::group(['middleware' => 'user'],function (){
+
+});
+
+Route::group(['prefix' => 'admin/', 'middleware' => 'admin'],function (){
+
 });
