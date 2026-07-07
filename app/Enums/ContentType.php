@@ -6,6 +6,8 @@ enum ContentType: string
     case PRODUCT = 'product';
     case USER = 'user';
     case OTHER = 'other'; //banner , sliders vb
+    case BANNER = 'banner';
+    case COLLECTION = 'collection';
 
 
 
