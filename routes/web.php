@@ -18,6 +18,7 @@ use App\Http\Controllers\User\Product\ProductController;
 
 Route::get('/',[DefaultController::class,'index'])->name('index');
 Route::get('giris-yap',[AuthController::class,'loginPage'])->name('loginPage');
+Route::get('kayit-ol',[AuthController::class,'registerPage'])->name('registerPage');
 Route::get('admin/login',[App\Http\Controllers\Admin\Auth\AuthController::class,'loginPage'])->name('admin.loginPage');
 
 Route::get('tum-urunler',[ProductController::class,'index'])->name('shops');

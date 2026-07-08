@@ -1,0 +1,99 @@
+@extends('user.layout')
+@section('title','Sepetim')
+@section('content')
+<main>
+    <div class="w-full max-w-site mx-auto px-5 lg:px-8" data-i5="container">
+      <div class="mb-10 pt-2 [&_[data-i5='breadcrumb']]:mb-7 [&_h1]:font-heading [&_h1]:text-page-title [&_h1]:font-semibold [&_h1]:leading-[1.12] [&_h1]:tracking-[-0.02em] [&_h1]:normal-case" data-i5="cart-page__head">
+        <nav class="flex flex-wrap items-center gap-2 font-body text-xs font-semibold tracking-[0.08em] uppercase text-muted mb-5 [&_a]:text-muted [&_a]:transition-colors [&_a:hover]:text-accent" aria-label="Konum" data-i5="breadcrumb">
+          <a href="index.html">Anasayfa</a>
+          <span class="opacity-[0.4]" data-i5="breadcrumb__sep">/</span>
+          <span>Sepet</span>
+        </nav>
+        <h1>Sepetiniz</h1>
+        <p class="mt-2.5 text-sm text-muted font-semibold" data-i5="cart-page__count">3 ürün</p>
+      </div>
+
+      <div class="grid gap-10 min-[960px]:grid-cols-[1fr_380px] min-[960px]:gap-12 min-[960px]:items-start" data-i5="cart-layout">
+        <div  id="cart-items">
+          <article class="grid grid-cols-[96px_1fr] gap-4 py-6 border-b-[3px] border-ink min-[640px]:grid-cols-[120px_1fr_auto] min-[640px]:gap-6 min-[640px]:items-center" data-unit-price="350" data-i5="cart-item">
+            <a href="product.html" class="block border-[3px] border-ink shadow-brutal-sm aspect-[3/4] overflow-hidden bg-bg [&_img]:w-full [&_img]:h-full [&_img]:object-cover" data-i5="cart-item__img">
+              <img src="assets/foto5.jpeg" alt="Premium Kartvizit">
+            </a>
+            <div >
+              <a href="product.html" class="block font-heading text-card-title font-semibold leading-[1.35] normal-case mb-1.5 transition-colors hover:text-accent" data-i5="cart-item__name">Premium Kartvizit</a>
+              <p class="text-sm text-muted mb-4" data-i5="cart-item__price">350 ₺ / adet</p>
+              <div class="flex items-center justify-between gap-4 flex-wrap" data-i5="cart-item__actions">
+                <div class="inline-flex items-stretch border-[3px] border-ink shadow-brutal-sm [&_button]:w-9 [&_button]:flex [&_button]:shrink-0 [&_button]:items-center [&_button]:justify-center [&_button]:text-base [&_button]:font-semibold [&_button]:bg-surface [&_button]:cursor-pointer [&_button]:transition-colors hover:[&_button:not(:disabled)]:bg-hover [&_button:disabled]:opacity-35 [&_button:disabled]:cursor-not-allowed [&_input]:w-11 [&_input]:min-w-11 [&_input]:shrink-0 [&_input]:text-center [&_input]:border-x-[3px] [&_input]:border-x-ink [&_input]:text-[13px] [&_input]:font-semibold [&_input]:outline-none [&_input]:bg-surface [&_input]:appearance-none [&_input::-webkit-outer-spin-button]:appearance-none [&_input::-webkit-inner-spin-button]:appearance-none [&_input]:[-moz-appearance:textfield]" data-i5="cart-qty">
+                  <button type="button" aria-label="Azalt">−</button>
+                  <input type="number" value="2" min="1" aria-label="Adet">
+                  <button type="button" aria-label="Artır">+</button>
+                </div>
+                <button type="button" class="text-xs font-semibold uppercase tracking-[0.04em] text-muted underline underline-offset-[3px] transition-colors hover:text-ink" data-i5="cart-item__remove">Kaldır</button>
+              </div>
+            </div>
+            <p class="font-body text-base font-bold text-right whitespace-nowrap max-[639px]:col-span-full max-[639px]:text-left max-[639px]:pt-1" data-i5="cart-item__total">700 ₺</p>
+          </article>
+          <article class="grid grid-cols-[96px_1fr] gap-4 py-6 border-b-[3px] border-ink min-[640px]:grid-cols-[120px_1fr_auto] min-[640px]:gap-6 min-[640px]:items-center" data-unit-price="420" data-i5="cart-item">
+            <a href="product.html" class="block border-[3px] border-ink shadow-brutal-sm aspect-[3/4] overflow-hidden bg-bg [&_img]:w-full [&_img]:h-full [&_img]:object-cover" data-i5="cart-item__img">
+              <img src="assets/WhatsApp Image 2026-06-27 at 00.28.43.jpeg" alt="Magnet Afiş Seti">
+            </a>
+            <div >
+              <a href="product.html" class="block font-heading text-card-title font-semibold leading-[1.35] normal-case mb-1.5 transition-colors hover:text-accent" data-i5="cart-item__name">Magnet Afiş Seti</a>
+              <p class="text-sm text-muted mb-4" data-i5="cart-item__price">420 ₺ / adet</p>
+              <div class="flex items-center justify-between gap-4 flex-wrap" data-i5="cart-item__actions">
+                <div class="inline-flex items-stretch border-[3px] border-ink shadow-brutal-sm [&_button]:w-9 [&_button]:flex [&_button]:shrink-0 [&_button]:items-center [&_button]:justify-center [&_button]:text-base [&_button]:font-semibold [&_button]:bg-surface [&_button]:cursor-pointer [&_button]:transition-colors hover:[&_button:not(:disabled)]:bg-hover [&_button:disabled]:opacity-35 [&_button:disabled]:cursor-not-allowed [&_input]:w-11 [&_input]:min-w-11 [&_input]:shrink-0 [&_input]:text-center [&_input]:border-x-[3px] [&_input]:border-x-ink [&_input]:text-[13px] [&_input]:font-semibold [&_input]:outline-none [&_input]:bg-surface [&_input]:appearance-none [&_input::-webkit-outer-spin-button]:appearance-none [&_input::-webkit-inner-spin-button]:appearance-none [&_input]:[-moz-appearance:textfield]" data-i5="cart-qty">
+                  <button type="button" aria-label="Azalt">−</button>
+                  <input type="number" value="1" min="1" aria-label="Adet">
+                  <button type="button" aria-label="Artır">+</button>
+                </div>
+                <button type="button" class="text-xs font-semibold uppercase tracking-[0.04em] text-muted underline underline-offset-[3px] transition-colors hover:text-ink" data-i5="cart-item__remove">Kaldır</button>
+              </div>
+            </div>
+            <p class="font-body text-base font-bold text-right whitespace-nowrap max-[639px]:col-span-full max-[639px]:text-left max-[639px]:pt-1" data-i5="cart-item__total">420 ₺</p>
+          </article>
+        </div>
+
+        <aside class="border-[3px] border-ink shadow-brutal bg-surface p-7 min-[960px]:sticky min-[960px]:top-[calc(var(--spacing-announce)+80px)] [&_h2]:font-body [&_h2]:text-[1.1rem] [&_h2]:font-bold [&_h2]:uppercase [&_h2]:mb-6 [&_h2]:pb-4 [&_h2]:border-b-[3px] [&_h2]:border-ink" data-i5="cart-summary">
+          <h2>Sipariş Özeti</h2>
+          <div class="mb-6 p-4 bg-bg border-[3px] border-ink [&_p]:text-xs [&_p]:font-semibold [&_p]:uppercase [&_p]:tracking-[0.04em] [&_p]:mb-2.5 [&_p.is-free]:text-accent [&_p.is-free]:font-semibold" data-i5="cart-shipping-bar">
+            <p class="is-free">Ücretsiz kargo kazandınız!</p>
+          </div>
+          <div class="flex justify-between gap-4 text-sm mb-3 [&_span:first-child]:text-muted" data-i5="cart-summary__row">
+            <span>Ara Toplam</span>
+            <span data-cart-subtotal>1.120 ₺</span>
+          </div>
+          <div class="flex justify-between gap-4 text-sm mb-3 [&_span:first-child]:text-muted" data-i5="cart-summary__row">
+            <span>Kargo</span>
+            <span data-cart-shipping>Ücretsiz</span>
+          </div>
+          <div data-i5="cart-summary__row--total" data-i5-tags="cart-summary__row cart-summary__row--total" class="flex justify-between gap-4 text-sm mb-3 font-body text-xl font-bold mt-4 pt-4 border-t-[3px] border-ink [&_span:first-child]:text-muted">
+            <span>Toplam</span>
+            <span data-cart-total>1.120 ₺</span>
+          </div>
+          <p class="text-xs text-muted leading-normal my-3 mb-6" data-i5="cart-summary__note">500₺ üzeri siparişlerde kargo ücretsiz. Fiyatlara KDV dahildir.</p>
+          <div class="grid gap-3 [&_[data-i5='btn']]:w-full [&_[data-i5='btn']]:justify-center [&_[data-i5='btn']]:text-center" data-i5="cart-summary__actions">
+            <a data-i5="btn--fill" data-i5-tags="btn btn--fill" href="checkout.html" class="inline-flex items-center gap-2 px-6 py-3.5 font-body text-[13px] font-bold uppercase tracking-[0.06em] border-[3px] border-ink transition-[transform,box-shadow,background-color] bg-action text-on-dark shadow-brutal hover:bg-action-hover hover:-translate-x-0.5 hover:-translate-y-0.5">Ödemeye Geç</a>
+            <a href="products.html" class="block text-center text-[13px] font-semibold text-muted underline underline-offset-[3px] transition-colors hover:text-accent" data-i5="cart-summary__continue">Alışverişe Devam Et</a>
+          </div>
+        </aside>
+      </div>
+
+      <section class="mt-16 mb-16 pt-12 border-t-[3px] border-ink" data-i5="cart-trust">
+        <div class="grid gap-4 min-[768px]:grid-cols-3 min-[768px]:gap-5" data-i5="cart-trust__grid">
+          <div class="p-6 border-[3px] border-ink shadow-brutal-sm bg-surface text-center [&_strong]:block [&_strong]:font-body [&_strong]:text-[13px] [&_strong]:font-bold [&_strong]:uppercase [&_strong]:mb-1.5 [&_span]:text-[13px] [&_span]:text-muted" data-i5="cart-trust__item">
+            <strong>Güvenli Ödeme</strong>
+            <span>256-bit SSL şifreleme</span>
+          </div>
+          <div class="p-6 border-[3px] border-ink shadow-brutal-sm bg-surface text-center [&_strong]:block [&_strong]:font-body [&_strong]:text-[13px] [&_strong]:font-bold [&_strong]:uppercase [&_strong]:mb-1.5 [&_span]:text-[13px] [&_span]:text-muted" data-i5="cart-trust__item">
+            <strong>Hızlı Teslimat</strong>
+            <span>3–5 iş günü</span>
+          </div>
+          <div class="p-6 border-[3px] border-ink shadow-brutal-sm bg-surface text-center [&_strong]:block [&_strong]:font-body [&_strong]:text-[13px] [&_strong]:font-bold [&_strong]:uppercase [&_strong]:mb-1.5 [&_span]:text-[13px] [&_span]:text-muted" data-i5="cart-trust__item">
+            <strong>Kalite Garantisi</strong>
+            <span>Memnuniyet garantili</span>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+@endsection
