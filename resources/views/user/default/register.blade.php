@@ -4,7 +4,7 @@
 <main id="register-root" class="py-8 pb-20">
     <div class="w-full max-w-site mx-auto px-5 lg:px-8" data-i5="container">
       <nav class="flex flex-wrap items-center gap-2 font-body text-xs font-semibold tracking-[0.08em] uppercase text-muted mb-5 [&_a]:text-muted [&_a]:transition-colors [&_a:hover]:text-accent" aria-label="Konum" data-i5="breadcrumb">
-        <a href="index.html">Anasayfa</a>
+        <a href="{{ route('index') }}">Anasayfa</a>
         <span class="opacity-[0.4]" data-i5="breadcrumb__sep">/</span>
         <span>Kayıt</span>
       </nav>
@@ -14,14 +14,31 @@
           <h1>Kayıt Ol</h1>
           <p>Ücretsiz hesap oluşturun; siparişlerinizi takip edin ve hızlıca alışverişe devam edin.</p>
 
-          <form class="grid gap-5" id="register-form" action="#" method="post" data-i5="login-form">
+          @if (session('success'))
+          <div class="p-3.5 mb-5 border-[3px] border-ink bg-bg text-sm font-semibold text-ink" role="alert">{{ session('success') }}</div>
+          @endif
+          @if (session('error'))
+          <div class="p-3.5 mb-5 border-[3px] border-ink bg-bg text-sm font-semibold text-announce" role="alert">{{ session('error') }}</div>
+          @endif
+          @if ($errors->any())
+          <div class="p-3.5 mb-5 border-[3px] border-ink bg-bg text-sm font-semibold text-announce" role="alert">
+            <ul class="grid gap-1">
+              @foreach ($errors->all() as $error)
+              <li>{{ $error }}</li>
+              @endforeach
+            </ul>
+          </div>
+          @endif
+
+          <form class="grid gap-5" id="register-form" action="{{ route('register') }}" method="post" data-i5="login-form">
+            @csrf
             <div class="flex flex-col gap-1.5 [&_label]:font-body [&_label]:text-[11px] [&_label]:font-bold [&_label]:uppercase [&_label]:tracking-[0.06em] [&_input]:px-3.5 [&_input]:py-[13px] [&_input]:border-[3px] [&_input]:border-ink [&_input]:text-[15px] [&_input]:bg-surface [&_input]:outline-none focus:[&_input]:shadow-brutal-sm" data-i5="login-field">
               <label for="register-name">Ad Soyad</label>
-              <input type="text" id="register-name" name="name" required placeholder="Adınız Soyadınız" autocomplete="name">
+              <input type="text" id="register-name" name="name" value="{{ old('name') }}" required placeholder="Adınız Soyadınız" autocomplete="name">
             </div>
             <div class="flex flex-col gap-1.5 [&_label]:font-body [&_label]:text-[11px] [&_label]:font-bold [&_label]:uppercase [&_label]:tracking-[0.06em] [&_input]:px-3.5 [&_input]:py-[13px] [&_input]:border-[3px] [&_input]:border-ink [&_input]:text-[15px] [&_input]:bg-surface [&_input]:outline-none focus:[&_input]:shadow-brutal-sm" data-i5="login-field">
               <label for="register-email">E-posta</label>
-              <input type="email" id="register-email" name="email" required placeholder="ornek@firma.com" autocomplete="email">
+              <input type="email" id="register-email" name="email" value="{{ old('email') }}" required placeholder="ornek@firma.com" autocomplete="email">
             </div>
             <div class="grid gap-5 min-[560px]:grid-cols-2" data-i5="register-row">
               <div class="flex flex-col gap-1.5 [&_label]:font-body [&_label]:text-[11px] [&_label]:font-bold [&_label]:uppercase [&_label]:tracking-[0.06em] [&_input]:px-3.5 [&_input]:py-[13px] [&_input]:border-[3px] [&_input]:border-ink [&_input]:text-[15px] [&_input]:bg-surface [&_input]:outline-none focus:[&_input]:shadow-brutal-sm" data-i5="login-field">
@@ -45,7 +62,7 @@
               </div>
             </div>
             <label class="flex items-start gap-2.5 text-[13px] leading-normal text-muted cursor-pointer [&_input]:w-4 [&_input]:h-4 [&_input]:mt-0.5 [&_input]:accent-accent [&_input]:shrink-0 [&_a]:text-accent [&_a]:font-semibold [&_a]:underline [&_a]:underline-offset-[3px] [&_a:hover]:text-accent-dark" data-i5="register-terms">
-              <input type="checkbox" id="register-terms" name="terms" required>
+              <input type="checkbox" id="register-terms" name="terms" value="1" @checked(old('terms')) required>
               <span><a href="distance-sales.html">Mesafeli Satış Sözleşmesi</a> ve <a href="privacy.html">Gizlilik Politikası</a>'nı okudum, kabul ediyorum.</span>
             </label>
             <button data-i5="login-submit" data-i5-tags="btn btn--fill login-submit" type="submit" class="inline-flex items-center gap-2 px-6 py-3.5 font-body text-[13px] font-bold uppercase tracking-[0.06em] border-[3px] border-ink transition-[transform,box-shadow,background-color] bg-action text-on-dark shadow-brutal hover:bg-action-hover hover:-translate-x-0.5 hover:-translate-y-0.5 w-full justify-center text-center">Hesap Oluştur</button>
@@ -83,7 +100,7 @@
           </div>
 
           <p class="mt-7 pt-6 border-t-[3px] border-ink text-center text-sm text-muted [&_a]:font-bold [&_a]:text-accent [&_a]:underline [&_a]:underline-offset-[3px] [&_a:hover]:text-accent-dark" data-i5="login-footer-text">
-            Zaten hesabınız var mı? <a href="login.html">Giriş yapın</a>
+            Zaten hesabınız var mı? <a href="{{ route('loginPage') }}">Giriş yapın</a>
           </p>
         </div>
 

@@ -4,7 +4,7 @@
  <main id="login-root" class="py-8 pb-20">
     <div class="w-full max-w-site mx-auto px-5 lg:px-8" data-i5="container">
       <nav class="flex flex-wrap items-center gap-2 font-body text-xs font-semibold tracking-[0.08em] uppercase text-muted mb-5 [&_a]:text-muted [&_a]:transition-colors [&_a:hover]:text-accent" aria-label="Konum" data-i5="breadcrumb">
-        <a href="index.html">Anasayfa</a>
+        <a href="{{ route('index') }}">Anasayfa</a>
         <span class="opacity-[0.4]" data-i5="breadcrumb__sep">/</span>
         <span>Giriş</span>
       </nav>
@@ -14,10 +14,27 @@
           <h1>Giriş Yap</h1>
           <p>Hesabınıza giriş yaparak siparişlerinizi takip edin ve hızlıca alışverişe devam edin.</p>
 
-          <form class="grid gap-5" id="login-form" action="#" method="post" data-i5="login-form">
+          @if (session('success'))
+          <div class="p-3.5 mb-5 border-[3px] border-ink bg-bg text-sm font-semibold text-ink" role="alert">{{ session('success') }}</div>
+          @endif
+          @if (session('error'))
+          <div class="p-3.5 mb-5 border-[3px] border-ink bg-bg text-sm font-semibold text-announce" role="alert">{{ session('error') }}</div>
+          @endif
+          @if ($errors->any())
+          <div class="p-3.5 mb-5 border-[3px] border-ink bg-bg text-sm font-semibold text-announce" role="alert">
+            <ul class="grid gap-1">
+              @foreach ($errors->all() as $error)
+              <li>{{ $error }}</li>
+              @endforeach
+            </ul>
+          </div>
+          @endif
+
+          <form class="grid gap-5" id="login-form" action="{{ route('authenticate') }}" method="post" data-i5="login-form">
+            @csrf
             <div class="flex flex-col gap-1.5 [&_label]:font-body [&_label]:text-[11px] [&_label]:font-bold [&_label]:uppercase [&_label]:tracking-[0.06em] [&_input]:px-3.5 [&_input]:py-[13px] [&_input]:border-[3px] [&_input]:border-ink [&_input]:text-[15px] [&_input]:bg-surface [&_input]:outline-none focus:[&_input]:shadow-brutal-sm" data-i5="login-field">
               <label for="login-email">E-posta</label>
-              <input type="email" id="login-email" name="email" required placeholder="ornek@firma.com" autocomplete="email">
+              <input type="email" id="login-email" name="email" value="{{ old('email') }}" required placeholder="ornek@firma.com" autocomplete="email">
             </div>
             <div class="flex flex-col gap-1.5 [&_label]:font-body [&_label]:text-[11px] [&_label]:font-bold [&_label]:uppercase [&_label]:tracking-[0.06em] [&_input]:px-3.5 [&_input]:py-[13px] [&_input]:border-[3px] [&_input]:border-ink [&_input]:text-[15px] [&_input]:bg-surface [&_input]:outline-none focus:[&_input]:shadow-brutal-sm" data-i5="login-field">
               <label for="login-password">Şifre</label>
@@ -30,7 +47,7 @@
             </div>
             <div class="flex items-center justify-between gap-3 flex-wrap" data-i5="login-options">
               <label class="flex items-center gap-2 text-sm cursor-pointer [&_input]:w-4 [&_input]:h-4 [&_input]:accent-accent" data-i5="login-check">
-                <input type="checkbox" id="login-remember" name="remember">
+                <input type="checkbox" id="login-remember" name="remember" value="1" @checked(old('remember'))>
                 Beni hatırla
               </label>
               <a href="#" class="text-[13px] font-semibold text-accent underline underline-offset-[3px] hover:text-accent-dark" data-i5="login-forgot">Şifremi unuttum</a>
@@ -52,7 +69,7 @@
           </div>
 
           <p class="mt-7 pt-6 border-t-[3px] border-ink text-center text-sm text-muted [&_a]:font-bold [&_a]:text-accent [&_a]:underline [&_a]:underline-offset-[3px] [&_a:hover]:text-accent-dark" data-i5="login-footer-text">
-            Hesabınız yok mu? <a href="register.html">Kayıt olun</a>
+            Hesabınız yok mu? <a href="{{ route('registerPage') }}">Kayıt olun</a>
           </p>
         </div>
 

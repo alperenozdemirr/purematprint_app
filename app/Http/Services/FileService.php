@@ -11,6 +11,7 @@ class FileService
     protected const fileDirectory = "shared_directory/files/users";
     protected const userImageDirectory = "shared_directory/images/users";
     protected const productDirectory = "shared_directory/images/products";
+    protected const bannerDirectory = "shared_directory/images/banners";
     protected const otherDirectory = "shared_directory/images/other";
     //protected const categoryIconDirectory = "shared_directory/image/category";
     protected const addToDatabase = true;
@@ -31,6 +32,9 @@ class FileService
         }elseif ($contentType == ContentType::PRODUCT){
             $baseDirectory = self::productDirectory;
             $contentType = ContentType::PRODUCT;
+        }elseif ($contentType == ContentType::BANNER){
+            $baseDirectory = self::bannerDirectory;
+            $contentType = ContentType::BANNER;
         }
 
         $fileName = $file->hashName();
@@ -74,6 +78,8 @@ class FileService
             $baseDirectory = self::otherDirectory;
         }elseif ($contentType == ContentType::PRODUCT){
             $baseDirectory = self::productDirectory;
+        }elseif ($contentType == ContentType::BANNER){
+            $baseDirectory = self::bannerDirectory;
         }
         $deleteItem = File::find($imageId);
         if ($deleteItem && $baseDirectory !== null){

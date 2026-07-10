@@ -17,9 +17,12 @@ class Admin
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if ($request->user() && $request->user()->type == UserType::ADMIN->value  && $request->user()->status == Status::ACTIVE->value) {
+        $user = $request->user();
+
+        if ($user && $user->type === UserType::ADMIN && $user->status === Status::ACTIVE) {
             return $next($request);
         }
-        return redirect(route('admin.loginPage'))->with('error' , 'Unauthorized action.');
+
+        return redirect(route('admin.loginPage'))->with('error', 'Bu sayfaya erişim yetkiniz yok.');
     }
 }

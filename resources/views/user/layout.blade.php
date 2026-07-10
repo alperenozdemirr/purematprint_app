@@ -130,6 +130,12 @@
   <script src="{{asset('user')}}/js/loader.js"></script>
   </head>
 <body class="font-body text-base leading-[1.55] text-ink bg-bg antialiased pt-announce overflow-x-hidden selection:bg-action-muted selection:text-on-dark" data-pmp-site>
+  @php
+    $authUser = auth()->user();
+    $isUserLoggedIn = $authUser
+        && $authUser->type === \App\Enums\UserType::USER
+        && $authUser->status === \App\Enums\Status::ACTIVE;
+  @endphp
   <!-- Site chrome — index5.js: duyuru, header, mobil menü, arama -->
   <div class="pmp-announce fixed inset-x-0 top-0 z-[300] flex min-h-[44px] items-center justify-center border-b-[3px] border-ink bg-announce px-5 text-center font-body text-[13px] font-semibold uppercase tracking-wide text-on-dark">
     500₺ üzeri ücretsiz kargo — <a class="underline underline-offset-[3px]" href="products.html">Alışverişe Başla</a>
@@ -148,9 +154,15 @@
           <button type="button" class="flex h-full w-16 items-center justify-center bg-transparent text-on-dark transition-colors hover:bg-header-hover max-[1039px]:hidden" id="i5-search-open" aria-label="Ara">
             <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="10.824" cy="10.824" r="7.824"/><path stroke-linecap="square" d="m16.971 16.971 4.47 4.47"/></svg>
           </button>
+          @if ($isUserLoggedIn)
           <a href="profile.html" class="flex items-center justify-center w-16 h-full text-on-dark transition-colors hover:bg-header-hover max-[1039px]:hidden" aria-label="Profil">
             <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"/></svg>
           </a>
+          @else
+          <a href="{{ route('loginPage') }}" class="flex items-center justify-center w-16 h-full text-on-dark transition-colors hover:bg-header-hover max-[1039px]:hidden" aria-label="Giriş Yap">
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"/></svg>
+          </a>
+          @endif
           <a href="cart.html" class="flex items-center justify-center w-16 relative text-on-dark transition-colors hover:bg-header-hover" aria-label="Sepet" data-i5="header__cart">
             <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007z"/></svg>
           </a>
@@ -229,10 +241,17 @@
           <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007z"/></svg>
           <span>Sepet</span>
         </a>
+        @if ($isUserLoggedIn)
         <a href="profile.html" class="flex items-center justify-center gap-2 [padding:14px_10px] bg-surface font-body text-xs font-bold tracking-[0.06em] uppercase text-ink hover:bg-hover [&.is-active]:bg-action [&.is-active]:text-on-dark">
           <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"/></svg>
           <span>Hesabım</span>
         </a>
+        @else
+        <a href="{{ route('loginPage') }}" class="flex items-center justify-center gap-2 [padding:14px_10px] bg-surface font-body text-xs font-bold tracking-[0.06em] uppercase text-ink hover:bg-hover [&.is-active]:bg-action [&.is-active]:text-on-dark">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"/></svg>
+          <span>Giriş</span>
+        </a>
+        @endif
       </div>
     </div>
     <nav class="flex-1 p-0 [overflow-y:auto] [-webkit-overflow-scrolling:touch]">
@@ -268,11 +287,19 @@
       <p class="font-body text-xs font-bold tracking-[0.12em] uppercase text-accent [padding:16px_20px_8px] m-0 border-t-[3px] border-ink bg-bg">Hesap</p>
       <details class="[&_summary]:flex [&_summary]:items-center [&_summary]:justify-between [&_summary]:gap-3 [&_summary]:font-body [&_summary]:text-[20px] [&_summary]:font-bold [&_summary]:uppercase [&_summary]:[padding:16px_20px] [&_summary]:border-b-2 [&_summary]:border-ink [&_summary]:cursor-pointer [&_summary]:list-none [&_summary]:bg-surface hover:[&_summary]:bg-hover [&_a]:block [&_a]:font-body [&_a]:text-[15px] [&_a]:font-medium [&_a]:normal-case [&_a]:[padding:12px_20px_12px_32px] [&_a]:border-b [&_a]:border-ink [&_a]:bg-bg hover:[&_a]:bg-hover bg-surface">
         <summary>Hesabım</summary>
+        @if ($isUserLoggedIn)
         <a href="profile.html">Profil Bilgilerim</a>
         <a href="orders.html">Siparişlerim</a>
         <a href="addresses.html">Adreslerim</a>
         <a href="cart.html">Sepetim</a>
-        <a href="login.html">Giriş Yap</a>
+        <form action="{{ route('logout') }}" method="post">
+          @csrf
+          <button type="submit" class="block w-full text-left font-body text-[15px] font-medium normal-case [padding:12px_20px_12px_32px] border-b border-ink bg-bg hover:bg-hover">Çıkış Yap</button>
+        </form>
+        @else
+        <a href="{{ route('loginPage') }}">Giriş Yap</a>
+        <a href="{{ route('registerPage') }}">Kayıt Ol</a>
+        @endif
       </details>
       <p class="font-body text-xs font-bold tracking-[0.12em] uppercase text-accent [padding:16px_20px_8px] m-0 border-t-[3px] border-ink bg-bg">Kurumsal</p>
       <a href="about.html" class="block font-body text-[20px] font-bold uppercase [padding:16px_20px] border-b-2 border-ink text-ink bg-surface hover:bg-hover [&.is-current]:bg-hover [&.is-current]:text-accent" data-i5="mobile__link">Hakkımızda</a>
@@ -318,10 +345,14 @@
             <li><a href="about.html">Hakkımızda</a></li>
             <li><a href="contact.html">İletişim</a></li>
             <li><a href="#">Kargo &amp; Teslimat</a></li>
+            @if ($isUserLoggedIn)
             <li><a href="profile.html">Profil Bilgilerim</a></li>
             <li><a href="orders.html">Siparişlerim</a></li>
+            @else
+            <li><a href="{{ route('loginPage') }}">Giriş Yap</a></li>
+            <li><a href="{{ route('registerPage') }}">Kayıt Ol</a></li>
+            @endif
             <li><a href="blog.html">Blog</a></li>
-            <li><a href="login.html">Giriş Yap</a></li>
           </ul>
         </nav>
       </div>

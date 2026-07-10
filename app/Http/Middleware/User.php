@@ -17,9 +17,12 @@ class User
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if ($request->user() && $request->user()->type == UserType::USER->value  && $request->user()->status == Status::ACTIVE->value) {
+        $user = $request->user();
+
+        if ($user && $user->type === UserType::USER && $user->status === Status::ACTIVE) {
             return $next($request);
         }
-        return redirect(route('loginPage'))->with('error' , 'Unauthorized action.');
+
+        return redirect(route('loginPage'))->with('error', 'Bu sayfaya erişim yetkiniz yok.');
     }
 }
