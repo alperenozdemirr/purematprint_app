@@ -1,15 +1,35 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\User\Default;
 
+use App\Enums\Status;
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
+use App\Models\Product;
+use Illuminate\View\View;
 
 class DefaultController extends Controller
 {
-    public function index(){
-        return view('user.default.index');
-    }
+    public function index(): View
+    {
+        $bestsellerProducts = Product::query()
+            ->with('images')
+            ->where('status', Status::ACTIVE)
+            ->where('featured_status', true)
+            ->latest()
+            ->limit(12)
+            ->get();
 
-    
+        if ($bestsellerProducts->isEmpty()) {
+            $bestsellerProducts = Product::query()
+                ->with('images')
+                ->where('status', Status::ACTIVE)
+                ->latest()
+                ->limit(12)
+                ->get();
+        }
+
+        return view('user.default.index', compact('bestsellerProducts'));
+    }
 }

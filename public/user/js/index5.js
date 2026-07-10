@@ -33,6 +33,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initProductFilters();
   initProductSort();
   initMegaMenu();
+  initAccountDropdown();
   initNavCurrent();
   initFloatActions();
   initPasswordToggle();
@@ -812,6 +813,65 @@ function initMegaMenu() {
   mq.addEventListener('change', () => {
     closeAll();
     bind();
+  });
+}
+
+/** Masaüstü hesap menüsü — hover / tıklama ile açılır panel */
+function initAccountDropdown() {
+  const mq = window.matchMedia('(min-width: 1040px)');
+  const dropdown = document.querySelector('[data-i5="account-dropdown"]');
+  if (!dropdown) return;
+
+  const trigger = dropdown.querySelector('[data-i5="account-trigger"]');
+  if (!trigger) return;
+
+  let closeTimer;
+
+  const setExpanded = (open) => {
+    trigger.setAttribute('aria-expanded', open ? 'true' : 'false');
+    dropdown.classList.toggle('is-open', open);
+  };
+
+  const open = () => {
+    clearTimeout(closeTimer);
+    setExpanded(true);
+  };
+
+  const scheduleClose = () => {
+    clearTimeout(closeTimer);
+    closeTimer = setTimeout(() => setExpanded(false), 150);
+  };
+
+  const bind = () => {
+    dropdown.onmouseenter = () => {
+      if (mq.matches) open();
+    };
+    dropdown.onmouseleave = () => {
+      if (mq.matches) scheduleClose();
+    };
+
+    trigger.onclick = (event) => {
+      if (!mq.matches) return;
+      event.preventDefault();
+      setExpanded(!dropdown.classList.contains('is-open'));
+    };
+  };
+
+  bind();
+
+  mq.addEventListener('change', () => {
+    setExpanded(false);
+    bind();
+  });
+
+  document.addEventListener('click', (event) => {
+    if (mq.matches && !dropdown.contains(event.target)) {
+      setExpanded(false);
+    }
+  });
+
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') setExpanded(false);
   });
 }
 

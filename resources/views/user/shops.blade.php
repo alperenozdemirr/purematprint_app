@@ -12,6 +12,13 @@
         <h1 class="font-heading text-page-title font-semibold leading-[1.12] tracking-[-0.02em] text-ink normal-case" data-i5="shop__title">Tüm Ürünler</h1>
       </div>
 
+      @if (session('success'))
+      <div class="mb-6 p-3.5 border-[3px] border-ink bg-bg text-sm font-semibold text-ink" role="alert">{{ session('success') }}</div>
+      @endif
+      @if (session('error'))
+      <div class="mb-6 p-3.5 border-[3px] border-ink bg-bg text-sm font-semibold text-announce" role="alert">{{ session('error') }}</div>
+      @endif
+
       <div class="flex flex-col gap-5 mb-8 pb-6 border-b-[3px] border-ink min-[900px]:flex-row min-[900px]:items-center min-[900px]:justify-between min-[900px]:gap-6" data-i5="shop__toolbar">
         <div class="flex flex-wrap gap-2" role="tablist" aria-label="Kategori filtreleri" data-i5="filters">
           @php
@@ -54,8 +61,8 @@
             $placeholder = asset('user/assets/foto5.jpeg');
           @endphp
           <article data-i5="reveal" data-i5-tags="product reveal" class="relative opacity-0 translate-y-6 transition-all duration-700 group/card [&.is-revealed]:opacity-100 [&.is-revealed]:translate-y-0" data-price="{{ (int) $product->price }}" data-category="{{ $product->category?->slug }}">
-            <a href="{{ route('shopDetail', $product->slug) }}" class="block">
-              <div class="relative aspect-square border-[3px] border-ink bg-surface mb-0 overflow-hidden shadow-brutal-sm transition-shadow duration-200 group-hover/card:shadow-brutal w-full" data-i5="product__media">
+            <div class="relative aspect-square border-[3px] border-ink bg-surface mb-0 overflow-hidden shadow-brutal-sm transition-shadow duration-200 group-hover/card:shadow-brutal w-full" data-i5="product__media">
+              <a href="{{ route('shopDetail', $product->slug) }}" class="block absolute inset-0 z-[1]">
                 @if ($product->introduction_status)
                   <span class="absolute top-[10px] left-[10px] z-[2] px-2.5 py-1.5 bg-badge text-badge-fg font-body text-[11px] font-semibold tracking-[0.03em] normal-case border border-action/15 leading-none" data-i5="product__badge">Yeni</span>
                 @elseif ($product->featured_status)
@@ -67,8 +74,26 @@
                   <img data-i5="product__img--alt" class="absolute inset-0 w-full h-full object-cover transition-opacity duration-300 ease-out opacity-0 group-hover/card:opacity-100"
                        src="{{ $altImage->url }}" alt="">
                 @endif
-                <span class="absolute bottom-0 inset-x-0 z-[3] px-3 py-[11px] bg-action text-on-dark font-body text-xs font-semibold normal-case tracking-normal text-center border-t-2 border-action/25 opacity-0 invisible translate-y-2 transition-all duration-200 group-hover/card:opacity-100 group-hover/card:visible group-hover/card:translate-y-0 hover:bg-action-hover" data-i5="product__add">Sepete Ekle</span>
-              </div>
+              </a>
+              @if ($product->stock_count > 0)
+                @php
+                  $canAddToCart = auth()->check()
+                      && auth()->user()->type === \App\Enums\UserType::USER
+                      && auth()->user()->status === \App\Enums\Status::ACTIVE;
+                @endphp
+                @if ($canAddToCart)
+                  <form method="post" action="{{ route('cartStore') }}" class="absolute bottom-0 inset-x-0 z-[3]">
+                    @csrf
+                    <input type="hidden" name="product_id" value="{{ $product->id }}">
+                    <input type="hidden" name="quantity" value="1">
+                    <button type="submit" class="w-full px-3 py-[11px] bg-action text-on-dark font-body text-xs font-semibold normal-case tracking-normal text-center border-t-2 border-action/25 opacity-0 invisible translate-y-2 transition-all duration-200 group-hover/card:opacity-100 group-hover/card:visible group-hover/card:translate-y-0 hover:bg-action-hover" data-i5="product__add">Sepete Ekle</button>
+                  </form>
+                @else
+                  <a href="{{ route('loginPage') }}" class="absolute bottom-0 inset-x-0 z-[3] block px-3 py-[11px] bg-action text-on-dark font-body text-xs font-semibold normal-case tracking-normal text-center border-t-2 border-action/25 opacity-0 invisible translate-y-2 transition-all duration-200 group-hover/card:opacity-100 group-hover/card:visible group-hover/card:translate-y-0 hover:bg-action-hover" data-i5="product__add">Sepete Ekle</a>
+                @endif
+              @endif
+            </div>
+            <a href="{{ route('shopDetail', $product->slug) }}" class="block">
               <h3 class="font-heading text-card-title font-semibold leading-snug normal-case text-ink m-0 px-4 pt-3.5" data-i5="product__name">{{ $product->title }}</h3>
               <p class="font-body text-sm font-medium leading-snug text-ink m-0 px-4 pb-4 pt-1" data-i5="product__price">
                 @if ($product->stock_count === 0)

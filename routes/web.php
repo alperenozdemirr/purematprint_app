@@ -11,6 +11,9 @@ use App\Http\Controllers\Admin\Banner\BannerController as AdminBannerController;
 use App\Http\Controllers\Admin\Order\OrderController as AdminOrderController;
 use App\Http\Controllers\Admin\User\UserController as AdminUserController;
 use App\Http\Controllers\Admin\Auth\AuthController as AdminAuthController;
+use App\Http\Controllers\User\ShoppingCart\ShoppingCartController;
+use App\Http\Controllers\User\Account\AccountController;
+use App\Http\Controllers\User\Order\OrderController as UserOrderController;
 
 /*
 |--------------------------------------------------------------------------
@@ -37,7 +40,12 @@ Route::get('tum-urunler',[ProductController::class,'index'])->name('shops');
 Route::get('tum-urunler/{slug}',[ProductController::class,'show'])->name('shopDetail','slug');
 Route::get('koleksiyonlar',[ProductController::class,'collectionList'])->name('collectionList');
 Route::group(['middleware' => 'user'],function (){
-
+    Route::get('sepet', [ShoppingCartController::class, 'index'])->name('cart');
+    Route::post('sepet/store', [ShoppingCartController::class, 'store'])->name('cartStore');
+    Route::post('sepet/update', [ShoppingCartController::class, 'update'])->name('cartUpdate');
+    Route::get('sepet/{id}/delete', [ShoppingCartController::class, 'destroy'])->name('cartDelete');
+    Route::get('hesabim', [AccountController::class, 'index'])->name('account');
+    Route::get('siparislerim', [UserOrderController::class, 'index'])->name('orderList');
 });
 
 Route::group(['prefix' => 'admin/', 'middleware' => 'admin'], function () {

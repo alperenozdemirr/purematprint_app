@@ -5,46 +5,37 @@
  *   Header'daki sepet ikonuna adet rozeti ekler/günceller.
  *
  * NE YAPMAZ:
- *   Sepet içeriğini saklamaz — sadece adet sayısı (pmp-cart-qty).
- *   cart.html dışında demo değer 3 gösterir; cart sayfasında gerçek adet hesaplanır.
+ *   Sepet içeriğini saklamaz — adet sunucudan data-cart-count ile gelir.
  */
 
-const I5_CART_QTY_KEY = 'pmp-cart-qty';
-/** localStorage boşsa gösterilecek demo adet */
-const I5_CART_QTY_DEFAULT = 3;
-
-/** Global API — cart.js syncFromCartPage() ile çağrılır */
+/** Global API */
 const I5CartBadge = {
   get() {
-    try {
-      const stored = localStorage.getItem(I5_CART_QTY_KEY);
-      if (stored !== null) return Math.max(0, Number(stored) || 0);
-    } catch (_) {
-      /* localStorage kullanılamıyorsa demo değeri */
+    const count = Number(document.body?.dataset.cartCount);
+    if (!Number.isNaN(count)) {
+      return Math.max(0, count);
     }
-    return I5_CART_QTY_DEFAULT;
+
+    return 0;
   },
 
   set(qty) {
     const count = Math.max(0, Math.min(999, Math.round(Number(qty) || 0)));
-    try {
-      localStorage.setItem(I5_CART_QTY_KEY, String(count));
-    } catch (_) {
-      /* ignore */
+
+    if (document.body) {
+      document.body.dataset.cartCount = String(count);
     }
+
     I5CartBadge.render(count);
     return count;
   },
 
   syncFromCartPage() {
-    const items = document.querySelectorAll('#cart-items [data-i5="cart-item"]');
-    if (!items.length) return I5CartBadge.set(0);
+    const countEl = document.querySelector('[data-i5="cart-page__count"]');
+    if (!countEl) return I5CartBadge.render();
 
-    let total = 0;
-    items.forEach((item) => {
-      total += Number(item.querySelector('[data-i5="cart-qty"] input')?.value) || 1;
-    });
-    return I5CartBadge.set(total);
+    const match = countEl.textContent?.match(/(\d+)/);
+    return I5CartBadge.set(match ? Number(match[1]) : 0);
   },
 
   ensureBadges() {

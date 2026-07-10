@@ -14,7 +14,7 @@
           <p class="mb-7 max-w-[480px] text-[17px] text-[rgba(255,252,247,0.88)]" data-i5="hero__desc">Ajanslar ve tabelacılar için cesur baskı çözümleri. Kartvizitten dev tabelaya — her detay düşünülmüş, her proje kusursuz.</p>
           <div class="flex flex-wrap gap-3" data-i5="hero__actions">
             <a data-i5="btn--fill" data-i5-tags="btn btn--fill" href="{{ route('collectionList') }}" class="inline-flex items-center gap-2 px-6 py-3.5 font-body text-[13px] font-bold uppercase tracking-[0.06em] border-[3px] border-ink transition-[transform,box-shadow,background-color] bg-action text-on-dark shadow-brutal hover:bg-action-hover hover:-translate-x-0.5 hover:-translate-y-0.5">Koleksiyonu Keşfet →</a>
-            <a data-i5="btn--light" data-i5-tags="btn btn--outline btn--light" href="bestsellers.html" class="inline-flex items-center gap-2 px-6 py-3.5 font-body text-[13px] font-bold uppercase tracking-[0.06em] border-[3px] border-white bg-transparent text-white shadow-none hover:bg-white/10">Çok Satanlar</a>
+            <a data-i5="btn--light" data-i5-tags="btn btn--outline btn--light" href="{{ route('shops', ['siralama' => 'featured']) }}" class="inline-flex items-center gap-2 px-6 py-3.5 font-body text-[13px] font-bold uppercase tracking-[0.06em] border-[3px] border-white bg-transparent text-white shadow-none hover:bg-white/10">Çok Satanlar</a>
           </div>
         </div>
       </div>
@@ -41,120 +41,61 @@
           <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>
         </button>
       </div>
-      <p data-i5="reveal" data-i5-tags="band-head__more reveal" class="text-center my-4 mb-7 md:mb-9 opacity-0 translate-y-6 transition-all duration-700 [&.is-revealed]:opacity-100 [&.is-revealed]:translate-y-0"><a href="bestsellers.html" class="font-body text-[13px] font-bold uppercase tracking-[0.06em] underline underline-offset-4 hover:text-accent" data-i5="link">Tümünü gör →</a></p>
+      <p data-i5="reveal" data-i5-tags="band-head__more reveal" class="text-center my-4 mb-7 md:mb-9 opacity-0 translate-y-6 transition-all duration-700 [&.is-revealed]:opacity-100 [&.is-revealed]:translate-y-0"><a href="{{ route('shops', ['siralama' => 'featured']) }}" class="font-body text-[13px] font-bold uppercase tracking-[0.06em] underline underline-offset-4 hover:text-accent" data-i5="link">Tümünü gör →</a></p>
     </div>
     <div data-i5="band__track-wrap" data-i5-tags="carousel-wrap band__track-wrap" class="w-full max-w-none p-0 m-0 overflow-x-auto overflow-y-hidden border-t-[3px] border-b-[3px] border-ink bg-surface [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
-      <!-- ürün kartı — backend'de foreach ile çoğaltın -->
       <div data-i5="band__track" data-i5-tags="carousel band__track" class="flex gap-0 p-0 overflow-y-visible snap-none scroll-smooth overscroll-x-contain overscroll-y-auto [scrollbar-width:none] max-[767px]:[touch-action:pan-x_pan-y]" data-i5-product-carousel>
-        <article data-i5="carousel__item" data-i5-tags="product" class="relative shrink-0 min-w-0 border-r-[3px] border-ink bg-surface last:border-r-0 flex-[0_0_calc(100vw/2.1)] min-[640px]:flex-[0_0_calc(100vw/3.15)] min-[1024px]:flex-[0_0_calc(100vw/4.15)] min-[1440px]:flex-[0_0_calc(100vw/5.1)] group/card max-sm:flex-[0_0_82vw] max-sm:max-w-[82vw]"><a href="product.html?id=led-lightbox" class="block no-underline text-inherit"><div class="relative aspect-square w-full overflow-hidden bg-surface border-b-[3px] border-ink shadow-none" data-i5="product__media">
-              <img data-i5="product__img--main" data-i5-tags="product__img product__img--main" class="absolute inset-0 w-full h-full object-cover transition-opacity duration-300 ease-out group-hover/card:opacity-0" src="{{asset('user')}}/assets/foto5.jpeg" alt="LED Lightbox">
-              <img data-i5="product__img--alt" data-i5-tags="product__img product__img--alt" class="absolute inset-0 w-full h-full object-cover transition-opacity duration-300 ease-out opacity-0 group-hover/card:opacity-100" src="{{asset('user')}}/assets/WhatsApp Image 2026-06-27 at 00.28.43.jpeg" alt="">
-              <span class="absolute bottom-0 inset-x-0 z-[3] px-3 py-[11px] bg-action text-on-dark font-body text-xs font-semibold normal-case tracking-normal text-center border-t-2 border-action/25 opacity-0 invisible translate-y-2 transition-all duration-200 group-hover/card:opacity-100 group-hover/card:visible group-hover/card:translate-y-0 hover:bg-action-hover" data-i5="product__add" role="button" tabindex="0">Sepete Ekle</span>
+        @php $placeholder = asset('user/assets/foto5.jpeg'); @endphp
+        @forelse ($bestsellerProducts as $product)
+          @php
+            $mainImage = $product->images->first();
+            $altImage = $product->images->skip(1)->first();
+            $canAddToCart = auth()->check()
+                && auth()->user()->type === \App\Enums\UserType::USER
+                && auth()->user()->status === \App\Enums\Status::ACTIVE;
+          @endphp
+          <article data-i5="carousel__item" data-i5-tags="product" class="relative shrink-0 min-w-0 border-r-[3px] border-ink bg-surface last:border-r-0 flex-[0_0_calc(100vw/2.1)] min-[640px]:flex-[0_0_calc(100vw/3.15)] min-[1024px]:flex-[0_0_calc(100vw/4.15)] min-[1440px]:flex-[0_0_calc(100vw/5.1)] group/card max-sm:flex-[0_0_82vw] max-sm:max-w-[82vw]">
+            <div class="relative aspect-square w-full overflow-hidden bg-surface border-b-[3px] border-ink shadow-none" data-i5="product__media">
+              <a href="{{ route('shopDetail', $product->slug) }}" class="block absolute inset-0 z-[1]">
+                @if ($product->introduction_status)
+                  <span class="absolute top-[10px] left-[10px] z-[2] px-2.5 py-1.5 bg-badge text-badge-fg font-body text-[11px] font-semibold tracking-[0.03em] normal-case border border-action/15 leading-none" data-i5="product__badge">Yeni</span>
+                @elseif ($product->featured_status)
+                  <span class="absolute top-[10px] left-[10px] z-[2] px-2.5 py-1.5 bg-accent text-on-dark font-body text-[11px] font-semibold tracking-[0.03em] normal-case border border-ink/15 leading-none" data-i5="product__badge">Öne Çıkan</span>
+                @endif
+                <img data-i5="product__img--main" data-i5-tags="product__img product__img--main" class="absolute inset-0 w-full h-full object-cover transition-opacity duration-300 ease-out {{ $altImage ? 'group-hover/card:opacity-0' : '' }}" src="{{ $mainImage?->url ?? $placeholder }}" alt="{{ $product->title }}">
+                @if ($altImage)
+                  <img data-i5="product__img--alt" data-i5-tags="product__img product__img--alt" class="absolute inset-0 w-full h-full object-cover transition-opacity duration-300 ease-out opacity-0 group-hover/card:opacity-100" src="{{ $altImage->url }}" alt="">
+                @endif
+              </a>
+              @if ($product->stock_count > 0)
+                @if ($canAddToCart)
+                  <form method="post" action="{{ route('cartStore') }}" class="absolute bottom-0 inset-x-0 z-[3]">
+                    @csrf
+                    <input type="hidden" name="product_id" value="{{ $product->id }}">
+                    <input type="hidden" name="quantity" value="1">
+                    <button type="submit" class="w-full px-3 py-[11px] bg-action text-on-dark font-body text-xs font-semibold normal-case tracking-normal text-center border-t-2 border-action/25 opacity-0 invisible translate-y-2 transition-all duration-200 group-hover/card:opacity-100 group-hover/card:visible group-hover/card:translate-y-0 hover:bg-action-hover" data-i5="product__add">Sepete Ekle</button>
+                  </form>
+                @else
+                  <a href="{{ route('loginPage') }}" class="absolute bottom-0 inset-x-0 z-[3] block px-3 py-[11px] bg-action text-on-dark font-body text-xs font-semibold normal-case tracking-normal text-center border-t-2 border-action/25 opacity-0 invisible translate-y-2 transition-all duration-200 group-hover/card:opacity-100 group-hover/card:visible group-hover/card:translate-y-0 hover:bg-action-hover" data-i5="product__add">Sepete Ekle</a>
+                @endif
+              @endif
             </div>
-          
-            <h3 class="font-heading text-card-title font-semibold leading-snug normal-case text-ink m-0 px-4 pt-3.5 pb-1.5 max-sm:px-[18px] max-sm:pt-4 max-sm:pb-2 max-sm:text-[17px]" data-i5="product__name">LED Lightbox Tabela</h3>
-            <p class="font-body text-sm font-medium leading-snug text-ink m-0 px-4 pb-4 pt-1 max-sm:px-[18px] max-sm:pb-[18px] max-sm:text-[15px]" data-i5="product__price">3.200₺'den başlayan</p>
-          </a></article>
-        <article data-i5="carousel__item" data-i5-tags="product" class="relative shrink-0 min-w-0 border-r-[3px] border-ink bg-surface last:border-r-0 flex-[0_0_calc(100vw/2.1)] min-[640px]:flex-[0_0_calc(100vw/3.15)] min-[1024px]:flex-[0_0_calc(100vw/4.15)] min-[1440px]:flex-[0_0_calc(100vw/5.1)] group/card max-sm:flex-[0_0_82vw] max-sm:max-w-[82vw]"><a href="product.html?id=roll-up-banner" class="block no-underline text-inherit"><div class="relative aspect-square w-full overflow-hidden bg-surface border-b-[3px] border-ink shadow-none" data-i5="product__media">
-              <img data-i5="product__img--main" data-i5-tags="product__img product__img--main" class="absolute inset-0 w-full h-full object-cover transition-opacity duration-300 ease-out group-hover/card:opacity-0" src="{{asset('user')}}/assets/WhatsApp Image 2026-06-27 at 00.28.44.jpeg" alt="Roll-Up Banner">
-              <img data-i5="product__img--alt" data-i5-tags="product__img product__img--alt" class="absolute inset-0 w-full h-full object-cover transition-opacity duration-300 ease-out opacity-0 group-hover/card:opacity-100" src="{{asset('user')}}/assets/foto.jpeg" alt="">
-              <span class="absolute bottom-0 inset-x-0 z-[3] px-3 py-[11px] bg-action text-on-dark font-body text-xs font-semibold normal-case tracking-normal text-center border-t-2 border-action/25 opacity-0 invisible translate-y-2 transition-all duration-200 group-hover/card:opacity-100 group-hover/card:visible group-hover/card:translate-y-0 hover:bg-action-hover" data-i5="product__add" role="button" tabindex="0">Sepete Ekle</span>
-            </div>
-          
-            <h3 class="font-heading text-card-title font-semibold leading-snug normal-case text-ink m-0 px-4 pt-3.5 pb-1.5 max-sm:px-[18px] max-sm:pt-4 max-sm:pb-2 max-sm:text-[17px]" data-i5="product__name">Roll-Up Banner</h3>
-            <p class="font-body text-sm font-medium leading-snug text-ink m-0 px-4 pb-4 pt-1 max-sm:px-[18px] max-sm:pb-[18px] max-sm:text-[15px]" data-i5="product__price">890₺'den başlayan</p>
-          </a></article>
-        <article data-i5="carousel__item" data-i5-tags="product" class="relative shrink-0 min-w-0 border-r-[3px] border-ink bg-surface last:border-r-0 flex-[0_0_calc(100vw/2.1)] min-[640px]:flex-[0_0_calc(100vw/3.15)] min-[1024px]:flex-[0_0_calc(100vw/4.15)] min-[1440px]:flex-[0_0_calc(100vw/5.1)] group/card max-sm:flex-[0_0_82vw] max-sm:max-w-[82vw]"><a href="product.html?id=acik-hava-tabela" class="block no-underline text-inherit"><div class="relative aspect-square w-full overflow-hidden bg-surface border-b-[3px] border-ink shadow-none" data-i5="product__media">
-              <img data-i5="product__img--main" data-i5-tags="product__img product__img--main" class="absolute inset-0 w-full h-full object-cover transition-opacity duration-300 ease-out group-hover/card:opacity-0" src="{{asset('user')}}/assets/WhatsApp Image 2026-06-27 at 00.28.43.jpeg" alt="Açık Hava Tabelası">
-              <img data-i5="product__img--alt" data-i5-tags="product__img product__img--alt" class="absolute inset-0 w-full h-full object-cover transition-opacity duration-300 ease-out opacity-0 group-hover/card:opacity-100" src="{{asset('user')}}/assets/foto.jpeg" alt="">
-              <span class="absolute bottom-0 inset-x-0 z-[3] px-3 py-[11px] bg-action text-on-dark font-body text-xs font-semibold normal-case tracking-normal text-center border-t-2 border-action/25 opacity-0 invisible translate-y-2 transition-all duration-200 group-hover/card:opacity-100 group-hover/card:visible group-hover/card:translate-y-0 hover:bg-action-hover" data-i5="product__add" role="button" tabindex="0">Sepete Ekle</span>
-            </div>
-          
-            <h3 class="font-heading text-card-title font-semibold leading-snug normal-case text-ink m-0 px-4 pt-3.5 pb-1.5 max-sm:px-[18px] max-sm:pt-4 max-sm:pb-2 max-sm:text-[17px]" data-i5="product__name">Açık Hava Tabelası</h3>
-            <p class="font-body text-sm font-medium leading-snug text-ink m-0 px-4 pb-4 pt-1 max-sm:px-[18px] max-sm:pb-[18px] max-sm:text-[15px]" data-i5="product__price">1.680₺'den başlayan</p>
-          </a></article>
-        <article data-i5="carousel__item" data-i5-tags="product" class="relative shrink-0 min-w-0 border-r-[3px] border-ink bg-surface last:border-r-0 flex-[0_0_calc(100vw/2.1)] min-[640px]:flex-[0_0_calc(100vw/3.15)] min-[1024px]:flex-[0_0_calc(100vw/4.15)] min-[1440px]:flex-[0_0_calc(100vw/5.1)] group/card max-sm:flex-[0_0_82vw] max-sm:max-w-[82vw]"><a href="product.html?id=a-frame" class="block no-underline text-inherit"><div class="relative aspect-square w-full overflow-hidden bg-surface border-b-[3px] border-ink shadow-none" data-i5="product__media">
-              <img data-i5="product__img--main" data-i5-tags="product__img product__img--main" class="absolute inset-0 w-full h-full object-cover transition-opacity duration-300 ease-out group-hover/card:opacity-0" src="{{asset('user')}}/assets/foto.jpeg" alt="A-Frame Tabela">
-              <img data-i5="product__img--alt" data-i5-tags="product__img product__img--alt" class="absolute inset-0 w-full h-full object-cover transition-opacity duration-300 ease-out opacity-0 group-hover/card:opacity-100" src="{{asset('user')}}/assets/WhatsApp Image 2026-06-27 at 00.28.44.jpeg" alt="">
-              <span class="absolute bottom-0 inset-x-0 z-[3] px-3 py-[11px] bg-action text-on-dark font-body text-xs font-semibold normal-case tracking-normal text-center border-t-2 border-action/25 opacity-0 invisible translate-y-2 transition-all duration-200 group-hover/card:opacity-100 group-hover/card:visible group-hover/card:translate-y-0 hover:bg-action-hover" data-i5="product__add" role="button" tabindex="0">Sepete Ekle</span>
-            </div>
-          
-            <h3 class="font-heading text-card-title font-semibold leading-snug normal-case text-ink m-0 px-4 pt-3.5 pb-1.5 max-sm:px-[18px] max-sm:pt-4 max-sm:pb-2 max-sm:text-[17px]" data-i5="product__name">A-Frame Tabela</h3>
-            <p class="font-body text-sm font-medium leading-snug text-ink m-0 px-4 pb-4 pt-1 max-sm:px-[18px] max-sm:pb-[18px] max-sm:text-[15px]" data-i5="product__price">1.120₺'den başlayan</p>
-          </a></article>
-        <article data-i5="carousel__item" data-i5-tags="product" class="relative shrink-0 min-w-0 border-r-[3px] border-ink bg-surface last:border-r-0 flex-[0_0_calc(100vw/2.1)] min-[640px]:flex-[0_0_calc(100vw/3.15)] min-[1024px]:flex-[0_0_calc(100vw/4.15)] min-[1440px]:flex-[0_0_calc(100vw/5.1)] group/card max-sm:flex-[0_0_82vw] max-sm:max-w-[82vw]"><a href="product.html?id=premium-kartvizit" class="block no-underline text-inherit"><div class="relative aspect-square w-full overflow-hidden bg-surface border-b-[3px] border-ink shadow-none" data-i5="product__media">
-              <img data-i5="product__img--main" data-i5-tags="product__img product__img--main" class="absolute inset-0 w-full h-full object-cover transition-opacity duration-300 ease-out group-hover/card:opacity-0" src="{{asset('user')}}/assets/foto1.jpeg" alt="Premium Kartvizit">
-              <img data-i5="product__img--alt" data-i5-tags="product__img product__img--alt" class="absolute inset-0 w-full h-full object-cover transition-opacity duration-300 ease-out opacity-0 group-hover/card:opacity-100" src="{{asset('user')}}/assets/foto2.jpeg" alt="">
-              <span class="absolute bottom-0 inset-x-0 z-[3] px-3 py-[11px] bg-action text-on-dark font-body text-xs font-semibold normal-case tracking-normal text-center border-t-2 border-action/25 opacity-0 invisible translate-y-2 transition-all duration-200 group-hover/card:opacity-100 group-hover/card:visible group-hover/card:translate-y-0 hover:bg-action-hover" data-i5="product__add" role="button" tabindex="0">Sepete Ekle</span>
-            </div>
-          
-            <h3 class="font-heading text-card-title font-semibold leading-snug normal-case text-ink m-0 px-4 pt-3.5 pb-1.5 max-sm:px-[18px] max-sm:pt-4 max-sm:pb-2 max-sm:text-[17px]" data-i5="product__name">Premium Kartvizit</h3>
-            <p class="font-body text-sm font-medium leading-snug text-ink m-0 px-4 pb-4 pt-1 max-sm:px-[18px] max-sm:pb-[18px] max-sm:text-[15px]" data-i5="product__price">350₺'den başlayan</p>
-          </a></article>
-        <article data-i5="carousel__item" data-i5-tags="product" class="relative shrink-0 min-w-0 border-r-[3px] border-ink bg-surface last:border-r-0 flex-[0_0_calc(100vw/2.1)] min-[640px]:flex-[0_0_calc(100vw/3.15)] min-[1024px]:flex-[0_0_calc(100vw/4.15)] min-[1440px]:flex-[0_0_calc(100vw/5.1)] group/card max-sm:flex-[0_0_82vw] max-sm:max-w-[82vw]"><a href="product.html?id=magnet-afis" class="block no-underline text-inherit"><div class="relative aspect-square w-full overflow-hidden bg-surface border-b-[3px] border-ink shadow-none" data-i5="product__media">
-              <span data-i5="product__badge--sale" data-i5-tags="product__badge product__badge--sale" class="absolute top-[10px] left-[10px] z-[2] px-2.5 py-1.5 bg-badge text-badge-fg font-body text-[11px] font-semibold tracking-[0.03em] normal-case border border-action/15 leading-none bg-badge-sale text-on-dark border-action/15">İndirim</span>
-              <img data-i5="product__img--main" data-i5-tags="product__img product__img--main" class="absolute inset-0 w-full h-full object-cover transition-opacity duration-300 ease-out group-hover/card:opacity-0" src="{{asset('user')}}/assets/foto.jpeg" alt="Magnet Afiş Seti">
-              <img data-i5="product__img--alt" data-i5-tags="product__img product__img--alt" class="absolute inset-0 w-full h-full object-cover transition-opacity duration-300 ease-out opacity-0 group-hover/card:opacity-100" src="{{asset('user')}}/assets/WhatsApp Image 2026-06-27 at 00.28.44.jpeg" alt="">
-              <span class="absolute bottom-0 inset-x-0 z-[3] px-3 py-[11px] bg-action text-on-dark font-body text-xs font-semibold normal-case tracking-normal text-center border-t-2 border-action/25 opacity-0 invisible translate-y-2 transition-all duration-200 group-hover/card:opacity-100 group-hover/card:visible group-hover/card:translate-y-0 hover:bg-action-hover" data-i5="product__add" role="button" tabindex="0">Sepete Ekle</span>
-            </div>
-          
-            <h3 class="font-heading text-card-title font-semibold leading-snug normal-case text-ink m-0 px-4 pt-3.5 pb-1.5 max-sm:px-[18px] max-sm:pt-4 max-sm:pb-2 max-sm:text-[17px]" data-i5="product__name">Magnet Afiş Seti</h3>
-            <p class="font-body text-sm font-medium leading-snug text-ink m-0 px-4 pb-4 pt-1 max-sm:px-[18px] max-sm:pb-[18px] max-sm:text-[15px]" data-i5="product__price">420₺'den başlayan</p>
-          </a></article>
-        <article data-i5="carousel__item" data-i5-tags="product" class="relative shrink-0 min-w-0 border-r-[3px] border-ink bg-surface last:border-r-0 flex-[0_0_calc(100vw/2.1)] min-[640px]:flex-[0_0_calc(100vw/3.15)] min-[1024px]:flex-[0_0_calc(100vw/4.15)] min-[1440px]:flex-[0_0_calc(100vw/5.1)] group/card max-sm:flex-[0_0_82vw] max-sm:max-w-[82vw]"><a href="product.html?id=kurumsal-kimlik" class="block no-underline text-inherit"><div class="relative aspect-square w-full overflow-hidden bg-surface border-b-[3px] border-ink shadow-none" data-i5="product__media">
-              <img data-i5="product__img--main" data-i5-tags="product__img product__img--main" class="absolute inset-0 w-full h-full object-cover transition-opacity duration-300 ease-out group-hover/card:opacity-0" src="{{asset('user')}}/assets/foto3.jpeg" alt="Kurumsal Kimlik">
-              <img data-i5="product__img--alt" data-i5-tags="product__img product__img--alt" class="absolute inset-0 w-full h-full object-cover transition-opacity duration-300 ease-out opacity-0 group-hover/card:opacity-100" src="{{asset('user')}}/assets/foto4.jpeg" alt="">
-              <span class="absolute bottom-0 inset-x-0 z-[3] px-3 py-[11px] bg-action text-on-dark font-body text-xs font-semibold normal-case tracking-normal text-center border-t-2 border-action/25 opacity-0 invisible translate-y-2 transition-all duration-200 group-hover/card:opacity-100 group-hover/card:visible group-hover/card:translate-y-0 hover:bg-action-hover" data-i5="product__add" role="button" tabindex="0">Sepete Ekle</span>
-            </div>
-          
-            <h3 class="font-heading text-card-title font-semibold leading-snug normal-case text-ink m-0 px-4 pt-3.5 pb-1.5 max-sm:px-[18px] max-sm:pt-4 max-sm:pb-2 max-sm:text-[17px]" data-i5="product__name">Kurumsal Kimlik Seti</h3>
-            <p class="font-body text-sm font-medium leading-snug text-ink m-0 px-4 pb-4 pt-1 max-sm:px-[18px] max-sm:pb-[18px] max-sm:text-[15px]" data-i5="product__price">2.400₺'den başlayan</p>
-          </a></article>
-        <article data-i5="carousel__item" data-i5-tags="product" class="relative shrink-0 min-w-0 border-r-[3px] border-ink bg-surface last:border-r-0 flex-[0_0_calc(100vw/2.1)] min-[640px]:flex-[0_0_calc(100vw/3.15)] min-[1024px]:flex-[0_0_calc(100vw/4.15)] min-[1440px]:flex-[0_0_calc(100vw/5.1)] group/card max-sm:flex-[0_0_82vw] max-sm:max-w-[82vw]"><a href="product.html?id=metal-kartvizit" class="block no-underline text-inherit"><div class="relative aspect-square w-full overflow-hidden bg-surface border-b-[3px] border-ink shadow-none" data-i5="product__media">
-              <img data-i5="product__img--main" data-i5-tags="product__img product__img--main" class="absolute inset-0 w-full h-full object-cover transition-opacity duration-300 ease-out group-hover/card:opacity-0" src="{{asset('user')}}/assets/foto2.jpeg" alt="Metal Kartvizit">
-              <img data-i5="product__img--alt" data-i5-tags="product__img product__img--alt" class="absolute inset-0 w-full h-full object-cover transition-opacity duration-300 ease-out opacity-0 group-hover/card:opacity-100" src="{{asset('user')}}/assets/foto1.jpeg" alt="">
-              <span class="absolute bottom-0 inset-x-0 z-[3] px-3 py-[11px] bg-action text-on-dark font-body text-xs font-semibold normal-case tracking-normal text-center border-t-2 border-action/25 opacity-0 invisible translate-y-2 transition-all duration-200 group-hover/card:opacity-100 group-hover/card:visible group-hover/card:translate-y-0 hover:bg-action-hover" data-i5="product__add" role="button" tabindex="0">Sepete Ekle</span>
-            </div>
-          
-            <h3 class="font-heading text-card-title font-semibold leading-snug normal-case text-ink m-0 px-4 pt-3.5 pb-1.5 max-sm:px-[18px] max-sm:pt-4 max-sm:pb-2 max-sm:text-[17px]" data-i5="product__name">Metal Kartvizit</h3>
-            <p class="font-body text-sm font-medium leading-snug text-ink m-0 px-4 pb-4 pt-1 max-sm:px-[18px] max-sm:pb-[18px] max-sm:text-[15px]" data-i5="product__price">680₺'den başlayan</p>
-          </a></article>
-        <article data-i5="carousel__item" data-i5-tags="product" class="relative shrink-0 min-w-0 border-r-[3px] border-ink bg-surface last:border-r-0 flex-[0_0_calc(100vw/2.1)] min-[640px]:flex-[0_0_calc(100vw/3.15)] min-[1024px]:flex-[0_0_calc(100vw/4.15)] min-[1440px]:flex-[0_0_calc(100vw/5.1)] group/card max-sm:flex-[0_0_82vw] max-sm:max-w-[82vw]"><a href="product.html?id=ozel-kutu" class="block no-underline text-inherit"><div class="relative aspect-square w-full overflow-hidden bg-surface border-b-[3px] border-ink shadow-none" data-i5="product__media">
-              <img data-i5="product__img--main" data-i5-tags="product__img product__img--main" class="absolute inset-0 w-full h-full object-cover transition-opacity duration-300 ease-out group-hover/card:opacity-0" src="{{asset('user')}}/assets/foto5.jpeg" alt="Özel Tasarım Kutu">
-              <img data-i5="product__img--alt" data-i5-tags="product__img product__img--alt" class="absolute inset-0 w-full h-full object-cover transition-opacity duration-300 ease-out opacity-0 group-hover/card:opacity-100" src="{{asset('user')}}/assets/WhatsApp Image 2026-06-27 at 00.28.43.jpeg" alt="">
-              <span class="absolute bottom-0 inset-x-0 z-[3] px-3 py-[11px] bg-action text-on-dark font-body text-xs font-semibold normal-case tracking-normal text-center border-t-2 border-action/25 opacity-0 invisible translate-y-2 transition-all duration-200 group-hover/card:opacity-100 group-hover/card:visible group-hover/card:translate-y-0 hover:bg-action-hover" data-i5="product__add" role="button" tabindex="0">Sepete Ekle</span>
-            </div>
-          
-            <h3 class="font-heading text-card-title font-semibold leading-snug normal-case text-ink m-0 px-4 pt-3.5 pb-1.5 max-sm:px-[18px] max-sm:pt-4 max-sm:pb-2 max-sm:text-[17px]" data-i5="product__name">Özel Tasarım Kutu</h3>
-            <p class="font-body text-sm font-medium leading-snug text-ink m-0 px-4 pb-4 pt-1 max-sm:px-[18px] max-sm:pb-[18px] max-sm:text-[15px]" data-i5="product__price">560₺'den başlayan</p>
-          </a></article>
-        <article data-i5="carousel__item" data-i5-tags="product" class="relative shrink-0 min-w-0 border-r-[3px] border-ink bg-surface last:border-r-0 flex-[0_0_calc(100vw/2.1)] min-[640px]:flex-[0_0_calc(100vw/3.15)] min-[1024px]:flex-[0_0_calc(100vw/4.15)] min-[1440px]:flex-[0_0_calc(100vw/5.1)] group/card max-sm:flex-[0_0_82vw] max-sm:max-w-[82vw]"><a href="product.html?id=broşur-seti" class="block no-underline text-inherit"><div class="relative aspect-square w-full overflow-hidden bg-surface border-b-[3px] border-ink shadow-none" data-i5="product__media">
-              <img data-i5="product__img--main" data-i5-tags="product__img product__img--main" class="absolute inset-0 w-full h-full object-cover transition-opacity duration-300 ease-out group-hover/card:opacity-0" src="{{asset('user')}}/assets/WhatsApp Image 2026-06-27 at 00.28.44.jpeg" alt="Broşür Seti">
-              <img data-i5="product__img--alt" data-i5-tags="product__img product__img--alt" class="absolute inset-0 w-full h-full object-cover transition-opacity duration-300 ease-out opacity-0 group-hover/card:opacity-100" src="{{asset('user')}}/assets/foto4.jpeg" alt="">
-              <span class="absolute bottom-0 inset-x-0 z-[3] px-3 py-[11px] bg-action text-on-dark font-body text-xs font-semibold normal-case tracking-normal text-center border-t-2 border-action/25 opacity-0 invisible translate-y-2 transition-all duration-200 group-hover/card:opacity-100 group-hover/card:visible group-hover/card:translate-y-0 hover:bg-action-hover" data-i5="product__add" role="button" tabindex="0">Sepete Ekle</span>
-            </div>
-          
-            <h3 class="font-heading text-card-title font-semibold leading-snug normal-case text-ink m-0 px-4 pt-3.5 pb-1.5 max-sm:px-[18px] max-sm:pt-4 max-sm:pb-2 max-sm:text-[17px]" data-i5="product__name">Broşür Seti — 500 Adet</h3>
-            <p class="font-body text-sm font-medium leading-snug text-ink m-0 px-4 pb-4 pt-1 max-sm:px-[18px] max-sm:pb-[18px] max-sm:text-[15px]" data-i5="product__price">780₺'den başlayan</p>
-          </a></article>
-        <article data-i5="carousel__item" data-i5-tags="product" class="relative shrink-0 min-w-0 border-r-[3px] border-ink bg-surface last:border-r-0 flex-[0_0_calc(100vw/2.1)] min-[640px]:flex-[0_0_calc(100vw/3.15)] min-[1024px]:flex-[0_0_calc(100vw/4.15)] min-[1440px]:flex-[0_0_calc(100vw/5.1)] group/card max-sm:flex-[0_0_82vw] max-sm:max-w-[82vw]"><a href="product.html?id=etiket-baski" class="block no-underline text-inherit"><div class="relative aspect-square w-full overflow-hidden bg-surface border-b-[3px] border-ink shadow-none" data-i5="product__media">
-              <img data-i5="product__img--main" data-i5-tags="product__img product__img--main" class="absolute inset-0 w-full h-full object-cover transition-opacity duration-300 ease-out group-hover/card:opacity-0" src="{{asset('user')}}/assets/foto4.jpeg" alt="Etiket Baskı">
-              <img data-i5="product__img--alt" data-i5-tags="product__img product__img--alt" class="absolute inset-0 w-full h-full object-cover transition-opacity duration-300 ease-out opacity-0 group-hover/card:opacity-100" src="{{asset('user')}}/assets/foto3.jpeg" alt="">
-              <span class="absolute bottom-0 inset-x-0 z-[3] px-3 py-[11px] bg-action text-on-dark font-body text-xs font-semibold normal-case tracking-normal text-center border-t-2 border-action/25 opacity-0 invisible translate-y-2 transition-all duration-200 group-hover/card:opacity-100 group-hover/card:visible group-hover/card:translate-y-0 hover:bg-action-hover" data-i5="product__add" role="button" tabindex="0">Sepete Ekle</span>
-            </div>
-          
-            <h3 class="font-heading text-card-title font-semibold leading-snug normal-case text-ink m-0 px-4 pt-3.5 pb-1.5 max-sm:px-[18px] max-sm:pt-4 max-sm:pb-2 max-sm:text-[17px]" data-i5="product__name">Etiket Baskı — 1000 Adet</h3>
-            <p class="font-body text-sm font-medium leading-snug text-ink m-0 px-4 pb-4 pt-1 max-sm:px-[18px] max-sm:pb-[18px] max-sm:text-[15px]" data-i5="product__price">290₺'den başlayan</p>
-          </a></article>
-        <article data-i5="carousel__item" data-i5-tags="product" class="relative shrink-0 min-w-0 border-r-[3px] border-ink bg-surface last:border-r-0 flex-[0_0_calc(100vw/2.1)] min-[640px]:flex-[0_0_calc(100vw/3.15)] min-[1024px]:flex-[0_0_calc(100vw/4.15)] min-[1440px]:flex-[0_0_calc(100vw/5.1)] group/card max-sm:flex-[0_0_82vw] max-sm:max-w-[82vw]"><a href="product.html?id=magnet-kartvizit" class="block no-underline text-inherit"><div class="relative aspect-square w-full overflow-hidden bg-surface border-b-[3px] border-ink shadow-none" data-i5="product__media">
-              <img data-i5="product__img--main" data-i5-tags="product__img product__img--main" class="absolute inset-0 w-full h-full object-cover transition-opacity duration-300 ease-out group-hover/card:opacity-0" src="{{asset('user')}}/assets/foto.jpeg" alt="Magnet Kartvizit">
-              <img data-i5="product__img--alt" data-i5-tags="product__img product__img--alt" class="absolute inset-0 w-full h-full object-cover transition-opacity duration-300 ease-out opacity-0 group-hover/card:opacity-100" src="{{asset('user')}}/assets/foto1.jpeg" alt="">
-              <span class="absolute bottom-0 inset-x-0 z-[3] px-3 py-[11px] bg-action text-on-dark font-body text-xs font-semibold normal-case tracking-normal text-center border-t-2 border-action/25 opacity-0 invisible translate-y-2 transition-all duration-200 group-hover/card:opacity-100 group-hover/card:visible group-hover/card:translate-y-0 hover:bg-action-hover" data-i5="product__add" role="button" tabindex="0">Sepete Ekle</span>
-            </div>
-          
-            <h3 class="font-heading text-card-title font-semibold leading-snug normal-case text-ink m-0 px-4 pt-3.5 pb-1.5 max-sm:px-[18px] max-sm:pt-4 max-sm:pb-2 max-sm:text-[17px]" data-i5="product__name">Magnet Kartvizit</h3>
-            <p class="font-body text-sm font-medium leading-snug text-ink m-0 px-4 pb-4 pt-1 max-sm:px-[18px] max-sm:pb-[18px] max-sm:text-[15px]" data-i5="product__price">480₺'den başlayan</p>
-          </a></article>
+            <a href="{{ route('shopDetail', $product->slug) }}" class="block no-underline text-inherit">
+              <h3 class="font-heading text-card-title font-semibold leading-snug normal-case text-ink m-0 px-4 pt-3.5 pb-1.5 max-sm:px-[18px] max-sm:pt-4 max-sm:pb-2 max-sm:text-[17px]" data-i5="product__name">{{ $product->title }}</h3>
+              <p class="font-body text-sm font-medium leading-snug text-ink m-0 px-4 pb-4 pt-1 max-sm:px-[18px] max-sm:pb-[18px] max-sm:text-[15px]" data-i5="product__price">
+                @if ($product->stock_count === 0)
+                  <span class="text-muted">Stokta yok</span>
+                @else
+                  {{ number_format((float) $product->price, 0, ',', '.') }}₺
+                @endif
+              </p>
+            </a>
+          </article>
+        @empty
+          <div class="flex shrink-0 items-center justify-center min-h-[280px] px-8 border-r-[3px] border-ink bg-surface flex-[0_0_100%]">
+            <p class="font-body text-sm font-semibold text-muted">Henüz öne çıkan ürün bulunmuyor.</p>
+          </div>
+        @endforelse
       </div>
     </div>
   </section>

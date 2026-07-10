@@ -21,6 +21,13 @@
       <span>{{ $product->title }}</span>
     </nav>
 
+    @if (session('success'))
+    <div class="mb-6 p-3.5 border-[3px] border-ink bg-bg text-sm font-semibold text-ink" role="alert">{{ session('success') }}</div>
+    @endif
+    @if (session('error'))
+    <div class="mb-6 p-3.5 border-[3px] border-ink bg-bg text-sm font-semibold text-announce" role="alert">{{ session('error') }}</div>
+    @endif
+
     <div class="grid gap-10 min-[960px]:grid-cols-2 min-[960px]:gap-14 min-[960px]:items-start" data-i5="product-page__grid">
       <div data-i5-pdp-gallery>
         <div class="relative aspect-[4/5] border-[3px] border-ink shadow-brutal bg-surface overflow-hidden mb-3" data-i5="pdp-gallery__main">
@@ -104,7 +111,21 @@
 
         <div class="grid gap-3 mb-9" data-i5="pdp-actions">
           @if ($product->stock_count > 0)
-            <a href="#" class="inline-flex items-center justify-center gap-2 w-full px-6 py-3.5 font-body text-[13px] font-bold uppercase tracking-[0.06em] text-center border-[3px] border-ink bg-action text-on-dark shadow-brutal hover:bg-action-hover hover:-translate-x-0.5 hover:-translate-y-0.5" data-i5="btn--fill">Sepete Ekle</a>
+            @php
+              $canAddToCart = auth()->check()
+                  && auth()->user()->type === \App\Enums\UserType::USER
+                  && auth()->user()->status === \App\Enums\Status::ACTIVE;
+            @endphp
+            @if ($canAddToCart)
+              <form method="post" action="{{ route('cartStore') }}">
+                @csrf
+                <input type="hidden" name="product_id" value="{{ $product->id }}">
+                <input type="hidden" name="quantity" value="1">
+                <button type="submit" class="inline-flex items-center justify-center gap-2 w-full px-6 py-3.5 font-body text-[13px] font-bold uppercase tracking-[0.06em] text-center border-[3px] border-ink bg-action text-on-dark shadow-brutal hover:bg-action-hover hover:-translate-x-0.5 hover:-translate-y-0.5" data-i5="btn--fill">Sepete Ekle</button>
+              </form>
+            @else
+              <a href="{{ route('loginPage') }}" class="inline-flex items-center justify-center gap-2 w-full px-6 py-3.5 font-body text-[13px] font-bold uppercase tracking-[0.06em] text-center border-[3px] border-ink bg-action text-on-dark shadow-brutal hover:bg-action-hover hover:-translate-x-0.5 hover:-translate-y-0.5" data-i5="btn--fill">Sepete Ekle</a>
+            @endif
           @else
             <span class="inline-flex items-center justify-center w-full px-6 py-3.5 font-body text-[13px] font-bold uppercase tracking-[0.06em] text-center border-[3px] border-ink bg-cream text-muted cursor-not-allowed">Stokta Yok</span>
           @endif

@@ -130,12 +130,6 @@
   <script src="{{asset('user')}}/js/loader.js"></script>
   </head>
 <body class="font-body text-base leading-[1.55] text-ink bg-bg antialiased pt-announce overflow-x-hidden selection:bg-action-muted selection:text-on-dark" data-pmp-site>
-  @php
-    $authUser = auth()->user();
-    $isUserLoggedIn = $authUser
-        && $authUser->type === \App\Enums\UserType::USER
-        && $authUser->status === \App\Enums\Status::ACTIVE;
-  @endphp
   <!-- Site chrome — index5.js: duyuru, header, mobil menü, arama -->
   <div class="pmp-announce fixed inset-x-0 top-0 z-[300] flex min-h-[44px] items-center justify-center border-b-[3px] border-ink bg-announce px-5 text-center font-body text-[13px] font-semibold uppercase tracking-wide text-on-dark">
     500₺ üzeri ücretsiz kargo — <a class="underline underline-offset-[3px]" href="products.html">Alışverişe Başla</a>
@@ -155,16 +149,47 @@
             <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="10.824" cy="10.824" r="7.824"/><path stroke-linecap="square" d="m16.971 16.971 4.47 4.47"/></svg>
           </button>
           @if ($isUserLoggedIn)
-          <a href="profile.html" class="flex items-center justify-center w-16 h-full text-on-dark transition-colors hover:bg-header-hover max-[1039px]:hidden" aria-label="Profil">
-            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"/></svg>
-          </a>
+          <div class="relative max-[1039px]:hidden group/account before:content-[''] before:absolute before:inset-x-0 before:top-full before:h-2" data-i5="account-dropdown">
+            <button type="button" class="flex items-center justify-center w-16 h-full text-on-dark transition-colors hover:bg-header-hover group-hover/account:bg-header-hover group-[.is-open]/account:bg-header-hover" data-i5="account-trigger" aria-label="Hesabım" aria-haspopup="true" aria-expanded="false">
+              <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"/></svg>
+            </button>
+            <div class="absolute right-0 top-[calc(100%+3px)] z-[90] w-[min(100vw-2.5rem,260px)] border-[3px] border-ink bg-surface shadow-brutal opacity-0 invisible translate-y-1 transition-all duration-200 pointer-events-none group-hover/account:opacity-100 group-hover/account:visible group-hover/account:translate-y-0 group-hover/account:pointer-events-auto group-focus-within/account:opacity-100 group-focus-within/account:visible group-focus-within/account:translate-y-0 group-focus-within/account:pointer-events-auto group-[.is-open]/account:opacity-100 group-[.is-open]/account:visible group-[.is-open]/account:translate-y-0 group-[.is-open]/account:pointer-events-auto" data-i5="account-panel">
+              <div class="flex items-center gap-3 px-4 py-3.5 border-b-[3px] border-ink bg-bg">
+                <span class="flex h-10 w-10 shrink-0 items-center justify-center border-[3px] border-ink bg-accent font-body text-[11px] font-bold uppercase tracking-[0.04em] text-on-dark" aria-hidden="true">{{ $userInitials }}</span>
+                <div class="min-w-0">
+                  <p class="truncate font-body text-[13px] font-bold uppercase tracking-[0.02em] text-ink">{{ $authUser->name }}</p>
+                  <p class="truncate text-[11px] text-muted">{{ $authUser->email }}</p>
+                </div>
+              </div>
+              <nav class="grid p-2" aria-label="Hesap menüsü">
+                <a href="{{ route('account') }}" class="flex items-center gap-2.5 px-3.5 py-3 font-body text-xs font-bold uppercase tracking-[0.04em] text-muted transition-[background,color] hover:bg-hover hover:text-ink [&_svg]:shrink-0 [&_svg]:opacity-70">
+                  <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"/></svg>
+                  Hesabım
+                </a>
+                <a href="{{ route('orderList') }}" class="flex items-center gap-2.5 px-3.5 py-3 font-body text-xs font-bold uppercase tracking-[0.04em] text-muted transition-[background,color] hover:bg-hover hover:text-ink [&_svg]:shrink-0 [&_svg]:opacity-70">
+                  <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25z"/></svg>
+                  Siparişlerim
+                </a>
+                <form action="{{ route('logout') }}" method="post" class="mt-1 border-t border-ink/10 pt-1">
+                  @csrf
+                  <button type="submit" class="flex w-full items-center gap-2.5 px-3.5 py-3 text-left font-body text-xs font-bold uppercase tracking-[0.04em] text-announce transition-[background,color] hover:bg-hover hover:text-ink [&_svg]:shrink-0">
+                    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9"/></svg>
+                    Çıkış Yap
+                  </button>
+                </form>
+              </nav>
+            </div>
+          </div>
           @else
           <a href="{{ route('loginPage') }}" class="flex items-center justify-center w-16 h-full text-on-dark transition-colors hover:bg-header-hover max-[1039px]:hidden" aria-label="Giriş Yap">
             <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"/></svg>
           </a>
           @endif
-          <a href="cart.html" class="flex items-center justify-center w-16 relative text-on-dark transition-colors hover:bg-header-hover" aria-label="Sepet" data-i5="header__cart">
+          <a href="{{ route('cart') }}" class="flex items-center justify-center w-16 relative text-on-dark transition-colors hover:bg-header-hover" aria-label="{{ $cartCount > 0 ? 'Sepet ('.$cartCount.' ürün)' : 'Sepet' }}" data-i5="header__cart">
             <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007z"/></svg>
+            @if ($cartCount > 0)
+            <span class="absolute top-[10px] right-[10px] min-w-[18px] h-[18px] px-1 bg-on-dark text-announce font-body text-[10px] font-bold leading-none border-2 border-ink flex items-center justify-center pointer-events-none">{{ $cartCount > 99 ? '99+' : $cartCount }}</span>
+            @endif
           </a>
           <a href="products.html" class="hidden items-center border-l-[3px] border-ink bg-on-dark px-6 font-body text-[13px] font-bold uppercase tracking-[0.06em] text-announce transition-colors hover:bg-cream min-[768px]:flex">Keşfet</a>
         </div>
@@ -237,12 +262,12 @@
         </button>
       </form>
       <div class="grid [grid-template-columns:1fr_1fr] mt-5 border-[3px] border-ink shadow-brutal-sm [&>a:first-child]:border-r-[3px] [&>a:first-child]:border-r-ink">
-        <a href="cart.html" class="flex items-center justify-center gap-2 [padding:14px_10px] bg-surface font-body text-xs font-bold tracking-[0.06em] uppercase text-ink hover:bg-hover [&.is-active]:bg-action [&.is-active]:text-on-dark">
+        <a href="{{ route('cart') }}" class="flex items-center justify-center gap-2 [padding:14px_10px] bg-surface font-body text-xs font-bold tracking-[0.06em] uppercase text-ink hover:bg-hover [&.is-active]:bg-action [&.is-active]:text-on-dark">
           <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007z"/></svg>
           <span>Sepet</span>
         </a>
         @if ($isUserLoggedIn)
-        <a href="profile.html" class="flex items-center justify-center gap-2 [padding:14px_10px] bg-surface font-body text-xs font-bold tracking-[0.06em] uppercase text-ink hover:bg-hover [&.is-active]:bg-action [&.is-active]:text-on-dark">
+        <a href="{{ route('account') }}" class="flex items-center justify-center gap-2 [padding:14px_10px] bg-surface font-body text-xs font-bold tracking-[0.06em] uppercase text-ink hover:bg-hover [&.is-active]:bg-action [&.is-active]:text-on-dark">
           <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"/></svg>
           <span>Hesabım</span>
         </a>
@@ -288,10 +313,10 @@
       <details class="[&_summary]:flex [&_summary]:items-center [&_summary]:justify-between [&_summary]:gap-3 [&_summary]:font-body [&_summary]:text-[20px] [&_summary]:font-bold [&_summary]:uppercase [&_summary]:[padding:16px_20px] [&_summary]:border-b-2 [&_summary]:border-ink [&_summary]:cursor-pointer [&_summary]:list-none [&_summary]:bg-surface hover:[&_summary]:bg-hover [&_a]:block [&_a]:font-body [&_a]:text-[15px] [&_a]:font-medium [&_a]:normal-case [&_a]:[padding:12px_20px_12px_32px] [&_a]:border-b [&_a]:border-ink [&_a]:bg-bg hover:[&_a]:bg-hover bg-surface">
         <summary>Hesabım</summary>
         @if ($isUserLoggedIn)
-        <a href="profile.html">Profil Bilgilerim</a>
-        <a href="orders.html">Siparişlerim</a>
+        <a href="{{ route('account') }}">Profil Bilgilerim</a>
+        <a href="{{ route('orderList') }}">Siparişlerim</a>
         <a href="addresses.html">Adreslerim</a>
-        <a href="cart.html">Sepetim</a>
+        <a href="{{ route('cart') }}">Sepetim</a>
         <form action="{{ route('logout') }}" method="post">
           @csrf
           <button type="submit" class="block w-full text-left font-body text-[15px] font-medium normal-case [padding:12px_20px_12px_32px] border-b border-ink bg-bg hover:bg-hover">Çıkış Yap</button>
@@ -346,8 +371,8 @@
             <li><a href="contact.html">İletişim</a></li>
             <li><a href="#">Kargo &amp; Teslimat</a></li>
             @if ($isUserLoggedIn)
-            <li><a href="profile.html">Profil Bilgilerim</a></li>
-            <li><a href="orders.html">Siparişlerim</a></li>
+            <li><a href="{{ route('account') }}">Profil Bilgilerim</a></li>
+            <li><a href="{{ route('orderList') }}">Siparişlerim</a></li>
             @else
             <li><a href="{{ route('loginPage') }}">Giriş Yap</a></li>
             <li><a href="{{ route('registerPage') }}">Kayıt Ol</a></li>
@@ -374,8 +399,7 @@
       </div>
     </div>
   </footer>
-  <!-- cart-badge.js + index5.js (menü, carousel, ticker) -->
-  <script src="{{asset('user')}}/js/cart-badge.js"></script>
+  <!-- index5.js (menü, carousel, ticker) -->
   <script src="{{asset('user')}}/js/index5.js"></script>
 </body>
 </html>
