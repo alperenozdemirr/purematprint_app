@@ -44,8 +44,20 @@ Route::group(['middleware' => 'user'],function (){
     Route::post('sepet/store', [ShoppingCartController::class, 'store'])->name('cartStore');
     Route::post('sepet/update', [ShoppingCartController::class, 'update'])->name('cartUpdate');
     Route::get('sepet/{id}/delete', [ShoppingCartController::class, 'destroy'])->name('cartDelete');
+
     Route::get('hesabim', [AccountController::class, 'index'])->name('account');
+    Route::post('hesabim/update', [AccountController::class, 'update'])->name('accountUpdate');
+    Route::get('adreslerim', [AccountController::class, 'addressList'])->name('addressList');
+    Route::get('adreslerim/yeni', [AccountController::class, 'addressCreatePage'])->name('addressCreatePage');
+    Route::post('adreslerim/store', [AccountController::class, 'addressStore'])->name('addressStore');
+    Route::get('adreslerim/{id}/duzenle', [AccountController::class, 'addressEditPage'])->name('addressEditPage');
+    Route::post('adreslerim/update', [AccountController::class, 'addressUpdate'])->name('addressUpdate');
+    Route::get('adreslerim/{id}/delete', [AccountController::class, 'addressDestroy'])->name('addressDelete');
+
     Route::get('siparislerim', [UserOrderController::class, 'index'])->name('orderList');
+    Route::get('siparislerim/{code}', [UserOrderController::class, 'show'])->name('orderShow');
+    Route::get('odeme', [UserOrderController::class, 'checkoutPage'])->name('checkout');
+    Route::post('odeme', [UserOrderController::class, 'checkoutStore'])->name('checkoutStore');
 });
 
 Route::group(['prefix' => 'admin/', 'middleware' => 'admin'], function () {

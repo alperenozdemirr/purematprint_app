@@ -399,6 +399,7 @@
       </div>
     </div>
   </footer>
+  @stack('scripts')
   <!-- index5.js (menü, carousel, ticker) -->
   <script src="{{asset('user')}}/js/index5.js"></script>
 </body>

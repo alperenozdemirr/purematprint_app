@@ -98,7 +98,7 @@
           <p class="text-xs text-muted leading-normal my-3 mb-6" data-i5="cart-summary__note">500₺ üzeri siparişlerde kargo ücretsiz. Fiyatlara KDV dahildir.</p>
           <div class="grid gap-3 [&_[data-i5='btn']]:w-full [&_[data-i5='btn']]:justify-center [&_[data-i5='btn']]:text-center" data-i5="cart-summary__actions">
             @if ($cartItems->isNotEmpty())
-            <a data-i5="btn--fill" data-i5-tags="btn btn--fill" href="checkout.html" class="inline-flex items-center gap-2 px-6 py-3.5 font-body text-[13px] font-bold uppercase tracking-[0.06em] border-[3px] border-ink transition-[transform,box-shadow,background-color] bg-action text-on-dark shadow-brutal hover:bg-action-hover hover:-translate-x-0.5 hover:-translate-y-0.5">Ödemeye Geç</a>
+            <a data-i5="btn--fill" data-i5-tags="btn btn--fill" href="{{ route('checkout') }}" class="inline-flex items-center gap-2 px-6 py-3.5 font-body text-[13px] font-bold uppercase tracking-[0.06em] border-[3px] border-ink transition-[transform,box-shadow,background-color] bg-action text-on-dark shadow-brutal hover:bg-action-hover hover:-translate-x-0.5 hover:-translate-y-0.5">Ödemeye Geç</a>
             @endif
             <a href="{{ route('shops') }}" class="block text-center text-[13px] font-semibold text-muted underline underline-offset-[3px] transition-colors hover:text-accent" data-i5="cart-summary__continue">Alışverişe Devam Et</a>
           </div>
