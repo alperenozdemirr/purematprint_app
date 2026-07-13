@@ -40,10 +40,11 @@
           <label for="parent_id" class="mb-1.5 block font-body text-[13px] font-bold text-ink">Üst Kategori</label>
           <select id="parent_id" name="parent_id" class="w-full rounded-lg border border-ink/10 bg-cream px-3.5 py-2.5 font-body text-[14px] font-medium text-ink outline-none transition-colors focus:border-accent focus:ring-2 focus:ring-accent/15">
             <option value="">Ana kategori (üst yok)</option>
-            @foreach ($parentCategories as $parentCategory)
-              <option value="{{ $parentCategory->id }}" @selected(old('parent_id', $category->parent_id) == $parentCategory->id)>{{ $parentCategory->name }}</option>
+            @foreach ($parentOptions as $parentOption)
+              <option value="{{ $parentOption['id'] }}" @selected(old('parent_id', $category->parent_id) == $parentOption['id'])>{{ $parentOption['label'] }}</option>
             @endforeach
           </select>
+          <p class="mt-1.5 font-body text-[12px] text-muted">Herhangi bir kategorinin altına taşıyabilirsiniz. Kendisi ve alt kategorileri listede gösterilmez.</p>
           @error('parent_id') <p class="mt-1.5 font-body text-[12px] font-medium text-danger">{{ $message }}</p> @enderror
         </div>
 

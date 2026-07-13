@@ -27,9 +27,7 @@ class ProductController extends Controller
                 ->first();
 
             if ($category) {
-                $categoryIds = Category::query()
-                    ->where('parent_id', $category->id)
-                    ->pluck('id')
+                $categoryIds = collect(Category::descendantIds($category->id))
                     ->push($category->id);
 
                 $query->whereIn('category_id', $categoryIds);

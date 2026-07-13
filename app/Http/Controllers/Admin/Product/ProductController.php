@@ -47,16 +47,16 @@ class ProductController extends Controller
         }
 
         $products = $query->paginate(15)->withQueryString();
-        $categories = Category::query()->orderBy('name')->get();
+        $categoryOptions = Category::buildSelectOptions();
 
-        return view('admin.product-list', compact('products', 'categories'));
+        return view('admin.product-list', compact('products', 'categoryOptions'));
     }
 
     public function storePage(): View
     {
-        $categories = Category::query()->orderBy('name')->get();
+        $categoryOptions = Category::buildSelectOptions();
 
-        return view('admin.new-product', compact('categories'));
+        return view('admin.new-product', compact('categoryOptions'));
     }
 
     public function store(ProductStoreRequest $request): RedirectResponse
@@ -94,9 +94,9 @@ class ProductController extends Controller
             ->where('slug', $slug)
             ->firstOrFail();
 
-        $categories = Category::query()->orderBy('name')->get();
+        $categoryOptions = Category::buildSelectOptions();
 
-        return view('admin.product-edit', compact('product', 'categories'));
+        return view('admin.product-edit', compact('product', 'categoryOptions'));
     }
 
     public function update(ProductUpdateRequest $request): RedirectResponse

@@ -17,23 +17,21 @@ class CategoryController extends Controller
     public function index(): View
     {
         $categories = Category::query()
-            ->with('parent')
             ->withCount(['products', 'children'])
             ->orderBy('number')
             ->orderBy('name')
             ->paginate(15);
 
-        return view('admin.category-list', compact('categories'));
+        $categoryPathMap = Category::parentPathMap();
+
+        return view('admin.category-list', compact('categories', 'categoryPathMap'));
     }
 
     public function storePage(): View
     {
-        $parentCategories = Category::query()
-            ->whereNull('parent_id')
-            ->orderBy('name')
-            ->get();
+        $parentOptions = Category::buildSelectOptions();
 
-        return view('admin.new-category', compact('parentCategories'));
+        return view('admin.new-category', compact('parentOptions'));
     }
 
     public function store(CategoryStoreRequest $request): RedirectResponse
@@ -57,13 +55,9 @@ class CategoryController extends Controller
             ->where('slug', $slug)
             ->firstOrFail();
 
-        $parentCategories = Category::query()
-            ->whereNull('parent_id')
-            ->where('id', '!=', $category->id)
-            ->orderBy('name')
-            ->get();
+        $parentOptions = Category::buildSelectOptions($category->id);
 
-        return view('admin.category-edit', compact('category', 'parentCategories'));
+        return view('admin.category-edit', compact('category', 'parentOptions'));
     }
 
     public function update(CategoryUpdateRequest $request): RedirectResponse

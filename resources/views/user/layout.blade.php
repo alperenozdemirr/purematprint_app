@@ -200,48 +200,9 @@
       <div class="mx-auto max-w-site px-8 min-[1040px]:flex min-[1040px]:w-full min-[1040px]:max-w-none min-[1040px]:justify-center min-[1040px]:px-4">
         <ul class="m-0 flex min-h-12 list-none items-center justify-center gap-7 p-0 min-[1040px]:h-16 min-[1040px]:min-h-0 min-[1040px]:items-stretch min-[1200px]:gap-7">
           <li><a href="{{ route('shops') }}" class="relative inline-flex items-center font-body text-[13px] font-bold tracking-wider uppercase text-on-dark whitespace-nowrap bg-transparent border-0 p-0 cursor-pointer transition-colors hover:text-white min-[1040px]:h-full min-[1040px]:px-1.5 after:absolute after:left-0 after:bottom-[-5px] min-[1040px]:after:bottom-3 after:h-0.5 after:w-full after:bg-white after:origin-left after:scale-x-0 hover:after:scale-x-100 after:transition-transform [&.is-active]:text-white [&.is-active]:after:scale-x-100"  data-i5="mega-nav__link">Tüm Ürünler</a></li>
-          <li class="static min-[1040px]:flex min-[1040px]:items-center group/mega before:content-[''] before:absolute before:inset-x-0 before:bottom-full before:h-3" data-i5="mega-item">
-            <a href="category.html?cat=tabela" class="relative inline-flex items-center font-body text-[13px] font-bold tracking-wider uppercase text-on-dark whitespace-nowrap bg-transparent border-0 p-0 cursor-pointer transition-colors hover:text-white min-[1040px]:h-full min-[1040px]:px-1.5 after:absolute after:left-0 after:bottom-[-5px] min-[1040px]:after:bottom-3 after:h-0.5 after:w-full after:bg-white after:origin-left after:scale-x-0 hover:after:scale-x-100 after:transition-transform [&.is-active]:text-white [&.is-active]:after:scale-x-100"  data-i5="mega-nav__link">Tabela & Afiş</a>
-            <div class="absolute inset-x-0 top-[calc(100%+3px)] w-full bg-surface border-b-[3px] border-ink opacity-0 invisible translate-y-1 transition-all duration-200 pointer-events-none z-[80] group-hover:opacity-100 group-hover:visible group-hover:translate-y-0 group-hover:pointer-events-auto group-focus-within:opacity-100 group-focus-within:visible group-focus-within:translate-y-0 group-focus-within:pointer-events-auto min-[1040px]:translate-y-0 group-[.is-open]/mega:opacity-100 group-[.is-open]/mega:visible group-[.is-open]/mega:translate-y-0 group-[.is-open]/mega:pointer-events-auto" data-i5="mega-panel">
-              <div class="mx-auto max-w-[1440px] px-12 py-9 pb-11">
-                <div class="pmp-mega-grid grid grid-cols-2 gap-x-12 gap-y-1 min-[1200px]:grid-cols-4 min-[1200px]:gap-x-14 min-[1200px]:gap-y-1.5">
-                  <a class="block py-2 col-span-full mb-2 pb-3.5 border-b border-ink/10 font-body text-xs font-bold uppercase tracking-wider text-ink hover:text-accent" href="category.html?cat=tabela">Tümünü Gör</a>
-                  <a class="block py-2 font-body text-[15px] font-medium text-muted normal-case tracking-normal transition-colors hover:text-accent" href="product.html?id=acik-hava-tabela">Açık Hava Tabelası</a>
-                  <a class="block py-2 font-body text-[15px] font-medium text-muted normal-case tracking-normal transition-colors hover:text-accent" href="product.html?id=a-frame">A-Frame Tabela</a>
-                  <a class="block py-2 font-body text-[15px] font-medium text-muted normal-case tracking-normal transition-colors hover:text-accent" href="product.html?id=led-lightbox">LED Lightbox</a>
-                  <a class="block py-2 font-body text-[15px] font-medium text-muted normal-case tracking-normal transition-colors hover:text-accent" href="product.html?id=roll-up-banner">Roll-Up Banner</a>
-                </div>
-              </div>
-            </div>
-          </li>
-          <li class="static min-[1040px]:flex min-[1040px]:items-center group/mega before:content-[''] before:absolute before:inset-x-0 before:bottom-full before:h-3" data-i5="mega-item">
-            <a href="category.html?cat=kartvizit" class="relative inline-flex items-center font-body text-[13px] font-bold tracking-wider uppercase text-on-dark whitespace-nowrap bg-transparent border-0 p-0 cursor-pointer transition-colors hover:text-white min-[1040px]:h-full min-[1040px]:px-1.5 after:absolute after:left-0 after:bottom-[-5px] min-[1040px]:after:bottom-3 after:h-0.5 after:w-full after:bg-white after:origin-left after:scale-x-0 hover:after:scale-x-100 after:transition-transform [&.is-active]:text-white [&.is-active]:after:scale-x-100"  data-i5="mega-nav__link">Menü & Display</a>
-            <div class="absolute inset-x-0 top-[calc(100%+3px)] w-full bg-surface border-b-[3px] border-ink opacity-0 invisible translate-y-1 transition-all duration-200 pointer-events-none z-[80] group-hover:opacity-100 group-hover:visible group-hover:translate-y-0 group-hover:pointer-events-auto group-focus-within:opacity-100 group-focus-within:visible group-focus-within:translate-y-0 group-focus-within:pointer-events-auto min-[1040px]:translate-y-0 group-[.is-open]/mega:opacity-100 group-[.is-open]/mega:visible group-[.is-open]/mega:translate-y-0 group-[.is-open]/mega:pointer-events-auto" data-i5="mega-panel">
-              <div class="mx-auto max-w-[1440px] px-12 py-9 pb-11">
-                <div class="pmp-mega-grid grid grid-cols-2 gap-x-12 gap-y-1 min-[1200px]:grid-cols-4 min-[1200px]:gap-x-14 min-[1200px]:gap-y-1.5">
-                  <a class="block py-2 col-span-full mb-2 pb-3.5 border-b border-ink/10 font-body text-xs font-bold uppercase tracking-wider text-ink hover:text-accent" href="category.html?cat=kartvizit">Tümünü Gör</a>
-                  <a class="block py-2 font-body text-[15px] font-medium text-muted normal-case tracking-normal transition-colors hover:text-accent" href="product.html?id=magnet-afis">Magnet Afiş Seti</a>
-                  <a class="block py-2 font-body text-[15px] font-medium text-muted normal-case tracking-normal transition-colors hover:text-accent" href="product.html?id=roll-up-banner">Roll-Up Banner</a>
-                </div>
-              </div>
-            </div>
-          </li>
-          <li class="static min-[1040px]:flex min-[1040px]:items-center group/mega before:content-[''] before:absolute before:inset-x-0 before:bottom-full before:h-3" data-i5="mega-item">
-            <a href="category.html?cat=kurumsal" class="relative inline-flex items-center font-body text-[13px] font-bold tracking-wider uppercase text-on-dark whitespace-nowrap bg-transparent border-0 p-0 cursor-pointer transition-colors hover:text-white min-[1040px]:h-full min-[1040px]:px-1.5 after:absolute after:left-0 after:bottom-[-5px] min-[1040px]:after:bottom-3 after:h-0.5 after:w-full after:bg-white after:origin-left after:scale-x-0 hover:after:scale-x-100 after:transition-transform [&.is-active]:text-white [&.is-active]:after:scale-x-100"  data-i5="mega-nav__link">Baskı & Marka</a>
-            <div class="absolute inset-x-0 top-[calc(100%+3px)] w-full bg-surface border-b-[3px] border-ink opacity-0 invisible translate-y-1 transition-all duration-200 pointer-events-none z-[80] group-hover:opacity-100 group-hover:visible group-hover:translate-y-0 group-hover:pointer-events-auto group-focus-within:opacity-100 group-focus-within:visible group-focus-within:translate-y-0 group-focus-within:pointer-events-auto min-[1040px]:translate-y-0 group-[.is-open]/mega:opacity-100 group-[.is-open]/mega:visible group-[.is-open]/mega:translate-y-0 group-[.is-open]/mega:pointer-events-auto" data-i5="mega-panel">
-              <div class="mx-auto max-w-[1440px] px-12 py-9 pb-11">
-                <div class="pmp-mega-grid grid grid-cols-2 gap-x-12 gap-y-1 min-[1200px]:grid-cols-4 min-[1200px]:gap-x-14 min-[1200px]:gap-y-1.5">
-                  <a class="block py-2 col-span-full mb-2 pb-3.5 border-b border-ink/10 font-body text-xs font-bold uppercase tracking-wider text-ink hover:text-accent" href="products.html">Tümünü Gör</a>
-                  <a class="block py-2 font-body text-[15px] font-medium text-muted normal-case tracking-normal transition-colors hover:text-accent" href="category.html?cat=kartvizit">Kartvizit</a>
-                  <a class="block py-2 font-body text-[15px] font-medium text-muted normal-case tracking-normal transition-colors hover:text-accent" href="category.html?cat=kurumsal">Kurumsal Kimlik</a>
-                  <a class="block py-2 font-body text-[15px] font-medium text-muted normal-case tracking-normal transition-colors hover:text-accent" href="category.html?cat=ambalaj">Ambalaj</a>
-                  <a class="block py-2 font-body text-[15px] font-medium text-muted normal-case tracking-normal transition-colors hover:text-accent" href="category.html?cat=dijital">Dijital Baskı</a>
-                </div>
-              </div>
-            </div>
-          </li>
+          @include('user.partials.nav-desktop-categories')
           <li><a href="{{ route('collectionList') }}" class="relative inline-flex items-center font-body text-[13px] font-bold tracking-wider uppercase text-on-dark whitespace-nowrap bg-transparent border-0 p-0 cursor-pointer transition-colors hover:text-white min-[1040px]:h-full min-[1040px]:px-1.5 after:absolute after:left-0 after:bottom-[-5px] min-[1040px]:after:bottom-3 after:h-0.5 after:w-full after:bg-white after:origin-left after:scale-x-0 hover:after:scale-x-100 after:transition-transform [&.is-active]:text-white [&.is-active]:after:scale-x-100"  data-i5="mega-nav__link">Koleksiyonlar</a></li>
-          <li><a href="bestsellers.html" class="relative inline-flex items-center font-body text-[13px] font-bold tracking-wider uppercase text-on-dark whitespace-nowrap bg-transparent border-0 p-0 cursor-pointer transition-colors hover:text-white min-[1040px]:h-full min-[1040px]:px-1.5 after:absolute after:left-0 after:bottom-[-5px] min-[1040px]:after:bottom-3 after:h-0.5 after:w-full after:bg-white after:origin-left after:scale-x-0 hover:after:scale-x-100 after:transition-transform [&.is-active]:text-white [&.is-active]:after:scale-x-100"  data-i5="mega-nav__link">Çok Satanlar</a></li>
+          <li><a href="{{ route('shops', ['siralama' => 'featured']) }}" class="relative inline-flex items-center font-body text-[13px] font-bold tracking-wider uppercase text-on-dark whitespace-nowrap bg-transparent border-0 p-0 cursor-pointer transition-colors hover:text-white min-[1040px]:h-full min-[1040px]:px-1.5 after:absolute after:left-0 after:bottom-[-5px] min-[1040px]:after:bottom-3 after:h-0.5 after:w-full after:bg-white after:origin-left after:scale-x-0 hover:after:scale-x-100 after:transition-transform [&.is-active]:text-white [&.is-active]:after:scale-x-100"  data-i5="mega-nav__link">Çok Satanlar</a></li>
         </ul>
       </div>
     </nav>
@@ -282,31 +243,10 @@
     <nav class="flex-1 p-0 [overflow-y:auto] [-webkit-overflow-scrolling:touch]">
       <p class="font-body text-xs font-bold tracking-[0.12em] uppercase text-accent [padding:16px_20px_8px] m-0 border-t-[3px] border-ink bg-bg">Katalog</p>
       <a href="{{ route('shops') }}" class="block font-body text-[20px] font-bold uppercase [padding:16px_20px] border-b-2 border-ink text-ink bg-surface hover:bg-hover [&.is-current]:bg-hover [&.is-current]:text-accent" data-i5="mobile__link">Tüm Ürünler</a>
-      <details class="[&_summary]:flex [&_summary]:items-center [&_summary]:justify-between [&_summary]:gap-3 [&_summary]:font-body [&_summary]:text-[20px] [&_summary]:font-bold [&_summary]:uppercase [&_summary]:[padding:16px_20px] [&_summary]:border-b-2 [&_summary]:border-ink [&_summary]:cursor-pointer [&_summary]:list-none [&_summary]:bg-surface hover:[&_summary]:bg-hover [&_a]:block [&_a]:font-body [&_a]:text-[15px] [&_a]:font-medium [&_a]:normal-case [&_a]:[padding:12px_20px_12px_32px] [&_a]:border-b [&_a]:border-ink [&_a]:bg-bg hover:[&_a]:bg-hover bg-surface">
-        <summary>Tabela &amp; Afiş</summary>
-        <a href="category.html?cat=tabela">Tümünü Gör</a>
-        <a href="product.html?id=acik-hava-tabela">Açık Hava Tabelası</a>
-        <a href="product.html?id=a-frame">A-Frame Tabela</a>
-        <a href="product.html?id=led-lightbox">LED Lightbox</a>
-        <a href="product.html?id=roll-up-banner">Roll-Up Banner</a>
-      </details>
-      <details class="[&_summary]:flex [&_summary]:items-center [&_summary]:justify-between [&_summary]:gap-3 [&_summary]:font-body [&_summary]:text-[20px] [&_summary]:font-bold [&_summary]:uppercase [&_summary]:[padding:16px_20px] [&_summary]:border-b-2 [&_summary]:border-ink [&_summary]:cursor-pointer [&_summary]:list-none [&_summary]:bg-surface hover:[&_summary]:bg-hover [&_a]:block [&_a]:font-body [&_a]:text-[15px] [&_a]:font-medium [&_a]:normal-case [&_a]:[padding:12px_20px_12px_32px] [&_a]:border-b [&_a]:border-ink [&_a]:bg-bg hover:[&_a]:bg-hover bg-surface">
-        <summary>Menü &amp; Display</summary>
-        <a href="category.html?cat=kartvizit">Tümünü Gör</a>
-        <a href="product.html?id=magnet-afis">Magnet Afiş Seti</a>
-        <a href="product.html?id=roll-up-banner">Roll-Up Banner</a>
-      </details>
-      <details class="[&_summary]:flex [&_summary]:items-center [&_summary]:justify-between [&_summary]:gap-3 [&_summary]:font-body [&_summary]:text-[20px] [&_summary]:font-bold [&_summary]:uppercase [&_summary]:[padding:16px_20px] [&_summary]:border-b-2 [&_summary]:border-ink [&_summary]:cursor-pointer [&_summary]:list-none [&_summary]:bg-surface hover:[&_summary]:bg-hover [&_a]:block [&_a]:font-body [&_a]:text-[15px] [&_a]:font-medium [&_a]:normal-case [&_a]:[padding:12px_20px_12px_32px] [&_a]:border-b [&_a]:border-ink [&_a]:bg-bg hover:[&_a]:bg-hover bg-surface">
-        <summary>Baskı &amp; Marka</summary>
-        <a href="category.html?cat=kartvizit">Kartvizit</a>
-        <a href="category.html?cat=kurumsal">Kurumsal Kimlik</a>
-        <a href="category.html?cat=ambalaj">Ambalaj</a>
-        <a href="category.html?cat=dijital">Dijital Baskı</a>
-      </details>
+      @include('user.partials.nav-mobile-categories')
       <a href="{{ route('collectionList') }}" class="block font-body text-[20px] font-bold uppercase [padding:16px_20px] border-b-2 border-ink text-ink bg-surface hover:bg-hover [&.is-current]:bg-hover [&.is-current]:text-accent" data-i5="mobile__link">Koleksiyonlar</a>
+      <a href="{{ route('shops', ['siralama' => 'featured']) }}" class="block font-body text-[20px] font-bold uppercase [padding:16px_20px] border-b-2 border-ink text-ink bg-surface hover:bg-hover [&.is-current]:bg-hover [&.is-current]:text-accent" data-i5="mobile__link">Çok Satanlar</a>
       <p class="font-body text-xs font-bold tracking-[0.12em] uppercase text-accent [padding:16px_20px_8px] m-0 border-t-[3px] border-ink bg-bg">Keşfet</p>
-      <a href="{{ route('collectionList') }}" class="block font-body text-[20px] font-bold uppercase [padding:16px_20px] border-b-2 border-ink text-ink bg-surface hover:bg-hover [&.is-current]:bg-hover [&.is-current]:text-accent" data-i5="mobile__link">Koleksiyonlar</a>
-      <a href="bestsellers.html" class="block font-body text-[20px] font-bold uppercase [padding:16px_20px] border-b-2 border-ink text-ink bg-surface hover:bg-hover [&.is-current]:bg-hover [&.is-current]:text-accent" data-i5="mobile__link">Çok Satanlar</a>
       <a href="#surec" class="block font-body text-[20px] font-bold uppercase [padding:16px_20px] border-b-2 border-ink text-ink bg-surface hover:bg-hover [&.is-current]:bg-hover [&.is-current]:text-accent" data-i5="mobile__link">Süreç</a>
       <a href="#yorumlar" class="block font-body text-[20px] font-bold uppercase [padding:16px_20px] border-b-2 border-ink text-ink bg-surface hover:bg-hover [&.is-current]:bg-hover [&.is-current]:text-accent" data-i5="mobile__link">Referanslar</a>
       <p class="font-body text-xs font-bold tracking-[0.12em] uppercase text-accent [padding:16px_20px_8px] m-0 border-t-[3px] border-ink bg-bg">Hesap</p>
@@ -366,7 +306,7 @@
           <ul>
             <li><a href="{{ route('shops') }}">Tüm Ürünler</a></li>
             <li><a href="{{ route('collectionList') }}">Koleksiyonlar</a></li>
-            <li><a href="bestsellers.html">Çok Satanlar</a></li>
+            <li><a href="{{ route('shops', ['siralama' => 'featured']) }}">Çok Satanlar</a></li>
             <li><a href="about.html">Hakkımızda</a></li>
             <li><a href="contact.html">İletişim</a></li>
             <li><a href="#">Kargo &amp; Teslimat</a></li>

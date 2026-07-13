@@ -26,8 +26,8 @@
       </div>
       <select name="category" class="rounded-lg border border-ink/10 bg-cream px-3 py-2.5 font-body text-[14px] font-medium text-ink outline-none focus:border-accent">
         <option value="">Tüm Kategoriler</option>
-        @foreach ($categories as $category)
-          <option value="{{ $category->id }}" @selected(request('category') == $category->id)>{{ $category->name }}</option>
+        @foreach ($categoryOptions as $categoryOption)
+          <option value="{{ $categoryOption['id'] }}" @selected(request('category') == $categoryOption['id'])>{{ $categoryOption['label'] }}</option>
         @endforeach
       </select>
       <select name="status" class="rounded-lg border border-ink/10 bg-cream px-3 py-2.5 font-body text-[14px] font-medium text-ink outline-none focus:border-accent">

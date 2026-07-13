@@ -6,6 +6,7 @@ namespace App\View\Composers;
 
 use App\Enums\Status;
 use App\Enums\UserType;
+use App\Models\Category;
 use App\Models\ShoppingCart;
 use Illuminate\View\View;
 
@@ -39,6 +40,7 @@ class UserLayoutComposer
             'isUserLoggedIn' => $isUserLoggedIn,
             'userInitials' => $userInitials,
             'cartCount' => $cartCount,
+            'menuCategories' => Category::menuTree(),
         ]);
     }
 }

@@ -154,8 +154,8 @@
             <label for="category_id" class="mb-1.5 block font-body text-[13px] font-bold text-ink">Kategori Seç <span class="text-danger">*</span></label>
             <select id="category_id" name="category_id" required class="w-full rounded-lg border border-ink/10 bg-cream px-3.5 py-2.5 font-body text-[14px] font-medium text-ink outline-none transition-colors focus:border-accent focus:ring-2 focus:ring-accent/15">
               <option value="">Kategori seçin...</option>
-              @foreach ($categories as $category)
-                <option value="{{ $category->id }}" @selected(old('category_id', $product->category_id) == $category->id)>{{ $category->name }}</option>
+              @foreach ($categoryOptions as $categoryOption)
+                <option value="{{ $categoryOption['id'] }}" @selected(old('category_id', $product->category_id) == $categoryOption['id'])>{{ $categoryOption['label'] }}</option>
               @endforeach
             </select>
             @error('category_id') <p class="mt-1.5 font-body text-[12px] font-medium text-danger">{{ $message }}</p> @enderror

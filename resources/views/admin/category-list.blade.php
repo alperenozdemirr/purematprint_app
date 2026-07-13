@@ -22,7 +22,7 @@
         <thead>
           <tr class="bg-cream/60 [&_th]:px-4 [&_th]:py-3.5 [&_th]:font-body [&_th]:text-[11px] [&_th]:font-bold [&_th]:uppercase [&_th]:tracking-[0.08em] [&_th]:text-muted">
             <th>Kategori</th>
-            <th>Üst Kategori</th>
+            <th>Hiyerarşi</th>
             <th>Sıra</th>
             <th>Ürün</th>
             <th>Alt Kategori</th>
@@ -36,7 +36,7 @@
                 <p class="font-body text-[14px] font-bold text-ink">{{ $category->name }}</p>
                 <p class="mt-0.5 font-body text-[12px] text-muted">{{ $category->slug }}</p>
               </td>
-              <td class="font-body text-[13px] text-ink">{{ $category->parent?->name ?? '—' }}</td>
+              <td class="font-body text-[13px] text-ink">{{ $categoryPathMap[$category->id] ?? '—' }}</td>
               <td class="font-body text-[13px] text-ink">{{ $category->number ?? 0 }}</td>
               <td class="font-body text-[13px] text-ink">{{ $category->products_count }}</td>
               <td class="font-body text-[13px] text-ink">{{ $category->children_count }}</td>
