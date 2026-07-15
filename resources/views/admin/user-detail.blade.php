@@ -159,6 +159,14 @@
         <button type="submit" class="inline-flex w-full items-center justify-center rounded-lg bg-accent px-5 py-3 font-body text-[13px] font-bold uppercase tracking-[0.06em] text-on-dark transition-colors hover:bg-accent-dark">
           Kullanıcıyı Güncelle
         </button>
+
+        @if ($user->id !== auth()->id())
+        <a href="{{ route('admin.userDelete', $user->id) }}"
+           onclick="return confirm('Bu kullanıcıyı ve tüm sipariş, adres, sepet, yorum ve ödeme kayıtlarını kalıcı olarak silmek istediğinize emin misiniz?')"
+           class="inline-flex w-full items-center justify-center rounded-lg border border-danger/30 px-5 py-3 font-body text-[13px] font-bold uppercase tracking-[0.06em] text-danger transition-colors hover:bg-danger/5">
+          Kullanıcıyı Sil
+        </a>
+        @endif
       </div>
     </form>
   </div>

@@ -9,13 +9,28 @@ use App\Enums\UserType;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\UserIndexRequest;
 use App\Http\Requests\Admin\UserUpdateRequest;
+use App\Enums\ContentType;
+use App\Http\Services\FileService;
+use App\Models\Address;
+use App\Models\Comment;
+use App\Models\EmailVerification;
+use App\Models\File;
+use App\Models\Order;
+use App\Models\OrderDetail;
+use App\Models\Payment;
+use App\Models\ShoppingCart;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
 class UserController extends Controller
 {
+    public function __construct(protected FileService $fileService)
+    {
+    }
+
     public function index(UserIndexRequest $request): View
     {
         $validated = $request->validated();
@@ -93,5 +108,60 @@ class UserController extends Controller
 
         return redirect()->route('admin.userDetailPage', $user->id)
             ->with('success', 'Kullanıcı başarıyla güncellendi.');
+    }
+
+    public function destroy(int $id): RedirectResponse
+    {
+        $user = User::query()->findOrFail($id);
+
+        if ($user->id === Auth::id()) {
+            return redirect()
+                ->route('admin.userDetailPage', $user->id)
+                ->with('error', 'Kendi hesabınızı silemezsiniz.');
+        }
+
+        DB::transaction(function () use ($user) {
+            $orderIds = Order::query()
+                ->where('user_id', $user->id)
+                ->pluck('id');
+
+            if ($orderIds->isNotEmpty()) {
+                $orderDetailIds = OrderDetail::query()
+                    ->whereIn('order_id', $orderIds)
+                    ->pluck('id');
+
+                if ($orderDetailIds->isNotEmpty()) {
+                    Comment::query()
+                        ->whereIn('order_detail_id', $orderDetailIds)
+                        ->delete();
+                }
+
+                OrderDetail::query()->whereIn('order_id', $orderIds)->delete();
+                Payment::query()->whereIn('order_id', $orderIds)->delete();
+                Order::query()->whereIn('id', $orderIds)->delete();
+            }
+
+            Comment::query()->where('user_id', $user->id)->delete();
+            Payment::query()->where('user_id', $user->id)->delete();
+            ShoppingCart::query()->where('user_id', $user->id)->delete();
+            Address::query()->where('user_id', $user->id)->delete();
+            EmailVerification::query()->where('email', $user->email)->delete();
+
+            File::query()
+                ->where('user_id', $user->id)
+                ->pluck('id')
+                ->each(fn (int $fileId) => $this->fileService->imageDelete($fileId, ContentType::USER));
+
+            if ($user->image_id) {
+                $this->fileService->imageDelete($user->image_id, ContentType::USER);
+            }
+
+            $user->tokens()->delete();
+            $user->delete();
+        });
+
+        return redirect()
+            ->route('admin.userList')
+            ->with('success', 'Kullanıcı ve ilişkili tüm veriler silindi.');
     }
 }

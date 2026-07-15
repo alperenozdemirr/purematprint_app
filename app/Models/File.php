@@ -26,6 +26,7 @@ class File extends Model
         $directory = match ($this->content_type) {
             ContentType::PRODUCT->value => 'shared_directory/images/products',
             ContentType::BANNER->value => 'shared_directory/images/banners',
+            ContentType::COLLECTION->value => 'shared_directory/images/collections',
             ContentType::USER->value => 'shared_directory/images/users',
             default => 'shared_directory/images/other',
         };

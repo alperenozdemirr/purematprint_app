@@ -36,7 +36,7 @@
       <svg width="19" height="19" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 5h18M3 12h18M3 19h18"/></svg>
       <span>Kategoriler</span>
     </a>
-    <a href="#" class="{{ $navLink }}">
+    <a href="{{ route('admin.collectionList') }}" class="{{ $navLink }} {{ request()->routeIs('admin.collection*') ? $navLinkActive : '' }}">
       <svg width="19" height="19" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z"/></svg>
       <span>Koleksiyonlar</span>
     </a>
@@ -50,7 +50,7 @@
       <svg width="19" height="19" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4zM3 6h18M16 10a4 4 0 0 1-8 0"/></svg>
       <span>Siparişler</span>
     </a>
-    <a href="#" class="{{ $navLink }}">
+    <a href="{{ route('admin.commentList') }}" class="{{ $navLink }} {{ request()->routeIs('admin.comment*') ? $navLinkActive : '' }}">
       <svg width="19" height="19" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
       <span>Yorumlar</span>
     </a>

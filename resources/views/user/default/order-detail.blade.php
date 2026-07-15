@@ -38,6 +38,9 @@
       @if (session('success'))
       <div class="mb-5 p-3.5 border-[3px] border-ink bg-bg text-sm font-semibold text-ink" role="alert">{{ session('success') }}</div>
       @endif
+      @if (session('error'))
+      <div class="mb-5 p-3.5 border-[3px] border-announce bg-[rgba(182,29,15,0.06)] text-sm font-semibold text-announce" role="alert">{{ session('error') }}</div>
+      @endif
 
       <div class="flex flex-wrap items-start justify-between gap-4 mb-5 [&_h1]:font-heading [&_h1]:text-page-title [&_h1]:font-semibold [&_h1]:leading-[1.12] [&_h1]:tracking-[-0.02em] [&_h1]:normal-case" data-i5="order-detail__header">
         <div>
@@ -69,14 +72,17 @@
           </section>
           @endif
 
-          <section class="border-[3px] border-ink shadow-brutal-sm bg-surface p-6 [&_h2]:font-body [&_h2]:text-[13px] [&_h2]:font-bold [&_h2]:uppercase [&_h2]:tracking-[0.06em] [&_h2]:mb-5 [&_h2]:pb-3 [&_h2]:border-b-[3px] [&_h2]:border-ink" data-i5="order-detail__section">
+          <section id="order-review" class="border-[3px] border-ink shadow-brutal-sm bg-surface p-6 [&_h2]:font-body [&_h2]:text-[13px] [&_h2]:font-bold [&_h2]:uppercase [&_h2]:tracking-[0.06em] [&_h2]:mb-5 [&_h2]:pb-3 [&_h2]:border-b-[3px] [&_h2]:border-ink scroll-mt-24" data-i5="order-detail__section">
             <h2>Ürünler ({{ $order->details->count() }})</h2>
             @foreach ($order->details as $detail)
             @php
               $product = $detail->product;
               $lineTotal = (float) $detail->price * $detail->quantity;
+              $existingComment = $detail->comment;
+              $canReview = $order->status === \App\Enums\OrderStatus::COMPLETED && ! $existingComment;
             @endphp
-            <div class="grid grid-cols-[72px_1fr_auto] gap-4 items-center py-4 border-b-[3px] border-ink last:border-b-0 last:pb-0 first:pt-0" data-i5="order-detail-item">
+            <div class="py-4 border-b-[3px] border-ink last:border-b-0 last:pb-0 first:pt-0" data-i5="order-detail-item-wrap">
+            <div class="grid grid-cols-[72px_1fr_auto] gap-4 items-center" data-i5="order-detail-item">
               <a href="{{ $product ? route('shopDetail', $product->slug) : '#' }}" class="border-[3px] border-ink aspect-[3/4] overflow-hidden bg-bg block transition-shadow hover:shadow-brutal-sm [&_img]:w-full [&_img]:h-full [&_img]:object-cover" data-i5="order-detail-item__img">
                 <img src="{{ $product?->images->first()?->url ?? $placeholder }}" alt="{{ $product?->title }}">
               </a>
@@ -85,6 +91,42 @@
                 <p class="text-[13px] text-muted" data-i5="order-detail-item__qty">{{ $detail->quantity }} adet × {{ number_format((float) $detail->price, 0, ',', '.') }} ₺</p>
               </div>
               <span class="font-body font-bold text-sm" data-i5="order-detail-item__price">{{ number_format($lineTotal, 0, ',', '.') }} ₺</span>
+            </div>
+
+            @if ($existingComment)
+            <div class="mt-4 border-[3px] border-ink bg-bg p-4" data-i5="order-review-existing">
+              <p class="mb-2 font-body text-[11px] font-bold uppercase tracking-[0.06em] text-muted">Değerlendirmeniz</p>
+              <div class="flex items-center gap-2 mb-2">
+                <span class="font-body text-[15px] font-bold text-[#f59e0b]">{{ number_format((float) $existingComment->rating, 1) }} ★</span>
+                @if (! $existingComment->is_visible)
+                  <span class="font-body text-[10px] font-bold uppercase tracking-[0.06em] px-2 py-0.5 border-2 border-[#d97706] text-[#92400e] bg-[#fff8e6]">Onay Bekliyor</span>
+                @else
+                  <span class="font-body text-[10px] font-bold uppercase tracking-[0.06em] px-2 py-0.5 border-2 border-[#15803d] text-[#15803d] bg-[rgba(21,128,61,0.1)]">Yayında</span>
+                @endif
+              </div>
+              <p class="text-sm text-muted leading-relaxed">{{ $existingComment->content }}</p>
+            </div>
+            @elseif ($canReview)
+            <form action="{{ route('commentStore') }}" method="POST" class="mt-4 border-[3px] border-ink bg-bg p-4" data-i5="order-review-form">
+              @csrf
+              <input type="hidden" name="order_detail_id" value="{{ $detail->id }}">
+              <p class="mb-3 font-body text-[11px] font-bold uppercase tracking-[0.06em] text-muted">Bu ürünü değerlendir</p>
+              <div class="mb-3">
+                @include('user.partials.star-rating-input', ['name' => 'rating'])
+                @error('rating') <p class="mt-1.5 text-[12px] font-semibold text-announce">{{ $message }}</p> @enderror
+              </div>
+              <div class="mb-3">
+                <label for="comment-content-{{ $detail->id }}" class="mb-1.5 block text-[12px] font-bold uppercase tracking-[0.04em] text-muted">Yorumunuz</label>
+                <textarea id="comment-content-{{ $detail->id }}" name="content" rows="3" maxlength="255" required
+                          class="w-full border-[3px] border-ink bg-surface px-3 py-2.5 text-sm text-ink outline-none transition-shadow focus:shadow-brutal-sm"
+                          placeholder="Ürün hakkındaki deneyiminizi paylaşın...">{{ old('content') }}</textarea>
+                @error('content') <p class="mt-1.5 text-[12px] font-semibold text-announce">{{ $message }}</p> @enderror
+              </div>
+              <button type="submit" class="inline-flex items-center gap-2 px-4 py-2.5 font-body text-[11px] font-bold uppercase tracking-[0.04em] border-[3px] border-ink bg-accent text-on-dark shadow-brutal-sm transition-colors hover:bg-action">
+                Değerlendirmeyi Gönder
+              </button>
+            </form>
+            @endif
             </div>
             @endforeach
           </section>

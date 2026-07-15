@@ -217,8 +217,8 @@
       </button>
     </div>
     <div class="[padding:16px_20px] border-b-[3px] border-ink shrink-0">
-      <form class="flex items-stretch border-[3px] border-ink shadow-brutal-sm bg-surface [&_input]:flex-1 [&_input]:min-w-0 [&_input]:border-0 [&_input]:bg-transparent [&_input]:px-4 [&_input]:py-3.5 [&_input]:font-body [&_input]:text-[15px] [&_input]:text-ink [&_input]:outline-none [&_button]:flex [&_button]:shrink-0 [&_button]:w-[52px] [&_button]:items-center [&_button]:justify-center [&_button]:border-0 [&_button]:border-l-[3px] [&_button]:border-l-ink [&_button]:bg-action [&_button]:text-on-dark [&_button]:cursor-pointer" action="products.html" method="get">
-        <input type="search" name="q" placeholder="Ürün ara..." aria-label="Ara">
+      <form class="flex items-stretch border-[3px] border-ink shadow-brutal-sm bg-surface [&_input]:flex-1 [&_input]:min-w-0 [&_input]:border-0 [&_input]:bg-transparent [&_input]:px-4 [&_input]:py-3.5 [&_input]:font-body [&_input]:text-[15px] [&_input]:text-ink [&_input]:outline-none [&_button]:flex [&_button]:shrink-0 [&_button]:w-[52px] [&_button]:items-center [&_button]:justify-center [&_button]:border-0 [&_button]:border-l-[3px] [&_button]:border-l-ink [&_button]:bg-action [&_button]:text-on-dark [&_button]:cursor-pointer" action="{{ route('shops') }}" method="get">
+        <input type="search" name="q" value="{{ request('q') }}" placeholder="Ürün ara..." aria-label="Ara">
         <button type="submit" aria-label="Ara"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="10.824" cy="10.824" r="7.824"/><path stroke-linecap="square" d="m16.971 16.971 4.47 4.47"/></svg>
         </button>
       </form>
@@ -275,14 +275,17 @@
     </div>
   </aside>
 
-  <div class="fixed inset-0 z-[500] flex items-center justify-center bg-[rgba(255,252,247,0.98)] opacity-0 invisible transition-[opacity,visibility] duration-200 [&.open]:opacity-100 [&.open]:visible" id="i5-search" aria-hidden="true" data-i5="search">
-    <button type="button" class="absolute right-5 flex h-12 w-12 items-center justify-center border-[3px] border-ink bg-surface text-ink shadow-brutal-sm transition-colors hover:bg-hover top-[calc(44px+12px)] z-10" id="i5-search-close" aria-label="Kapat">
+  <div class="fixed inset-0 z-[500] flex items-start justify-center overflow-y-auto bg-[rgba(255,252,247,0.98)] px-5 pb-10 pt-[calc(44px+72px)] opacity-0 invisible transition-[opacity,visibility] duration-200 [&.open]:opacity-100 [&.open]:visible" id="i5-search" aria-hidden="true" data-i5="search" data-search-url="{{ route('searchSuggestions') }}" data-shops-url="{{ route('shops') }}">
+    <button type="button" class="fixed right-5 flex h-12 w-12 items-center justify-center border-[3px] border-ink bg-surface text-ink shadow-brutal-sm transition-colors hover:bg-hover top-[calc(44px+12px)] z-[510]" id="i5-search-close" aria-label="Kapat">
       <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg>
     </button>
-    <form class="flex w-[min(720px,90vw)] items-center gap-4 border-[3px] border-ink bg-surface px-6 py-5 shadow-brutal" action="products.html" method="get">
-      <svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.824" cy="10.824" r="7.824"/><path stroke-linecap="square" d="m16.971 16.971 4.47 4.47"/></svg>
-      <input type="search" name="q" placeholder="Ürün, kategori veya marka ara..." aria-label="Ara" class="min-w-0 flex-1 border-0 bg-transparent font-body text-[clamp(1.25rem,4vw,2rem)] font-bold uppercase tracking-tight text-ink outline-none placeholder:text-muted placeholder:opacity-80">
-    </form>
+    <div class="w-full max-w-[760px]">
+      <form class="flex items-center gap-4 border-[3px] border-ink bg-surface px-6 py-5 shadow-brutal" action="{{ route('shops') }}" method="get" data-search-form>
+        <svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.824" cy="10.824" r="7.824"/><path stroke-linecap="square" d="m16.971 16.971 4.47 4.47"/></svg>
+        <input type="search" name="q" value="{{ request('q') }}" placeholder="Ürün adı veya kodu ara..." aria-label="Ara" autocomplete="off" data-search-input class="min-w-0 flex-1 border-0 bg-transparent font-body text-[clamp(1.25rem,4vw,2rem)] font-bold uppercase tracking-tight text-ink outline-none placeholder:text-muted placeholder:opacity-80">
+      </form>
+      <div class="mt-4 hidden border-[3px] border-ink bg-surface shadow-brutal-sm" data-search-results aria-live="polite"></div>
+    </div>
   </div>
 
 
@@ -340,6 +343,7 @@
     </div>
   </footer>
   @stack('scripts')
+  <script src="{{ asset('user/js/search.js') }}"></script>
   <!-- index5.js (menü, carousel, ticker) -->
   <script src="{{asset('user')}}/js/index5.js"></script>
 </body>

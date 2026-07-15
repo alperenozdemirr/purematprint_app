@@ -1,6 +1,9 @@
 <?php
 
 use App\Http\Controllers\User\Auth\AuthController;
+use App\Http\Controllers\User\Auth\ForgotPasswordController;
+use App\Http\Controllers\User\Auth\ResetPasswordController;
+use App\Http\Controllers\User\EmailVerification\EmailVerificationController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\User\Default\DefaultController;
 use App\Http\Controllers\User\Product\ProductController;
@@ -14,6 +17,9 @@ use App\Http\Controllers\Admin\Auth\AuthController as AdminAuthController;
 use App\Http\Controllers\User\ShoppingCart\ShoppingCartController;
 use App\Http\Controllers\User\Account\AccountController;
 use App\Http\Controllers\User\Order\OrderController as UserOrderController;
+use App\Http\Controllers\User\Comment\CommentController as UserCommentController;
+use App\Http\Controllers\Admin\Collection\CollectionController as AdminCollectionController;
+use App\Http\Controllers\Admin\Comment\CommentController as AdminCommentController;
 
 /*
 |--------------------------------------------------------------------------
@@ -31,7 +37,14 @@ Route::get('giris-yap',[AuthController::class,'loginPage'])->name('loginPage');
 Route::post('giris-yap',[AuthController::class,'authenticate'])->name('authenticate');
 Route::get('kayit-ol',[AuthController::class,'registerPage'])->name('registerPage');
 Route::post('kayit-ol',[AuthController::class,'register'])->name('register');
+Route::get('kayit-ol/dogrula',[EmailVerificationController::class,'index'])->name('registerVerifyPage');
+Route::post('kayit-ol/dogrula/kod-gonder',[EmailVerificationController::class,'sendCode'])->name('registerVerifySend');
+Route::post('kayit-ol/dogrula',[EmailVerificationController::class,'verify'])->name('registerVerify');
 Route::post('cikis-yap',[AuthController::class,'logout'])->middleware('auth')->name('logout');
+Route::get('sifremi-unuttum', [ForgotPasswordController::class, 'create'])->name('password.request');
+Route::post('sifremi-unuttum', [ForgotPasswordController::class, 'store'])->name('password.email');
+Route::get('sifre-sifirla/{token}', [ResetPasswordController::class, 'create'])->name('password.reset');
+Route::post('sifre-sifirla', [ResetPasswordController::class, 'update'])->name('password.update');
 Route::get('admin/login', [AdminAuthController::class, 'loginPage'])->name('admin.loginPage');
 Route::post('admin/login', [AdminAuthController::class, 'authenticate'])->name('admin.authenticate');
 Route::post('admin/logout', [AdminAuthController::class, 'logout'])->middleware('auth')->name('admin.logout');
@@ -39,6 +52,8 @@ Route::post('admin/logout', [AdminAuthController::class, 'logout'])->middleware(
 Route::get('tum-urunler',[ProductController::class,'index'])->name('shops');
 Route::get('tum-urunler/{slug}',[ProductController::class,'show'])->name('shopDetail','slug');
 Route::get('koleksiyonlar',[ProductController::class,'collectionList'])->name('collectionList');
+Route::get('koleksiyonlar/{slug}',[ProductController::class,'collectionShow'])->name('collectionShow');
+Route::get('arama',[ProductController::class,'searchSuggestions'])->name('searchSuggestions');
 Route::group(['middleware' => 'user'],function (){
     Route::get('sepet', [ShoppingCartController::class, 'index'])->name('cart');
     Route::post('sepet/store', [ShoppingCartController::class, 'store'])->name('cartStore');
@@ -56,6 +71,7 @@ Route::group(['middleware' => 'user'],function (){
 
     Route::get('siparislerim', [UserOrderController::class, 'index'])->name('orderList');
     Route::get('siparislerim/{code}', [UserOrderController::class, 'show'])->name('orderShow');
+    Route::post('siparislerim/yorum', [UserCommentController::class, 'store'])->name('commentStore');
     Route::get('odeme', [UserOrderController::class, 'checkoutPage'])->name('checkout');
     Route::post('odeme', [UserOrderController::class, 'checkoutStore'])->name('checkoutStore');
 });
@@ -85,11 +101,23 @@ Route::group(['prefix' => 'admin/', 'middleware' => 'admin'], function () {
     Route::get('banners/{id}/delete', [AdminBannerController::class, 'destroy'])->name('admin.bannerDelete');
     Route::get('banners/{id}', [AdminBannerController::class, 'show'])->name('admin.bannerEditPage');
 
+    Route::get('collections', [AdminCollectionController::class, 'index'])->name('admin.collectionList');
+    Route::get('collections/create', [AdminCollectionController::class, 'storePage'])->name('admin.collectionStorePage');
+    Route::post('collections/store', [AdminCollectionController::class, 'store'])->name('admin.collectionStore');
+    Route::post('collections/update', [AdminCollectionController::class, 'update'])->name('admin.collectionUpdate');
+    Route::get('collections/{id}/delete', [AdminCollectionController::class, 'destroy'])->name('admin.collectionDelete');
+    Route::get('collections/{id}', [AdminCollectionController::class, 'show'])->name('admin.collectionEditPage');
+
+    Route::get('comments', [AdminCommentController::class, 'index'])->name('admin.commentList');
+    Route::post('comments/update', [AdminCommentController::class, 'update'])->name('admin.commentUpdate');
+    Route::get('comments/{id}/delete', [AdminCommentController::class, 'destroy'])->name('admin.commentDelete');
+
     Route::get('orders', [AdminOrderController::class, 'index'])->name('admin.orderList');
     Route::post('orders/update', [AdminOrderController::class, 'update'])->name('admin.orderUpdate');
     Route::get('orders/{code}', [AdminOrderController::class, 'show'])->name('admin.orderDetailPage');
 
     Route::get('users', [AdminUserController::class, 'index'])->name('admin.userList');
     Route::post('users/update', [AdminUserController::class, 'update'])->name('admin.userUpdate');
+    Route::get('users/{id}/delete', [AdminUserController::class, 'destroy'])->name('admin.userDelete');
     Route::get('users/{id}', [AdminUserController::class, 'show'])->name('admin.userDetailPage');
 });

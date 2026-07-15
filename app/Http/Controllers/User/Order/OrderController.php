@@ -28,7 +28,7 @@ class OrderController extends Controller
     public function index(): View
     {
         $orders = Order::query()
-            ->with(['details.product.images', 'payment'])
+            ->with(['details.product.images', 'details.comment', 'payment'])
             ->where('user_id', auth()->id())
             ->latest()
             ->get();
@@ -46,6 +46,7 @@ class OrderController extends Controller
                 'address.city',
                 'address.county',
                 'details.product.images',
+                'details.comment',
                 'payment',
             ])
             ->where('user_id', auth()->id())

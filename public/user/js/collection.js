@@ -8,9 +8,10 @@
 document.addEventListener('DOMContentLoaded', initCollectionCards);
 
 function initCollectionCards() {
-  if (document.body.dataset.page !== 'collection') return;
+  const grid = document.querySelector('[data-i5="collection__grid"]');
+  if (!grid) return;
 
-  const cards = [...document.querySelectorAll('[data-i5-tags~="collection__card"]')];
+  const cards = [...grid.querySelectorAll('[data-i5-tags~="collection__card"]')];
   if (!cards.length) return;
 
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {

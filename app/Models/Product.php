@@ -46,4 +46,9 @@ class Product extends Model
             ->where('content_type', ContentType::PRODUCT->value)
             ->orderBy('number');
     }
+
+    public function comments(): HasMany
+    {
+        return $this->hasMany(Comment::class);
+    }
 }

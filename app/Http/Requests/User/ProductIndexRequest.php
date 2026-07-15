@@ -19,6 +19,7 @@ class ProductIndexRequest extends FormRequest
         $this->merge([
             'kategori' => $this->kategori ?: null,
             'siralama' => $this->siralama ?: null,
+            'q' => trim((string) ($this->q ?? '')) ?: null,
         ]);
     }
 
@@ -27,6 +28,7 @@ class ProductIndexRequest extends FormRequest
         return [
             'kategori' => ['nullable', 'string', Rule::exists('categories', 'slug')],
             'siralama' => ['nullable', Rule::in(['featured', 'price-asc', 'price-desc', 'name'])],
+            'q' => ['nullable', 'string', 'max:100'],
         ];
     }
 }
