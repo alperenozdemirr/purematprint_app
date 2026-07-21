@@ -8,6 +8,7 @@ use App\Enums\Status;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\User\CartStoreRequest;
 use App\Http\Requests\User\CartUpdateRequest;
+use App\Http\Services\OrderPricingService;
 use App\Models\Product;
 use App\Models\ShoppingCart;
 use Illuminate\Http\RedirectResponse;
@@ -15,9 +16,9 @@ use Illuminate\View\View;
 
 class ShoppingCartController extends Controller
 {
-    private const FREE_SHIPPING_MIN = 500;
-
-    private const SHIPPING_FEE = 49;
+    public function __construct(protected OrderPricingService $pricingService)
+    {
+    }
 
     public function index(): View
     {
@@ -27,7 +28,7 @@ class ShoppingCartController extends Controller
             ->latest()
             ->get();
 
-        $summary = $this->buildSummary($cartItems);
+        $summary = $this->pricingService->calculate($cartItems, auth()->user());
 
         return view('user.shopping-cart', [
             'cartItems' => $cartItems,
@@ -105,27 +106,5 @@ class ShoppingCartController extends Controller
         return redirect()
             ->route('cart')
             ->with('success', 'Ürün sepetten kaldırıldı.');
-    }
-
-  /**
-     * @param  \Illuminate\Support\Collection<int, ShoppingCart>  $cartItems
-     * @return array{subtotal: float, shippingCost: float, total: float, totalQty: int, shippingFree: bool, shippingRemaining: float}
-     */
-    private function buildSummary($cartItems): array
-    {
-        $subtotal = 0.0;
-        $totalQty = 0;
-
-        foreach ($cartItems as $item) {
-            $subtotal += (float) $item->product->price * $item->quantity;
-            $totalQty += $item->quantity;
-        }
-
-        $shippingFree = $subtotal >= self::FREE_SHIPPING_MIN;
-        $shippingCost = $shippingFree ? 0.0 : ($cartItems->isEmpty() ? 0.0 : (float) self::SHIPPING_FEE);
-        $total = $subtotal + $shippingCost;
-        $shippingRemaining = max(0, self::FREE_SHIPPING_MIN - $subtotal);
-
-        return compact('subtotal', 'shippingCost', 'total', 'totalQty', 'shippingFree', 'shippingRemaining');
     }
 }

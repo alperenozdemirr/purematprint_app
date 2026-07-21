@@ -132,7 +132,11 @@
 <body class="font-body text-base leading-[1.55] text-ink bg-bg antialiased pt-announce overflow-x-hidden selection:bg-action-muted selection:text-on-dark" data-pmp-site>
   <!-- Site chrome — index5.js: duyuru, header, mobil menü, arama -->
   <div class="pmp-announce fixed inset-x-0 top-0 z-[300] flex min-h-[44px] items-center justify-center border-b-[3px] border-ink bg-announce px-5 text-center font-body text-[13px] font-semibold uppercase tracking-wide text-on-dark">
-    500₺ üzeri ücretsiz kargo — <a class="underline underline-offset-[3px]" href="products.html">Alışverişe Başla</a>
+    @if ($shippingPromoText)
+    {{ $shippingPromoText }} — <a class="underline underline-offset-[3px]" href="{{ route('shops') }}">Alışverişe Başla</a>
+    @else
+    <a class="underline underline-offset-[3px]" href="{{ route('shops') }}">Alışverişe Başla</a>
+    @endif
   </div>
 
   <header data-i5="header" class="sticky top-announce z-[200] overflow-visible border-b-[3px] border-ink bg-announce text-on-dark min-[1040px]:grid min-[1040px]:grid-cols-[auto_1fr_auto] min-[1040px]:grid-rows-[64px] min-[1040px]:items-stretch">
@@ -320,7 +324,7 @@
             <li><a href="{{ route('loginPage') }}">Giriş Yap</a></li>
             <li><a href="{{ route('registerPage') }}">Kayıt Ol</a></li>
             @endif
-            <li><a href="blog.html">Blog</a></li>
+            <li><a href="{{ route('blogList') }}">Blog</a></li>
           </ul>
         </nav>
       </div>

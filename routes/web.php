@@ -2,10 +2,12 @@
 
 use App\Http\Controllers\User\Auth\AuthController;
 use App\Http\Controllers\User\Auth\ForgotPasswordController;
+use App\Http\Controllers\User\Auth\GoogleAuthController;
 use App\Http\Controllers\User\Auth\ResetPasswordController;
 use App\Http\Controllers\User\EmailVerification\EmailVerificationController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\User\Default\DefaultController;
+use App\Http\Controllers\User\Default\MaintenanceController;
 use App\Http\Controllers\User\Product\ProductController;
 use App\Http\Controllers\Admin\Default\DefaultController as AdminDefaultController;
 use App\Http\Controllers\Admin\Product\ProductController as AdminProductController;
@@ -20,6 +22,9 @@ use App\Http\Controllers\User\Order\OrderController as UserOrderController;
 use App\Http\Controllers\User\Comment\CommentController as UserCommentController;
 use App\Http\Controllers\Admin\Collection\CollectionController as AdminCollectionController;
 use App\Http\Controllers\Admin\Comment\CommentController as AdminCommentController;
+use App\Http\Controllers\Admin\Setting\SettingController as AdminSettingController;
+use App\Http\Controllers\Admin\Blog\BlogController as AdminBlogController;
+use App\Http\Controllers\User\Blog\BlogController as UserBlogController;
 
 /*
 |--------------------------------------------------------------------------
@@ -33,6 +38,7 @@ use App\Http\Controllers\Admin\Comment\CommentController as AdminCommentControll
 */
 
 Route::get('/',[DefaultController::class,'index'])->name('index');
+Route::get('bakim', MaintenanceController::class)->name('maintenance');
 Route::get('giris-yap',[AuthController::class,'loginPage'])->name('loginPage');
 Route::post('giris-yap',[AuthController::class,'authenticate'])->name('authenticate');
 Route::get('kayit-ol',[AuthController::class,'registerPage'])->name('registerPage');
@@ -45,6 +51,8 @@ Route::get('sifremi-unuttum', [ForgotPasswordController::class, 'create'])->name
 Route::post('sifremi-unuttum', [ForgotPasswordController::class, 'store'])->name('password.email');
 Route::get('sifre-sifirla/{token}', [ResetPasswordController::class, 'create'])->name('password.reset');
 Route::post('sifre-sifirla', [ResetPasswordController::class, 'update'])->name('password.update');
+Route::get('auth/google', [GoogleAuthController::class, 'redirect'])->name('google.redirect');
+Route::get('auth/google/callback', [GoogleAuthController::class, 'callback'])->name('google.callback');
 Route::get('admin/login', [AdminAuthController::class, 'loginPage'])->name('admin.loginPage');
 Route::post('admin/login', [AdminAuthController::class, 'authenticate'])->name('admin.authenticate');
 Route::post('admin/logout', [AdminAuthController::class, 'logout'])->middleware('auth')->name('admin.logout');
@@ -54,6 +62,8 @@ Route::get('tum-urunler/{slug}',[ProductController::class,'show'])->name('shopDe
 Route::get('koleksiyonlar',[ProductController::class,'collectionList'])->name('collectionList');
 Route::get('koleksiyonlar/{slug}',[ProductController::class,'collectionShow'])->name('collectionShow');
 Route::get('arama',[ProductController::class,'searchSuggestions'])->name('searchSuggestions');
+Route::get('bloglar', [UserBlogController::class, 'index'])->name('blogList');
+Route::get('bloglar/{slug}', [UserBlogController::class, 'show'])->name('blogShow');
 Route::group(['middleware' => 'user'],function (){
     Route::get('sepet', [ShoppingCartController::class, 'index'])->name('cart');
     Route::post('sepet/store', [ShoppingCartController::class, 'store'])->name('cartStore');
@@ -120,4 +130,14 @@ Route::group(['prefix' => 'admin/', 'middleware' => 'admin'], function () {
     Route::post('users/update', [AdminUserController::class, 'update'])->name('admin.userUpdate');
     Route::get('users/{id}/delete', [AdminUserController::class, 'destroy'])->name('admin.userDelete');
     Route::get('users/{id}', [AdminUserController::class, 'show'])->name('admin.userDetailPage');
+
+    Route::get('blogs', [AdminBlogController::class, 'index'])->name('admin.blogList');
+    Route::get('blogs/create', [AdminBlogController::class, 'storePage'])->name('admin.blogStorePage');
+    Route::post('blogs/store', [AdminBlogController::class, 'store'])->name('admin.blogStore');
+    Route::post('blogs/update', [AdminBlogController::class, 'update'])->name('admin.blogUpdate');
+    Route::get('blogs/{id}/delete', [AdminBlogController::class, 'destroy'])->name('admin.blogDelete');
+    Route::get('blogs/{id}', [AdminBlogController::class, 'show'])->name('admin.blogEditPage');
+
+    Route::get('settings', [AdminSettingController::class, 'edit'])->name('admin.settings');
+    Route::post('settings', [AdminSettingController::class, 'update'])->name('admin.settingsUpdate');
 });

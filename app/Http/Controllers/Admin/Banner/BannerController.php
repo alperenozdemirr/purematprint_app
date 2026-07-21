@@ -40,10 +40,8 @@ class BannerController extends Controller
         $validated = $request->validated();
 
         $banner = Banner::create([
-            'sub_title' => $validated['sub_title'],
-            'title' => $validated['title'],
-            'description' => $validated['description'],
             'redirect_url' => $validated['redirect_url'] ?? null,
+            'btn_title' => $validated['btn_title'] ?? null,
             'number' => $validated['number'] ?? 0,
         ]);
 
@@ -75,10 +73,8 @@ class BannerController extends Controller
         $banner = Banner::query()->findOrFail($validated['id']);
 
         $banner->update([
-            'sub_title' => $validated['sub_title'],
-            'title' => $validated['title'],
-            'description' => $validated['description'],
             'redirect_url' => $validated['redirect_url'] ?? null,
+            'btn_title' => $validated['btn_title'] ?? null,
             'number' => $validated['number'] ?? 0,
         ]);
 

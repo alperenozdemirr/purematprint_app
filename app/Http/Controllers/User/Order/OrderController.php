@@ -9,6 +9,7 @@ use App\Enums\PaymentStatus;
 use App\Enums\Status;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\User\CheckoutStoreRequest;
+use App\Http\Services\OrderPricingService;
 use App\Models\Address;
 use App\Models\Order;
 use App\Models\OrderDetail;
@@ -21,9 +22,9 @@ use Illuminate\View\View;
 
 class OrderController extends Controller
 {
-    private const FREE_SHIPPING_MIN = 500;
-
-    private const SHIPPING_FEE = 49;
+    public function __construct(protected OrderPricingService $pricingService)
+    {
+    }
 
     public function index(): View
     {
@@ -93,7 +94,7 @@ class OrderController extends Controller
                 ->with('error', 'Ödeme yapabilmek için en az bir teslimat adresi ekleyin.');
         }
 
-        $summary = $this->buildCartSummary($cartItems);
+        $summary = $this->pricingService->calculate($cartItems, $user);
 
         return view('user.default.checkout', [
             'cartItems' => $cartItems,
@@ -133,16 +134,20 @@ class OrderController extends Controller
             }
         }
 
-        $summary = $this->buildCartSummary($cartItems);
+        $summary = $this->pricingService->calculate($cartItems, $user);
 
         $order = DB::transaction(function () use ($user, $cartItems, $addressId, $note, $summary) {
             $order = Order::create([
                 'user_id' => $user->id,
                 'code' => Order::generateCode(),
                 'subtotal' => $summary['subtotal'],
-                'total' => $summary['total'],
+                'is_discount_applied' => $summary['discountApplied'],
+                'discount_type' => $summary['discountType'],
+                'discount_slice' => (int) round($summary['discountValue'] ?? 0),
+                'discount_amount' => $summary['discountAmount'],
                 'shipping_is_free' => $summary['shippingFree'],
                 'shipping_price' => $summary['shippingCost'],
+                'total' => $summary['total'],
                 'address_id' => $addressId,
                 'invoice_address_id' => $addressId,
                 'note' => $note,
@@ -178,27 +183,5 @@ class OrderController extends Controller
         return redirect()
             ->route('orderShow', $order->code)
             ->with('success', 'Ödemeniz alındı. Siparişiniz oluşturuldu.');
-    }
-
-    /**
-     * @param  \Illuminate\Support\Collection<int, ShoppingCart>  $cartItems
-     * @return array{subtotal: float, shippingCost: float, total: float, totalQty: int, shippingFree: bool, shippingRemaining: float}
-     */
-    private function buildCartSummary($cartItems): array
-    {
-        $subtotal = 0.0;
-        $totalQty = 0;
-
-        foreach ($cartItems as $item) {
-            $subtotal += (float) $item->product->price * $item->quantity;
-            $totalQty += $item->quantity;
-        }
-
-        $shippingFree = $subtotal >= self::FREE_SHIPPING_MIN;
-        $shippingCost = $shippingFree ? 0.0 : (float) self::SHIPPING_FEE;
-        $total = $subtotal + $shippingCost;
-        $shippingRemaining = max(0, self::FREE_SHIPPING_MIN - $subtotal);
-
-        return compact('subtotal', 'shippingCost', 'total', 'totalQty', 'shippingFree', 'shippingRemaining');
     }
 }

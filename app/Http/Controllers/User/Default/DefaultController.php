@@ -6,6 +6,7 @@ namespace App\Http\Controllers\User\Default;
 
 use App\Enums\Status;
 use App\Http\Controllers\Controller;
+use App\Models\Banner;
 use App\Models\Product;
 use Illuminate\View\View;
 
@@ -30,6 +31,12 @@ class DefaultController extends Controller
                 ->get();
         }
 
-        return view('user.default.index', compact('bestsellerProducts'));
+        $welcomeBanners = Banner::query()
+            ->with('image')
+            ->orderBy('number')
+            ->orderByDesc('id')
+            ->get();
+
+        return view('user.default.index', compact('bestsellerProducts', 'welcomeBanners'));
     }
 }

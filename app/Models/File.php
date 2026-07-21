@@ -27,6 +27,7 @@ class File extends Model
             ContentType::PRODUCT->value => 'shared_directory/images/products',
             ContentType::BANNER->value => 'shared_directory/images/banners',
             ContentType::COLLECTION->value => 'shared_directory/images/collections',
+            ContentType::BLOG->value => 'shared_directory/images/blogs',
             ContentType::USER->value => 'shared_directory/images/users',
             default => 'shared_directory/images/other',
         };

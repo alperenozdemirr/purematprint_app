@@ -107,18 +107,22 @@
     </div>
     <div class="w-full max-w-site mx-auto px-5 lg:px-8" data-i5="container">
       <div data-i5="reveal" data-i5-tags="welcome__grid reveal" class="grid gap-3 min-[768px]:grid-cols-2 min-[768px]:gap-4 opacity-0 translate-y-6 transition-all duration-700 [&.is-revealed]:opacity-100 [&.is-revealed]:translate-y-0">
-        <a href="category.html?cat=tabela" class="relative block overflow-hidden bg-dark min-h-[280px] min-[768px]:min-h-[420px] after:absolute after:inset-0 after:bg-gradient-to-t after:from-ink/40 after:to-transparent after:pointer-events-none group/tile" data-i5="welcome__tile">
-          <div class="absolute inset-0" data-i5="welcome__media">
-            <img class="block w-full h-full object-cover transition-transform duration-500 ease-out group-hover/tile:scale-105" src="{{asset('user')}}/assets/foto3.jpeg" alt="Mağaza cephesinde tabela uygulaması" loading="lazy">
+        @forelse ($welcomeBanners as $banner)
+          <a href="{{ $banner->redirect_url ?: '#' }}" class="relative block overflow-hidden bg-dark min-h-[280px] min-[768px]:min-h-[420px] after:absolute after:inset-0 after:bg-gradient-to-t after:from-ink/40 after:to-transparent after:pointer-events-none group/tile" data-i5="welcome__tile">
+            <div class="absolute inset-0" data-i5="welcome__media">
+              @if ($banner->image)
+                <img class="block w-full h-full object-cover transition-transform duration-500 ease-out group-hover/tile:scale-105" src="{{ $banner->image->url }}" alt="{{ $banner->button_label }}" loading="lazy">
+              @else
+                <div class="flex h-full w-full items-center justify-center bg-hover text-muted font-body text-sm">Görsel yok</div>
+              @endif
+            </div>
+            <span class="absolute left-4 bottom-4 z-[1] inline-flex items-center px-[18px] py-3 font-body text-[11px] font-bold tracking-[0.1em] uppercase text-ink bg-white/95 border-2 border-ink transition-all duration-200 min-[768px]:left-6 min-[768px]:bottom-6 min-[768px]:px-[22px] min-[768px]:py-3.5 min-[768px]:text-xs group-hover/tile:bg-action group-hover/tile:text-on-dark group-hover/tile:-translate-y-0.5" data-i5="welcome__cta">{{ $banner->button_label }}</span>
+          </a>
+        @empty
+          <div class="col-span-full flex min-h-[280px] items-center justify-center border-[3px] border-ink bg-surface px-6 py-10 text-center min-[768px]:min-h-[420px]">
+            <p class="font-body text-sm font-semibold text-muted">Henüz banner eklenmemiş.</p>
           </div>
-          <span class="absolute left-4 bottom-4 z-[1] inline-flex items-center px-[18px] py-3 font-body text-[11px] font-bold tracking-[0.1em] uppercase text-ink bg-white/95 border-2 border-ink transition-all duration-200 min-[768px]:left-6 min-[768px]:bottom-6 min-[768px]:px-[22px] min-[768px]:py-3.5 min-[768px]:text-xs group-hover/tile:bg-action group-hover/tile:text-on-dark group-hover/tile:-translate-y-0.5" data-i5="welcome__cta">Tabelaları Keşfet</span>
-        </a>
-        <a href="category.html?cat=kartvizit" class="relative block overflow-hidden bg-dark min-h-[280px] min-[768px]:min-h-[420px] after:absolute after:inset-0 after:bg-gradient-to-t after:from-ink/40 after:to-transparent after:pointer-events-none group/tile" data-i5="welcome__tile">
-          <div class="absolute inset-0" data-i5="welcome__media">
-            <img class="block w-full h-full object-cover transition-transform duration-500 ease-out group-hover/tile:scale-105" src="{{asset('user')}}/assets/foto.jpeg" alt="Menü panosu ve display ürünleri" loading="lazy">
-          </div>
-          <span class="absolute left-4 bottom-4 z-[1] inline-flex items-center px-[18px] py-3 font-body text-[11px] font-bold tracking-[0.1em] uppercase text-ink bg-white/95 border-2 border-ink transition-all duration-200 min-[768px]:left-6 min-[768px]:bottom-6 min-[768px]:px-[22px] min-[768px]:py-3.5 min-[768px]:text-xs group-hover/tile:bg-action group-hover/tile:text-on-dark group-hover/tile:-translate-y-0.5" data-i5="welcome__cta">Menü &amp; Display Keşfet</span>
-        </a>
+        @endforelse
       </div>
     </div>
   </section>

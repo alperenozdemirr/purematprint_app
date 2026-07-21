@@ -47,9 +47,11 @@
                 </tr>
               </table>
 
+              @if ($shippingPromoSentence)
               <p style="margin:0 0 8px;font-size:13px;line-height:1.6;color:#5e5a54;">
-                500₺ ve üzeri siparişlerinizde <strong>ücretsiz kargo</strong> avantajından yararlanabilirsiniz.
+                {{ $shippingPromoSentence }}
               </p>
+              @endif
               <p style="margin:0;font-size:13px;line-height:1.6;color:#5e5a54;">
                 Sorularınız için bizimle iletişime geçmekten çekinmeyin. İyi alışverişler dileriz!
               </p>

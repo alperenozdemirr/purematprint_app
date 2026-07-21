@@ -16,13 +16,11 @@ class BannerUpdateRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'id' => 'required|integer|exists:banners,id',
-            'sub_title' => 'required|string|max:255',
-            'title' => 'required|string|max:255',
-            'description' => 'required|string|max:255',
-            'redirect_url' => 'nullable|url|max:255',
-            'number' => 'nullable|integer|min:0',
-            'image' => 'nullable|image|max:2048',
+            'id' => ['required', 'integer', 'exists:banners,id'],
+            'redirect_url' => ['nullable', 'string', 'max:255'],
+            'btn_title' => ['nullable', 'string', 'max:255'],
+            'number' => ['nullable', 'integer', 'min:0'],
+            'image' => ['nullable', 'image', 'max:2048'],
         ];
     }
 }

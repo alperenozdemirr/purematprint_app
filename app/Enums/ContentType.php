@@ -8,9 +8,7 @@ enum ContentType: string
     case OTHER = 'other'; //banner , sliders vb
     case BANNER = 'banner';
     case COLLECTION = 'collection';
-
-
-
+    case BLOG = 'blog';
     public static function values(): array
     {
         return array_column(self::cases(), 'value');

@@ -70,7 +70,7 @@
           <div class="mb-6 p-4 bg-bg border-[3px] border-ink [&_p]:text-xs [&_p]:font-semibold [&_p]:uppercase [&_p]:tracking-[0.04em] [&_p]:mb-2.5 [&_p.is-free]:text-accent [&_p.is-free]:font-semibold" data-i5="cart-shipping-bar">
             @if ($shippingFree)
             <p class="is-free">Ücretsiz kargo kazandınız!</p>
-            @else
+            @elseif ($shippingRemaining > 0)
             <p>Ücretsiz kargo için {{ number_format($shippingRemaining, 0, ',', '.') }} ₺ daha ekleyin</p>
             @endif
           </div>
@@ -79,6 +79,12 @@
             <span>Ara Toplam</span>
             <span data-cart-subtotal>{{ number_format($subtotal, 0, ',', '.') }} ₺</span>
           </div>
+          @if ($discountApplied)
+          <div class="flex justify-between gap-4 text-sm mb-3 text-accent" data-i5="cart-summary__row">
+            <span>İndirim</span>
+            <span>-{{ number_format($discountAmount, 0, ',', '.') }} ₺</span>
+          </div>
+          @endif
           <div class="flex justify-between gap-4 text-sm mb-3 [&_span:first-child]:text-muted" data-i5="cart-summary__row">
             <span>Kargo</span>
             <span data-cart-shipping>
@@ -95,7 +101,7 @@
             <span>Toplam</span>
             <span data-cart-total>{{ number_format($total, 0, ',', '.') }} ₺</span>
           </div>
-          <p class="text-xs text-muted leading-normal my-3 mb-6" data-i5="cart-summary__note">500₺ üzeri siparişlerde kargo ücretsiz. Fiyatlara KDV dahildir.</p>
+          <p class="text-xs text-muted leading-normal my-3 mb-6" data-i5="cart-summary__note">Fiyatlara KDV dahildir.</p>
           <div class="grid gap-3 [&_[data-i5='btn']]:w-full [&_[data-i5='btn']]:justify-center [&_[data-i5='btn']]:text-center" data-i5="cart-summary__actions">
             @if ($cartItems->isNotEmpty())
             <a data-i5="btn--fill" data-i5-tags="btn btn--fill" href="{{ route('checkout') }}" class="inline-flex items-center gap-2 px-6 py-3.5 font-body text-[13px] font-bold uppercase tracking-[0.06em] border-[3px] border-ink transition-[transform,box-shadow,background-color] bg-action text-on-dark shadow-brutal hover:bg-action-hover hover:-translate-x-0.5 hover:-translate-y-0.5">Ödemeye Geç</a>

@@ -114,7 +114,7 @@
 
           @if ($shippingFree)
           <div class="mb-6 p-4 bg-bg border-[3px] border-ink text-xs font-semibold uppercase tracking-[0.04em] text-accent">Ücretsiz kargo kazandınız!</div>
-          @else
+          @elseif ($shippingRemaining > 0)
           <div class="mb-6 p-4 bg-bg border-[3px] border-ink text-xs font-semibold uppercase tracking-[0.04em]">Ücretsiz kargo için {{ number_format($shippingRemaining, 0, ',', '.') }} ₺ daha ekleyin</div>
           @endif
 
@@ -122,6 +122,12 @@
             <span>Ara Toplam</span>
             <span>{{ number_format($subtotal, 0, ',', '.') }} ₺</span>
           </div>
+          @if ($discountApplied)
+          <div class="flex justify-between gap-4 text-sm mb-3 text-accent">
+            <span>İndirim</span>
+            <span>-{{ number_format($discountAmount, 0, ',', '.') }} ₺</span>
+          </div>
+          @endif
           <div class="flex justify-between gap-4 text-sm mb-3 text-muted">
             <span>Kargo</span>
             <span>{{ $shippingFree ? 'Ücretsiz' : number_format($shippingCost, 0, ',', '.').' ₺' }}</span>

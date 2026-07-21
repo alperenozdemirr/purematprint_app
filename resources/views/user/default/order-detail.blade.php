@@ -160,6 +160,12 @@
               <span>Ara Toplam</span>
               <strong>{{ number_format((float) $order->subtotal, 0, ',', '.') }} ₺</strong>
             </div>
+            @if ($order->is_discount_applied)
+            <div class="flex justify-between gap-3 text-sm py-2 text-accent" data-i5="order-summary__row">
+              <span>İndirim @if ($order->discountLabel()) ({{ $order->discountLabel() }}) @endif</span>
+              <strong>-{{ number_format((float) $order->discount_amount, 0, ',', '.') }} ₺</strong>
+            </div>
+            @endif
             <div class="flex justify-between gap-3 text-sm py-2 text-muted" data-i5="order-summary__row">
               <span>Kargo</span>
               <strong>{{ $order->shipping_is_free ? 'Ücretsiz' : number_format((float) $order->shipping_price, 0, ',', '.').' ₺' }}</strong>

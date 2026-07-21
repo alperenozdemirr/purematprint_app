@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Enums\DiscountType;
 use App\Enums\OrderStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -21,7 +22,9 @@ class Order extends Model
         'total',
         'subtotal',
         'is_discount_applied',
+        'discount_type',
         'discount_slice',
+        'discount_amount',
         'shipping_is_free',
         'shipping_price',
         'address_id',
@@ -34,6 +37,8 @@ class Order extends Model
     protected $casts = [
         'total' => 'decimal:2',
         'subtotal' => 'decimal:2',
+        'discount_amount' => 'decimal:2',
+        'discount_type' => DiscountType::class,
         'shipping_price' => 'decimal:2',
         'is_discount_applied' => 'boolean',
         'shipping_is_free' => 'boolean',
@@ -79,5 +84,22 @@ class Order extends Model
         } while (static::query()->where('code', $code)->exists());
 
         return $code;
+    }
+
+    public function discountLabel(): ?string
+    {
+        if (! $this->is_discount_applied) {
+            return null;
+        }
+
+        if ($this->discount_type === DiscountType::PERCENT) {
+            return '%'.number_format((float) $this->discount_slice, 0, ',', '.');
+        }
+
+        if ($this->discount_type === DiscountType::FIXED) {
+            return number_format((float) ($this->discount_amount ?? 0), 0, ',', '.').' ₺';
+        }
+
+        return null;
     }
 }

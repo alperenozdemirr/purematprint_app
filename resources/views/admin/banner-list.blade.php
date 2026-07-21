@@ -18,12 +18,11 @@
 
   <div class="overflow-hidden rounded-xl bg-surface shadow-card">
     <div class="overflow-x-auto">
-      <table class="w-full min-w-[900px] border-collapse text-left">
+      <table class="w-full min-w-[760px] border-collapse text-left">
         <thead>
           <tr class="bg-cream/60 [&_th]:px-4 [&_th]:py-3.5 [&_th]:font-body [&_th]:text-[11px] [&_th]:font-bold [&_th]:uppercase [&_th]:tracking-[0.08em] [&_th]:text-muted">
             <th>Görsel</th>
-            <th>Başlık</th>
-            <th>Alt Başlık</th>
+            <th>Buton Metni</th>
             <th>Yönlendirme</th>
             <th>Sıra</th>
             <th class="text-right">İşlemler</th>
@@ -35,7 +34,7 @@
               <td>
                 <div class="h-14 w-24 overflow-hidden rounded-lg bg-cream">
                   @if ($banner->image)
-                    <img src="{{ $banner->image->url }}" alt="{{ $banner->title }}" class="h-full w-full object-cover">
+                    <img src="{{ $banner->image->url }}" alt="Banner #{{ $banner->id }}" class="h-full w-full object-cover">
                   @else
                     <div class="flex h-full w-full items-center justify-center text-muted">
                       <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
@@ -43,11 +42,7 @@
                   @endif
                 </div>
               </td>
-              <td>
-                <p class="font-body text-[14px] font-bold text-ink">{{ $banner->title }}</p>
-                <p class="mt-0.5 max-w-[240px] truncate font-body text-[12px] text-muted">{{ $banner->description }}</p>
-              </td>
-              <td class="font-body text-[13px] text-ink">{{ $banner->sub_title }}</td>
+              <td class="font-body text-[14px] font-bold text-ink">{{ $banner->button_label }}</td>
               <td class="font-body text-[13px] text-ink">
                 @if ($banner->redirect_url)
                   <a href="{{ $banner->redirect_url }}" target="_blank" rel="noopener" class="text-accent hover:underline">{{ Str::limit($banner->redirect_url, 40) }}</a>
@@ -69,7 +64,7 @@
             </tr>
           @empty
             <tr>
-              <td colspan="6" class="px-4 py-10 text-center font-body text-[14px] text-muted">Henüz banner bulunmuyor.</td>
+              <td colspan="5" class="px-4 py-10 text-center font-body text-[14px] text-muted">Henüz banner bulunmuyor.</td>
             </tr>
           @endforelse
         </tbody>

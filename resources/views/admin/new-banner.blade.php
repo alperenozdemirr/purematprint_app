@@ -11,7 +11,7 @@
     </a>
     <div>
       <h2 class="font-heading text-[22px] font-bold leading-tight text-ink">Yeni Banner Ekle</h2>
-      <p class="font-body text-[13px] text-muted">Banner bilgilerini ve görselini yükleyin</p>
+      <p class="font-body text-[13px] text-muted">Görsel, yönlendirme ve buton metnini ayarlayın</p>
     </div>
   </div>
 
@@ -22,39 +22,23 @@
       <div class="flex flex-col gap-6">
         <section class="overflow-hidden rounded-xl bg-surface shadow-card">
           <div class="border-b border-ink/10 px-5 py-4">
-            <h3 class="font-heading text-[16px] font-bold text-ink">Banner İçeriği</h3>
+            <h3 class="font-heading text-[16px] font-bold text-ink">Banner Ayarları</h3>
           </div>
           <div class="grid grid-cols-1 gap-5 p-5">
             <div>
-              <label for="sub_title" class="mb-1.5 block font-body text-[13px] font-bold text-ink">Alt Başlık <span class="text-danger">*</span></label>
-              <input type="text" id="sub_title" name="sub_title" value="{{ old('sub_title') }}" required
-                     class="w-full rounded-lg border border-ink/10 bg-cream px-3.5 py-2.5 font-body text-[14px] text-ink outline-none transition-colors focus:border-accent focus:ring-2 focus:ring-accent/15"
-                     placeholder="Örn. Yeni Sezon">
-              @error('sub_title') <p class="mt-1.5 font-body text-[12px] font-medium text-danger">{{ $message }}</p> @enderror
-            </div>
-
-            <div>
-              <label for="title" class="mb-1.5 block font-body text-[13px] font-bold text-ink">Başlık <span class="text-danger">*</span></label>
-              <input type="text" id="title" name="title" value="{{ old('title') }}" required
-                     class="w-full rounded-lg border border-ink/10 bg-cream px-3.5 py-2.5 font-body text-[14px] text-ink outline-none transition-colors focus:border-accent focus:ring-2 focus:ring-accent/15"
-                     placeholder="Örn. LED Tabela Kampanyası">
-              @error('title') <p class="mt-1.5 font-body text-[12px] font-medium text-danger">{{ $message }}</p> @enderror
-            </div>
-
-            <div>
-              <label for="description" class="mb-1.5 block font-body text-[13px] font-bold text-ink">Açıklama <span class="text-danger">*</span></label>
-              <textarea id="description" name="description" rows="3" required
-                        class="w-full rounded-lg border border-ink/10 bg-cream px-3.5 py-2.5 font-body text-[14px] leading-relaxed text-ink outline-none transition-colors focus:border-accent focus:ring-2 focus:ring-accent/15"
-                        placeholder="Banner açıklaması...">{{ old('description') }}</textarea>
-              @error('description') <p class="mt-1.5 font-body text-[12px] font-medium text-danger">{{ $message }}</p> @enderror
-            </div>
-
-            <div>
               <label for="redirect_url" class="mb-1.5 block font-body text-[13px] font-bold text-ink">Yönlendirme URL</label>
-              <input type="url" id="redirect_url" name="redirect_url" value="{{ old('redirect_url') }}"
+              <input type="text" id="redirect_url" name="redirect_url" value="{{ old('redirect_url') }}"
                      class="w-full rounded-lg border border-ink/10 bg-cream px-3.5 py-2.5 font-body text-[14px] text-ink outline-none transition-colors focus:border-accent focus:ring-2 focus:ring-accent/15"
-                     placeholder="https://...">
+                     placeholder="/tum-urunler veya https://...">
               @error('redirect_url') <p class="mt-1.5 font-body text-[12px] font-medium text-danger">{{ $message }}</p> @enderror
+            </div>
+
+            <div>
+              <label for="btn_title" class="mb-1.5 block font-body text-[13px] font-bold text-ink">Buton Metni</label>
+              <input type="text" id="btn_title" name="btn_title" value="{{ old('btn_title') }}"
+                     class="w-full rounded-lg border border-ink/10 bg-cream px-3.5 py-2.5 font-body text-[14px] text-ink outline-none transition-colors focus:border-accent focus:ring-2 focus:ring-accent/15"
+                     placeholder="Boş bırakılırsa: Keşfet">
+              @error('btn_title') <p class="mt-1.5 font-body text-[12px] font-medium text-danger">{{ $message }}</p> @enderror
             </div>
 
             <div>

@@ -183,8 +183,8 @@
           </div>
           @if ($order->is_discount_applied)
             <div class="flex justify-between text-danger">
-              <span>İndirim (%{{ $order->discount_slice }})</span>
-              <span class="font-semibold">Uygulandı</span>
+              <span>İndirim @if ($order->discountLabel()) ({{ $order->discountLabel() }}) @endif</span>
+              <span class="font-semibold">-{{ number_format((float) $order->discount_amount, 2, ',', '.') }}₺</span>
             </div>
           @endif
           <div class="flex justify-between text-ink">

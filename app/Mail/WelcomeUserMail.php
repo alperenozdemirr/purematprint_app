@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Mail;
 
+use App\Models\Setting;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
@@ -29,6 +30,9 @@ class WelcomeUserMail extends Mailable
     {
         return new Content(
             view: 'mail.welcome-user',
+            with: [
+                'shippingPromoSentence' => Setting::current()->shippingPromoSentence(),
+            ],
         );
     }
 }
