@@ -7,6 +7,7 @@ namespace App\Http\Controllers\User\Default;
 use App\Enums\Status;
 use App\Http\Controllers\Controller;
 use App\Models\Banner;
+use App\Models\Company;
 use App\Models\Product;
 use Illuminate\View\View;
 
@@ -37,6 +38,8 @@ class DefaultController extends Controller
             ->orderByDesc('id')
             ->get();
 
-        return view('user.default.index', compact('bestsellerProducts', 'welcomeBanners'));
+        $tickerCompanies = Company::ordered()->get();
+
+        return view('user.default.index', compact('bestsellerProducts', 'welcomeBanners', 'tickerCompanies'));
     }
 }

@@ -47,6 +47,16 @@ class SettingUpdateRequest extends FormRequest
             'shipping_fee' => ['nullable', 'numeric', 'min:0', 'required_if:shipping_mode,paid'],
             'shipping_free_limit_enabled' => ['boolean'],
             'shipping_free_limit' => ['nullable', 'numeric', 'min:0', 'required_if:shipping_free_limit_enabled,1'],
+            'email' => ['nullable', 'email', 'max:255'],
+            'address' => ['nullable', 'string', 'max:500'],
+            'mobile_phone' => ['nullable', 'string', 'max:50'],
+            'business_phone' => ['nullable', 'string', 'max:50'],
+            'instagram_url' => ['nullable', 'url', 'max:255'],
+            'twitter_url' => ['nullable', 'url', 'max:255'],
+            'facebook_url' => ['nullable', 'url', 'max:255'],
+            'whatsapp_phone' => ['nullable', 'string', 'max:50'],
+            'short_info' => ['nullable', 'string', 'max:500'],
+            'logo' => ['nullable', 'image', 'max:4096'],
         ];
     }
 

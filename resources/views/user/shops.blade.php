@@ -21,6 +21,31 @@
         @endif
       </div>
 
+      @if (request('q') && ($searchCategories->isNotEmpty() || $searchCollections->isNotEmpty()))
+      <div class="mb-8 grid gap-4 min-[768px]:grid-cols-2">
+        @if ($searchCategories->isNotEmpty())
+        <div class="border-[3px] border-ink bg-surface p-5 shadow-brutal-sm">
+          <p class="mb-3 font-body text-[11px] font-bold uppercase tracking-[0.08em] text-muted">Eşleşen Kategoriler</p>
+          <div class="flex flex-wrap gap-2">
+            @foreach ($searchCategories as $searchCategory)
+            <a href="{{ route('shops', ['kategori' => $searchCategory->slug]) }}" class="inline-flex items-center px-3.5 py-2 font-body text-[12px] font-bold uppercase tracking-[0.04em] border-2 border-ink bg-bg text-ink transition-colors hover:bg-hover">{{ $searchCategory->name }}</a>
+            @endforeach
+          </div>
+        </div>
+        @endif
+        @if ($searchCollections->isNotEmpty())
+        <div class="border-[3px] border-ink bg-surface p-5 shadow-brutal-sm">
+          <p class="mb-3 font-body text-[11px] font-bold uppercase tracking-[0.08em] text-muted">Eşleşen Koleksiyonlar</p>
+          <div class="flex flex-wrap gap-2">
+            @foreach ($searchCollections as $searchCollection)
+            <a href="{{ route('collectionShow', $searchCollection->slug) }}" class="inline-flex items-center px-3.5 py-2 font-body text-[12px] font-bold uppercase tracking-[0.04em] border-2 border-ink bg-bg text-ink transition-colors hover:bg-hover">{{ $searchCollection->title }}</a>
+            @endforeach
+          </div>
+        </div>
+        @endif
+      </div>
+      @endif
+
       @if (session('success'))
       <div class="mb-6 p-3.5 border-[3px] border-ink bg-bg text-sm font-semibold text-ink" role="alert">{{ session('success') }}</div>
       @endif

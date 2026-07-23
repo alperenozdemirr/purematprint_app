@@ -59,22 +59,28 @@
               <h2>Şifre Değiştir</h2>
               <p>Hesabınızın güvenliği için güçlü bir şifre kullanın</p>
             </div>
-            <form class="p-6 px-5 grid gap-5" action="#" method="post" data-i5="profile-form">
+            <form class="p-6 px-5 grid gap-5" action="{{ route('accountPasswordUpdate') }}" method="post" data-i5="profile-form">
+              @csrf
               <div class="grid gap-4 min-[640px]:grid-cols-2" data-i5="profile-form__grid">
                 <div data-i5="profile-form__grid--full" class="flex flex-col gap-1.5 min-[640px]:col-span-full [&_label]:font-body [&_label]:text-[11px] [&_label]:font-bold [&_label]:uppercase [&_label]:tracking-[0.06em] [&_input]:px-3.5 [&_input]:py-[13px] [&_input]:border-[3px] [&_input]:border-ink [&_input]:text-[15px] [&_input]:bg-surface [&_input]:outline-none focus:[&_input]:shadow-brutal-sm">
                   <label for="profile-current-pw">Mevcut Şifre *</label>
-                  <input type="password" id="profile-current-pw" name="current_password" autocomplete="current-password" placeholder="••••••••" disabled>
+                  <input type="password" id="profile-current-pw" name="current_password" autocomplete="current-password" placeholder="••••••••" required>
+                  @error('current_password')<span class="text-xs text-announce">{{ $message }}</span>@enderror
                 </div>
                 <div class="flex flex-col gap-1.5 [&_label]:font-body [&_label]:text-[11px] [&_label]:font-bold [&_label]:uppercase [&_label]:tracking-[0.06em] [&_input]:px-3.5 [&_input]:py-[13px] [&_input]:border-[3px] [&_input]:border-ink [&_input]:text-[15px] [&_input]:bg-surface [&_input]:outline-none focus:[&_input]:shadow-brutal-sm" data-i5="profile-field">
                   <label for="profile-new-pw">Yeni Şifre *</label>
-                  <input type="password" id="profile-new-pw" name="new_password" autocomplete="new-password" minlength="6" placeholder="••••••••" disabled>
+                  <input type="password" id="profile-new-pw" name="password" autocomplete="new-password" minlength="6" placeholder="••••••••" required>
+                  @error('password')<span class="text-xs text-announce">{{ $message }}</span>@enderror
                 </div>
                 <div class="flex flex-col gap-1.5 [&_label]:font-body [&_label]:text-[11px] [&_label]:font-bold [&_label]:uppercase [&_label]:tracking-[0.06em] [&_input]:px-3.5 [&_input]:py-[13px] [&_input]:border-[3px] [&_input]:border-ink [&_input]:text-[15px] [&_input]:bg-surface [&_input]:outline-none focus:[&_input]:shadow-brutal-sm" data-i5="profile-field">
                   <label for="profile-confirm-pw">Yeni Şifre Tekrar *</label>
-                  <input type="password" id="profile-confirm-pw" name="confirm_password" autocomplete="new-password" minlength="6" placeholder="••••••••" disabled>
+                  <input type="password" id="profile-confirm-pw" name="password_confirmation" autocomplete="new-password" minlength="6" placeholder="••••••••" required>
                 </div>
               </div>
-              <p class="text-xs text-muted">Şifre değiştirme özelliği yakında eklenecek.</p>
+              <div class="flex flex-wrap gap-2.5 pt-1" data-i5="profile-form__actions">
+                <button data-i5="btn--fill" type="submit" class="inline-flex items-center gap-2 px-6 py-3.5 font-body text-[13px] font-bold uppercase tracking-[0.06em] border-[3px] border-ink transition-[transform,box-shadow,background-color] bg-action text-on-dark shadow-brutal hover:bg-action-hover hover:-translate-x-0.5 hover:-translate-y-0.5">Şifreyi Güncelle</button>
+              </div>
+              <p class="text-xs text-muted">Şifreniz değiştirildiğinde güvenlik amacıyla e-posta adresinize bilgilendirme gönderilir.</p>
             </form>
           </section>
         </div>

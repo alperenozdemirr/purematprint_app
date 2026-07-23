@@ -31,7 +31,7 @@
 
   {{-- Admin --}}
   <div class="flex shrink-0 items-center gap-2">
-    <div class="flex items-center gap-2.5 rounded-lg bg-cream px-2.5 py-1.5">
+    <a href="{{ route('admin.account') }}" class="flex items-center gap-2.5 rounded-lg bg-cream px-2.5 py-1.5 transition-colors hover:bg-hover" title="Hesabım">
       <span class="flex h-8 w-8 items-center justify-center rounded-md bg-accent font-body text-[13px] font-bold text-on-dark">
         {{ strtoupper(substr(optional(auth()->user())->name ?? 'A', 0, 1)) }}
       </span>
@@ -39,7 +39,7 @@
         <span class="block font-body text-[13px] font-bold leading-tight text-ink">{{ optional(auth()->user())->name ?? 'Yönetici' }}</span>
         <span class="block font-body text-[11px] leading-tight text-muted">Admin</span>
       </span>
-    </div>
+    </a>
     <form action="{{ route('admin.logout') }}" method="POST">
       @csrf
       <button type="submit" title="Çıkış Yap" aria-label="Çıkış Yap"

@@ -9,7 +9,7 @@
     <p class="font-body text-[13px] text-muted">Site durumu, kargo ve indirim kurallarını yönetin</p>
   </div>
 
-  <form action="{{ route('admin.settingsUpdate') }}" method="POST" class="grid gap-6">
+  <form action="{{ route('admin.settingsUpdate') }}" method="POST" enctype="multipart/form-data" class="grid gap-6">
     @csrf
 
     <section class="overflow-hidden rounded-xl bg-surface shadow-card">
@@ -104,6 +104,102 @@
                    placeholder="Örn. 1000">
             @error('shipping_free_limit') <p class="mt-1.5 font-body text-[12px] font-medium text-danger">{{ $message }}</p> @enderror
           </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="overflow-hidden rounded-xl bg-surface shadow-card">
+      <div class="border-b border-ink/10 px-5 py-4">
+        <h3 class="font-heading text-[16px] font-bold text-ink">Logo</h3>
+      </div>
+      <div class="grid gap-5 p-5">
+        @if ($setting->hasCustomLogo())
+          <div class="flex items-center gap-4">
+            <img src="{{ $setting->logoUrl() }}" alt="Site logosu" class="h-12 w-auto max-w-[200px] object-contain border border-ink/10 rounded-lg bg-cream p-2">
+            <p class="font-body text-[13px] text-muted">Mevcut logo yüklü. Yeni dosya seçerseniz eskisi silinir.</p>
+          </div>
+        @else
+          <p class="font-body text-[13px] text-muted">Logo yüklenmemiş — sitede varsayılan logo gösterilir.</p>
+        @endif
+        <div>
+          <label for="logo" class="mb-1.5 block font-body text-[13px] font-bold text-ink">Logo Yükle</label>
+          <input type="file" id="logo" name="logo" accept="image/*"
+                 class="w-full rounded-lg border border-ink/10 bg-cream px-3.5 py-2.5 font-body text-[14px] text-ink outline-none focus:border-accent focus:ring-2 focus:ring-accent/15">
+          @error('logo') <p class="mt-1.5 font-body text-[12px] font-medium text-danger">{{ $message }}</p> @enderror
+        </div>
+      </div>
+    </section>
+
+    <section class="overflow-hidden rounded-xl bg-surface shadow-card">
+      <div class="border-b border-ink/10 px-5 py-4">
+        <h3 class="font-heading text-[16px] font-bold text-ink">İletişim Bilgileri</h3>
+      </div>
+      <div class="grid gap-5 p-5 md:grid-cols-2">
+        <div>
+          <label for="email" class="mb-1.5 block font-body text-[13px] font-bold text-ink">E-posta</label>
+          <input type="email" id="email" name="email" value="{{ old('email', $setting->email) }}"
+                 class="w-full rounded-lg border border-ink/10 bg-cream px-3.5 py-2.5 font-body text-[14px] text-ink outline-none focus:border-accent focus:ring-2 focus:ring-accent/15">
+          @error('email') <p class="mt-1.5 font-body text-[12px] font-medium text-danger">{{ $message }}</p> @enderror
+        </div>
+        <div>
+          <label for="mobile_phone" class="mb-1.5 block font-body text-[13px] font-bold text-ink">Cep Telefonu</label>
+          <input type="text" id="mobile_phone" name="mobile_phone" value="{{ old('mobile_phone', $setting->mobile_phone) }}"
+                 class="w-full rounded-lg border border-ink/10 bg-cream px-3.5 py-2.5 font-body text-[14px] text-ink outline-none focus:border-accent focus:ring-2 focus:ring-accent/15"
+                 placeholder="0532 123 45 67">
+          @error('mobile_phone') <p class="mt-1.5 font-body text-[12px] font-medium text-danger">{{ $message }}</p> @enderror
+        </div>
+        <div>
+          <label for="business_phone" class="mb-1.5 block font-body text-[13px] font-bold text-ink">İş Telefonu</label>
+          <input type="text" id="business_phone" name="business_phone" value="{{ old('business_phone', $setting->business_phone) }}"
+                 class="w-full rounded-lg border border-ink/10 bg-cream px-3.5 py-2.5 font-body text-[14px] text-ink outline-none focus:border-accent focus:ring-2 focus:ring-accent/15">
+          @error('business_phone') <p class="mt-1.5 font-body text-[12px] font-medium text-danger">{{ $message }}</p> @enderror
+        </div>
+        <div>
+          <label for="whatsapp_phone" class="mb-1.5 block font-body text-[13px] font-bold text-ink">WhatsApp Numarası</label>
+          <input type="text" id="whatsapp_phone" name="whatsapp_phone" value="{{ old('whatsapp_phone', $setting->whatsapp_phone) }}"
+                 class="w-full rounded-lg border border-ink/10 bg-cream px-3.5 py-2.5 font-body text-[14px] text-ink outline-none focus:border-accent focus:ring-2 focus:ring-accent/15"
+                 placeholder="905321234567">
+          @error('whatsapp_phone') <p class="mt-1.5 font-body text-[12px] font-medium text-danger">{{ $message }}</p> @enderror
+        </div>
+        <div class="md:col-span-2">
+          <label for="address" class="mb-1.5 block font-body text-[13px] font-bold text-ink">Adres</label>
+          <textarea id="address" name="address" rows="3"
+                    class="w-full rounded-lg border border-ink/10 bg-cream px-3.5 py-2.5 font-body text-[14px] text-ink outline-none focus:border-accent focus:ring-2 focus:ring-accent/15">{{ old('address', $setting->address) }}</textarea>
+          @error('address') <p class="mt-1.5 font-body text-[12px] font-medium text-danger">{{ $message }}</p> @enderror
+        </div>
+        <div class="md:col-span-2">
+          <label for="short_info" class="mb-1.5 block font-body text-[13px] font-bold text-ink">Kısa Bilgi (Footer)</label>
+          <textarea id="short_info" name="short_info" rows="2"
+                    class="w-full rounded-lg border border-ink/10 bg-cream px-3.5 py-2.5 font-body text-[14px] text-ink outline-none focus:border-accent focus:ring-2 focus:ring-accent/15"
+                    placeholder="Footer altında gösterilecek kısa açıklama">{{ old('short_info', $setting->short_info) }}</textarea>
+          @error('short_info') <p class="mt-1.5 font-body text-[12px] font-medium text-danger">{{ $message }}</p> @enderror
+        </div>
+      </div>
+    </section>
+
+    <section class="overflow-hidden rounded-xl bg-surface shadow-card">
+      <div class="border-b border-ink/10 px-5 py-4">
+        <h3 class="font-heading text-[16px] font-bold text-ink">Sosyal Medya</h3>
+      </div>
+      <div class="grid gap-5 p-5 md:grid-cols-2">
+        <div>
+          <label for="instagram_url" class="mb-1.5 block font-body text-[13px] font-bold text-ink">Instagram</label>
+          <input type="url" id="instagram_url" name="instagram_url" value="{{ old('instagram_url', $setting->instagram_url) }}"
+                 class="w-full rounded-lg border border-ink/10 bg-cream px-3.5 py-2.5 font-body text-[14px] text-ink outline-none focus:border-accent focus:ring-2 focus:ring-accent/15"
+                 placeholder="https://instagram.com/...">
+          @error('instagram_url') <p class="mt-1.5 font-body text-[12px] font-medium text-danger">{{ $message }}</p> @enderror
+        </div>
+        <div>
+          <label for="twitter_url" class="mb-1.5 block font-body text-[13px] font-bold text-ink">Twitter / X</label>
+          <input type="url" id="twitter_url" name="twitter_url" value="{{ old('twitter_url', $setting->twitter_url) }}"
+                 class="w-full rounded-lg border border-ink/10 bg-cream px-3.5 py-2.5 font-body text-[14px] text-ink outline-none focus:border-accent focus:ring-2 focus:ring-accent/15">
+          @error('twitter_url') <p class="mt-1.5 font-body text-[12px] font-medium text-danger">{{ $message }}</p> @enderror
+        </div>
+        <div>
+          <label for="facebook_url" class="mb-1.5 block font-body text-[13px] font-bold text-ink">Facebook</label>
+          <input type="url" id="facebook_url" name="facebook_url" value="{{ old('facebook_url', $setting->facebook_url) }}"
+                 class="w-full rounded-lg border border-ink/10 bg-cream px-3.5 py-2.5 font-body text-[14px] text-ink outline-none focus:border-accent focus:ring-2 focus:ring-accent/15">
+          @error('facebook_url') <p class="mt-1.5 font-body text-[12px] font-medium text-danger">{{ $message }}</p> @enderror
         </div>
       </div>
     </section>

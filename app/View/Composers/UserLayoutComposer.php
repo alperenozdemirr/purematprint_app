@@ -36,13 +36,18 @@ class UserLayoutComposer
                 ->sum('quantity');
         }
 
+        $setting = Setting::current()->loadMissing('logo');
+
         $view->with([
             'authUser' => $authUser,
             'isUserLoggedIn' => $isUserLoggedIn,
             'userInitials' => $userInitials,
             'cartCount' => $cartCount,
             'menuCategories' => Category::menuTree(),
-            'shippingPromoText' => Setting::current()->shippingPromoText(),
+            'siteSetting' => $setting,
+            'siteLogoUrl' => $setting->logoUrl(),
+            'siteLogoIsCustom' => $setting->hasCustomLogo(),
+            'shippingPromoText' => $setting->shippingPromoText(),
         ]);
     }
 }

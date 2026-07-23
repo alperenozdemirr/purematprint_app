@@ -111,16 +111,26 @@ function initRegisterForm() {
 // NAVİGASYON — arama overlay, mobil menü, mega menü, aktif link
 // =============================================================================
 
-/** Tam ekran arama overlay — #i5-search-open ile açılır, Escape ile kapanır */
+/** Tam ekran arama overlay — masaüstü ve mobil header arama butonları */
 function initSearchOverlay() {
   const openBtn = document.getElementById('i5-search-open');
+  const openMobileBtn = document.getElementById('i5-search-open-mobile');
   const overlay = document.getElementById('i5-search');
   const closeBtn = document.getElementById('i5-search-close');
-  const input = overlay?.querySelector('input[type="search"]');
+  const input = overlay?.querySelector('[data-search-input]');
+  const mobileMenu = document.getElementById('i5-mobile-menu');
+  const mobileOverlay = document.getElementById('i5-mobile-overlay');
 
-  if (!openBtn || !overlay) return;
+  if (!overlay) return;
+
+  const closeMobileMenu = () => {
+    mobileMenu?.classList.remove('open');
+    mobileOverlay?.classList.remove('open');
+    mobileMenu?.setAttribute('aria-hidden', 'true');
+  };
 
   const open = () => {
+    closeMobileMenu();
     overlay.classList.add('open');
     overlay.setAttribute('aria-hidden', 'false');
     document.body.style.overflow = 'hidden';
@@ -131,9 +141,11 @@ function initSearchOverlay() {
     overlay.classList.remove('open');
     overlay.setAttribute('aria-hidden', 'true');
     document.body.style.overflow = '';
+    overlay.querySelector('[data-search-results]')?.classList.add('hidden');
   };
 
-  openBtn.addEventListener('click', open);
+  openBtn?.addEventListener('click', open);
+  openMobileBtn?.addEventListener('click', open);
   closeBtn?.addEventListener('click', shut);
   overlay.addEventListener('click', (e) => {
     if (e.target === overlay) shut();

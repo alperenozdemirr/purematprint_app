@@ -7,10 +7,13 @@ namespace App\Http\Controllers\User\Account;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\User\AccountUpdateRequest;
 use App\Http\Requests\User\AddressStoreRequest;
+use App\Http\Requests\User\PasswordUpdateRequest;
+use App\Mail\PasswordChangedMail;
 use App\Models\Address;
 use App\Models\City;
 use App\Models\County;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\View\View;
 
 class AccountController extends Controller
@@ -28,6 +31,26 @@ class AccountController extends Controller
         auth()->user()->update($request->validated());
 
         return back()->with('success', 'Profil bilgileriniz güncellendi.');
+    }
+
+    public function updatePassword(PasswordUpdateRequest $request): RedirectResponse
+    {
+        $user = auth()->user();
+
+        $user->update([
+            'password' => $request->validated('password'),
+        ]);
+
+        try {
+            Mail::to($user->email)->send(new PasswordChangedMail(
+                $user,
+                now()->timezone(config('app.timezone'))->format('d.m.Y H:i'),
+            ));
+        } catch (\Throwable $exception) {
+            report($exception);
+        }
+
+        return back()->with('success', 'Şifreniz güncellendi. Güvenlik bildirimi e-posta adresinize gönderildi.');
     }
 
     public function addressList(): View

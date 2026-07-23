@@ -129,7 +129,7 @@
   <script src="{{asset('user')}}/js/tw-classes.js"></script>
   <script src="{{asset('user')}}/js/loader.js"></script>
   </head>
-<body class="font-body text-base leading-[1.55] text-ink bg-bg antialiased pt-announce overflow-x-hidden selection:bg-action-muted selection:text-on-dark" data-pmp-site>
+<body class="font-body text-base leading-[1.55] text-ink bg-bg antialiased pt-announce overflow-x-hidden selection:bg-action-muted selection:text-on-dark" data-pmp-site @if ($siteSetting->whatsappDigits()) data-whatsapp="{{ $siteSetting->whatsappDigits() }}" @endif data-site-logo="{{ $siteLogoUrl }}">
   <!-- Site chrome — index5.js: duyuru, header, mobil menü, arama -->
   <div class="pmp-announce fixed inset-x-0 top-0 z-[300] flex min-h-[44px] items-center justify-center border-b-[3px] border-ink bg-announce px-5 text-center font-body text-[13px] font-semibold uppercase tracking-wide text-on-dark">
     @if ($shippingPromoText)
@@ -146,9 +146,12 @@
           <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
         </button>
         <a href="{{ route('index') }}" class="pmp-header-logo flex flex-1 items-center justify-center border-r-[3px] border-ink px-5 min-[1040px]:col-start-1 min-[1040px]:row-start-1 min-[1040px]:min-h-16 min-[1040px]:flex-none min-[1040px]:justify-start min-[1040px]:px-7">
-          <img src="{{asset('shared_directory')}}/logo.avif" alt="PureMatPrint" class="h-7 w-auto brightness-0 invert">
+          @include('user.partials.site-logo', ['invertOnDark' => true])
         </a>
         <div class="ml-auto flex items-stretch min-[1040px]:col-start-3 min-[1040px]:row-start-1 min-[1040px]:ml-0">
+          <button type="button" class="flex h-full w-16 items-center justify-center bg-transparent text-on-dark transition-colors hover:bg-header-hover min-[1040px]:hidden" id="i5-search-open-mobile" aria-label="Ara">
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="10.824" cy="10.824" r="7.824"/><path stroke-linecap="square" d="m16.971 16.971 4.47 4.47"/></svg>
+          </button>
           <button type="button" class="flex h-full w-16 items-center justify-center bg-transparent text-on-dark transition-colors hover:bg-header-hover max-[1039px]:hidden" id="i5-search-open" aria-label="Ara">
             <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="10.824" cy="10.824" r="7.824"/><path stroke-linecap="square" d="m16.971 16.971 4.47 4.47"/></svg>
           </button>
@@ -195,7 +198,7 @@
             <span class="absolute top-[10px] right-[10px] min-w-[18px] h-[18px] px-1 bg-on-dark text-announce font-body text-[10px] font-bold leading-none border-2 border-ink flex items-center justify-center pointer-events-none">{{ $cartCount > 99 ? '99+' : $cartCount }}</span>
             @endif
           </a>
-          <a href="products.html" class="hidden items-center border-l-[3px] border-ink bg-on-dark px-6 font-body text-[13px] font-bold uppercase tracking-[0.06em] text-announce transition-colors hover:bg-cream min-[768px]:flex">Keşfet</a>
+          <a href="{{ route('collectionList') }}" class="hidden items-center border-l-[3px] border-ink bg-on-dark px-6 font-body text-[13px] font-bold uppercase tracking-[0.06em] text-announce transition-colors hover:bg-cream min-[768px]:flex">Keşfet</a>
         </div>
       </div>
     </div>
@@ -215,17 +218,18 @@
   <div class="fixed inset-0 z-[400] bg-ink/60 opacity-0 invisible transition-[opacity,visibility] duration-300 [&.open]:opacity-100 [&.open]:visible" id="i5-mobile-overlay" data-i5="mobile-overlay"></div>
   <aside class="fixed top-0 left-0 z-[500] h-dvh w-[min(100%,400px)] -translate-x-full flex flex-col border-r-[3px] border-ink bg-surface transition-transform duration-300 [&.open]:translate-x-0" id="i5-mobile-menu" aria-hidden="true" data-i5="mobile">
     <div class="flex items-center justify-between p-5 border-b-[3px] border-ink shrink-0">
-      <a href="{{ route('index') }}" class="flex items-center"><img src="{{asset('shared_directory')}}/logo.avif" alt="PureMatPrint" class="h-[26px] w-auto"></a>
+      <a href="{{ route('index') }}" class="flex items-center">@include('user.partials.site-logo', ['class' => 'h-[26px] w-auto'])</a>
       <button type="button" class="flex items-center justify-center w-11 h-11 bg-surface border-[3px] border-ink shadow-brutal-sm text-ink shrink-0 hover:bg-hover" id="i5-mobile-close" aria-label="Kapat">
         <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg>
       </button>
     </div>
-    <div class="[padding:16px_20px] border-b-[3px] border-ink shrink-0">
+    <div class="[padding:16px_20px] border-b-[3px] border-ink shrink-0" data-search-root data-search-url="{{ route('searchSuggestions') }}" data-shops-url="{{ route('shops') }}">
       <form class="flex items-stretch border-[3px] border-ink shadow-brutal-sm bg-surface [&_input]:flex-1 [&_input]:min-w-0 [&_input]:border-0 [&_input]:bg-transparent [&_input]:px-4 [&_input]:py-3.5 [&_input]:font-body [&_input]:text-[15px] [&_input]:text-ink [&_input]:outline-none [&_button]:flex [&_button]:shrink-0 [&_button]:w-[52px] [&_button]:items-center [&_button]:justify-center [&_button]:border-0 [&_button]:border-l-[3px] [&_button]:border-l-ink [&_button]:bg-action [&_button]:text-on-dark [&_button]:cursor-pointer" action="{{ route('shops') }}" method="get">
-        <input type="search" name="q" value="{{ request('q') }}" placeholder="Ürün ara..." aria-label="Ara">
+        <input type="search" name="q" value="{{ request('q') }}" placeholder="Ürün, kategori, koleksiyon..." aria-label="Ara" autocomplete="off" data-search-input>
         <button type="submit" aria-label="Ara"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="10.824" cy="10.824" r="7.824"/><path stroke-linecap="square" d="m16.971 16.971 4.47 4.47"/></svg>
         </button>
       </form>
+      <div class="mt-3 hidden max-h-[min(50vh,320px)] overflow-y-auto border-[3px] border-ink bg-surface shadow-brutal-sm" data-search-results aria-live="polite"></div>
       <div class="grid [grid-template-columns:1fr_1fr] mt-5 border-[3px] border-ink shadow-brutal-sm [&>a:first-child]:border-r-[3px] [&>a:first-child]:border-r-ink">
         <a href="{{ route('cart') }}" class="flex items-center justify-center gap-2 [padding:14px_10px] bg-surface font-body text-xs font-bold tracking-[0.06em] uppercase text-ink hover:bg-hover [&.is-active]:bg-action [&.is-active]:text-on-dark">
           <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007z"/></svg>
@@ -259,7 +263,7 @@
         @if ($isUserLoggedIn)
         <a href="{{ route('account') }}">Profil Bilgilerim</a>
         <a href="{{ route('orderList') }}">Siparişlerim</a>
-        <a href="addresses.html">Adreslerim</a>
+        <a href="{{ route('addressList') }}">Adreslerim</a>
         <a href="{{ route('cart') }}">Sepetim</a>
         <form action="{{ route('logout') }}" method="post">
           @csrf
@@ -271,11 +275,11 @@
         @endif
       </details>
       <p class="font-body text-xs font-bold tracking-[0.12em] uppercase text-accent [padding:16px_20px_8px] m-0 border-t-[3px] border-ink bg-bg">Kurumsal</p>
-      <a href="about.html" class="block font-body text-[20px] font-bold uppercase [padding:16px_20px] border-b-2 border-ink text-ink bg-surface hover:bg-hover [&.is-current]:bg-hover [&.is-current]:text-accent" data-i5="mobile__link">Hakkımızda</a>
-      <a href="contact.html" class="block font-body text-[20px] font-bold uppercase [padding:16px_20px] border-b-2 border-ink text-ink bg-surface hover:bg-hover [&.is-current]:bg-hover [&.is-current]:text-accent" data-i5="mobile__link">İletişim</a>
+      <a href="{{ route('about') }}" class="block font-body text-[20px] font-bold uppercase [padding:16px_20px] border-b-2 border-ink text-ink bg-surface hover:bg-hover [&.is-current]:bg-hover [&.is-current]:text-accent" data-i5="mobile__link">Hakkımızda</a>
+      <a href="{{ route('contact') }}" class="block font-body text-[20px] font-bold uppercase [padding:16px_20px] border-b-2 border-ink text-ink bg-surface hover:bg-hover [&.is-current]:bg-hover [&.is-current]:text-accent" data-i5="mobile__link">İletişim</a>
     </nav>
     <div class="p-5 border-t-[3px] border-ink shrink-0">
-      <a href="products.html" class="block w-full m-0 p-4 text-center bg-action text-on-dark font-body text-[13px] font-bold tracking-[0.06em] uppercase border-2 border-action/25 shadow-ui-sm hover:bg-action-hover">Alışverişe Başla</a>
+      <a href="{{ route('shops') }}" class="block w-full m-0 p-4 text-center bg-action text-on-dark font-body text-[13px] font-bold tracking-[0.06em] uppercase border-2 border-action/25 shadow-ui-sm hover:bg-action-hover">Alışverişe Başla</a>
     </div>
   </aside>
 
@@ -283,12 +287,12 @@
     <button type="button" class="fixed right-5 flex h-12 w-12 items-center justify-center border-[3px] border-ink bg-surface text-ink shadow-brutal-sm transition-colors hover:bg-hover top-[calc(44px+12px)] z-[510]" id="i5-search-close" aria-label="Kapat">
       <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg>
     </button>
-    <div class="w-full max-w-[760px]">
+    <div class="w-full max-w-[760px]" data-search-root data-search-url="{{ route('searchSuggestions') }}" data-shops-url="{{ route('shops') }}">
       <form class="flex items-center gap-4 border-[3px] border-ink bg-surface px-6 py-5 shadow-brutal" action="{{ route('shops') }}" method="get" data-search-form>
         <svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.824" cy="10.824" r="7.824"/><path stroke-linecap="square" d="m16.971 16.971 4.47 4.47"/></svg>
-        <input type="search" name="q" value="{{ request('q') }}" placeholder="Ürün adı veya kodu ara..." aria-label="Ara" autocomplete="off" data-search-input class="min-w-0 flex-1 border-0 bg-transparent font-body text-[clamp(1.25rem,4vw,2rem)] font-bold uppercase tracking-tight text-ink outline-none placeholder:text-muted placeholder:opacity-80">
+        <input type="search" name="q" value="{{ request('q') }}" placeholder="Ürün, kategori veya koleksiyon ara..." aria-label="Ara" autocomplete="off" data-search-input class="min-w-0 flex-1 border-0 bg-transparent font-body text-[clamp(1.25rem,4vw,2rem)] font-bold uppercase tracking-tight text-ink outline-none placeholder:text-muted placeholder:opacity-80">
       </form>
-      <div class="mt-4 hidden border-[3px] border-ink bg-surface shadow-brutal-sm" data-search-results aria-live="polite"></div>
+      <div class="mt-4 hidden max-h-[min(60vh,420px)] overflow-y-auto border-[3px] border-ink bg-surface shadow-brutal-sm" data-search-results aria-live="polite"></div>
     </div>
   </div>
 
@@ -304,9 +308,17 @@
         <div >
           <h2 class="font-heading text-[clamp(1.2rem,2.4vw,1.45rem)] font-bold uppercase tracking-[0.05em] mb-3" data-i5="footer__heading">Bültene katıl</h2>
           <p class="text-[15px] leading-[1.65] opacity-[0.72] mb-6 max-w-[38ch]" data-i5="footer__lead">Yeni ürünler, proje hikayeleri ve özel indirimler için abone olun.</p>
-          <form class="flex flex-col gap-2.5 max-w-[440px] min-[480px]:flex-row [&_input]:min-w-0 [&_input]:flex-1 [&_input]:px-4 [&_input]:py-3.5 [&_input]:border-2 [&_input]:border-on-dark/[0.28] [&_input]:bg-transparent [&_input]:text-inherit [&_input]:text-[15px] [&_input]:outline-none [&_input]:placeholder:text-on-dark/[0.45] focus:[&_input]:border-on-dark/60 [&_button]:px-6 [&_button]:py-3.5 [&_button]:bg-on-dark [&_button]:text-ink [&_button]:font-body [&_button]:text-[13px] [&_button]:font-bold [&_button]:uppercase [&_button]:tracking-[0.04em] [&_button]:whitespace-nowrap [&_button]:transition-colors hover:[&_button]:bg-hover" data-newsletter-form data-i5="footer__form">
-            <input type="email" placeholder="E-posta adresiniz" required aria-label="E-posta" >
-            <button type="submit" >Abone Ol</button>
+          @if (session('newsletter_success'))
+            <p class="mb-4 max-w-[440px] border-2 border-on-dark/30 bg-on-dark/10 px-4 py-3 text-[13px] font-semibold" role="alert">{{ session('newsletter_success') }}</p>
+          @endif
+          @if ($errors->has('email') && old('_newsletter'))
+            <p class="mb-4 max-w-[440px] border-2 border-announce/40 bg-announce/10 px-4 py-3 text-[13px] font-semibold text-on-dark" role="alert">{{ $errors->first('email') }}</p>
+          @endif
+          <form action="{{ route('newsletterSubscribe') }}" method="POST" class="flex flex-col gap-2.5 max-w-[440px] min-[480px]:flex-row [&_input]:min-w-0 [&_input]:flex-1 [&_input]:px-4 [&_input]:py-3.5 [&_input]:border-2 [&_input]:border-on-dark/[0.28] [&_input]:bg-transparent [&_input]:text-inherit [&_input]:text-[15px] [&_input]:outline-none [&_input]:placeholder:text-on-dark/[0.45] focus:[&_input]:border-on-dark/60 [&_button]:px-6 [&_button]:py-3.5 [&_button]:bg-on-dark [&_button]:text-ink [&_button]:font-body [&_button]:text-[13px] [&_button]:font-bold [&_button]:uppercase [&_button]:tracking-[0.04em] [&_button]:whitespace-nowrap [&_button]:transition-colors hover:[&_button]:bg-hover" data-i5="footer__form">
+            @csrf
+            <input type="hidden" name="_newsletter" value="1">
+            <input type="email" name="email" value="{{ old('email') }}" placeholder="E-posta adresiniz" required aria-label="E-posta">
+            <button type="submit">Abone Ol</button>
           </form>
         </div>
         <nav class="[&_ul]:flex [&_ul]:flex-col [&_ul]:gap-[11px] [&_a]:text-sm [&_a]:text-on-dark/[0.72] [&_a]:transition-colors hover:[&_a]:text-on-dark" aria-label="Footer" data-i5="footer__nav">
@@ -314,9 +326,9 @@
             <li><a href="{{ route('shops') }}">Tüm Ürünler</a></li>
             <li><a href="{{ route('collectionList') }}">Koleksiyonlar</a></li>
             <li><a href="{{ route('shops', ['siralama' => 'featured']) }}">Çok Satanlar</a></li>
-            <li><a href="about.html">Hakkımızda</a></li>
-            <li><a href="contact.html">İletişim</a></li>
-            <li><a href="#">Kargo &amp; Teslimat</a></li>
+            <li><a href="{{ route('about') }}">Hakkımızda</a></li>
+            <li><a href="{{ route('contact') }}">İletişim</a></li>
+            <li><a href="{{ route('shippingInfo') }}">Kargo &amp; Teslimat</a></li>
             @if ($isUserLoggedIn)
             <li><a href="{{ route('account') }}">Profil Bilgilerim</a></li>
             <li><a href="{{ route('orderList') }}">Siparişlerim</a></li>
@@ -336,11 +348,27 @@
           <span>Amex</span>
         </div>
         <div class="flex flex-col gap-2.5 min-[768px]:flex-row min-[768px]:flex-wrap min-[768px]:items-center min-[768px]:justify-end min-[768px]:gap-x-5 min-[768px]:gap-y-2.5" data-i5="footer__meta">
+          @if ($siteSetting->short_info)
+            <p class="m-0 text-xs opacity-[0.72] max-w-[48ch] min-[768px]:text-right">{{ $siteSetting->short_info }}</p>
+          @endif
           <p class="m-0 text-xs opacity-[0.55]" data-i5="footer__copy">&copy; 2026 PureMatPrint</p>
+          @if ($siteSetting->instagram_url || $siteSetting->twitter_url || $siteSetting->facebook_url)
+            <nav class="flex flex-wrap items-center gap-x-4 gap-y-2 [&_a]:text-[11px] [&_a]:text-on-dark/50 [&_a]:transition-colors hover:[&_a]:text-on-dark" aria-label="Sosyal medya">
+              @if ($siteSetting->instagram_url)
+                <a href="{{ $siteSetting->instagram_url }}" target="_blank" rel="noopener noreferrer">Instagram</a>
+              @endif
+              @if ($siteSetting->twitter_url)
+                <a href="{{ $siteSetting->twitter_url }}" target="_blank" rel="noopener noreferrer">Twitter</a>
+              @endif
+              @if ($siteSetting->facebook_url)
+                <a href="{{ $siteSetting->facebook_url }}" target="_blank" rel="noopener noreferrer">Facebook</a>
+              @endif
+            </nav>
+          @endif
           <nav class="flex flex-wrap items-center gap-x-4 gap-y-2 [&_a]:text-[11px] [&_a]:text-on-dark/50 [&_a]:transition-colors hover:[&_a]:text-on-dark" aria-label="Yasal" data-i5="footer__legal">
-            <a href="privacy.html">KVKK / Gizlilik</a>
-            <a href="cookies.html">Çerez Politikası</a>
-            <a href="distance-sales.html">Mesafeli Satış Sözleşmesi</a>
+            <a href="{{ route('privacy') }}">KVKK / Gizlilik</a>
+            <a href="{{ route('cookies') }}">Çerez Politikası</a>
+            <a href="{{ route('distanceSales') }}">Mesafeli Satış Sözleşmesi</a>
           </nav>
         </div>
       </div>

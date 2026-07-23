@@ -62,11 +62,12 @@
     loader.setAttribute('role', 'status');
     loader.setAttribute('aria-live', 'polite');
     loader.setAttribute('aria-busy', 'true');
+    const logoSrc = document.body.dataset.siteLogo || `${window.location.origin}/shared_directory/logo.avif`;
     loader.innerHTML = `
       <div class="${T.loader__announce || ''}" data-i5="loader__announce">PureMatPrint Stüdyo</div>
       <div class="${T.loader__main || ''}" data-i5="loader__main">
         <div class="${T.loader__logo_box || ''}" data-i5="loader__logo-box">
-          <img src="logo.avif" alt="PureMatPrint" width="150" height="48" class="block w-full max-w-[150px] h-auto">
+          <img src="${logoSrc}" alt="PureMatPrint" width="150" height="48" class="block w-full max-w-[150px] h-auto">
         </div>
         <div class="${T.loader__copy || ''}" data-i5="loader__copy">
           <p class="${T.loader__label || ''}" data-i5="loader__label" data-pmp-loader-label>${LOADER_MESSAGES[0]}</p>

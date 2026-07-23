@@ -51,7 +51,7 @@
         <div class="absolute inset-0 bg-gradient-to-br from-dark via-dark/90 to-accent/40"></div>
       </div>
       <div class="relative z-[1] p-10">
-        <img src="{{ asset('shared_directory') }}/logo.avif" alt="PureMatPrint" class="h-8 w-auto brightness-0 invert">
+        @include('user.partials.site-logo', ['class' => 'h-8 w-auto', 'invertOnDark' => true])
         <p class="mt-3 font-body text-[12px] font-bold uppercase tracking-[0.14em] text-on-dark/50">Yönetim Paneli</p>
       </div>
       <div class="relative z-[1] p-10">
@@ -67,7 +67,7 @@
       <div class="w-full max-w-[420px]">
         {{-- Mobil logo --}}
         <div class="mb-8 text-center lg:hidden">
-          <img src="{{ asset('shared_directory') }}/logo.avif" alt="PureMatPrint" class="mx-auto h-7 w-auto">
+          @include('user.partials.site-logo', ['class' => 'mx-auto h-7 w-auto'])
           <p class="mt-2 font-body text-[12px] font-bold uppercase tracking-[0.12em] text-muted">Admin Girişi</p>
         </div>
 

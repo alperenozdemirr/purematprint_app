@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\View\Composers\AdminLayoutComposer;
 use App\View\Composers\UserLayoutComposer;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
@@ -21,6 +22,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        View::composer('user.layout', UserLayoutComposer::class);
+        View::composer('user.*', UserLayoutComposer::class);
+        View::composer(['admin.layout', 'admin.default.login'], AdminLayoutComposer::class);
     }
 }

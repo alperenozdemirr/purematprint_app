@@ -10,7 +10,7 @@
   {{-- Logo --}}
   <div class="flex h-16 shrink-0 items-center justify-between border-b-[3px] border-ink px-5">
     <a href="{{ route('admin.index') }}" class="flex items-center gap-2.5">
-      <img src="{{ asset('shared_directory') }}/logo.avif" alt="PureMatPrint" class="h-6 w-auto brightness-0 invert">
+      @include('user.partials.site-logo', ['class' => 'h-6 w-auto', 'invertOnDark' => true])
       <span class="font-heading text-[13px] font-bold uppercase tracking-[0.12em] text-on-dark/60">Admin</span>
     </a>
     <button type="button" data-admin-nav-close aria-label="Menüyü kapat"
@@ -60,8 +60,20 @@
       <svg width="19" height="19" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 4h16v16H4zM8 8h8M8 12h8M8 16h5"/></svg>
       <span>Blog</span>
     </a>
+    <a href="{{ route('admin.newsletterList') }}" class="{{ $navLink }} {{ request()->routeIs('admin.newsletter*') ? $navLinkActive : '' }}">
+      <svg width="19" height="19" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 4h16v12H4zM4 8l8 5 8-5"/></svg>
+      <span>Bülten</span>
+    </a>
+    <a href="{{ route('admin.companyList') }}" class="{{ $navLink }} {{ request()->routeIs('admin.company*') ? $navLinkActive : '' }}">
+      <svg width="19" height="19" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 21h18M5 21V7l8-4 8 4v14M9 21v-6h6v6"/></svg>
+      <span>Referans Firmalar</span>
+    </a>
 
     <p class="{{ $navLabel }}">Sistem</p>
+    <a href="{{ route('admin.account') }}" class="{{ $navLink }} {{ request()->routeIs('admin.account*') ? $navLinkActive : '' }}">
+      <svg width="19" height="19" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z"/></svg>
+      <span>Hesabım</span>
+    </a>
     <a href="{{ route('admin.settings') }}" class="{{ $navLink }} {{ request()->routeIs('admin.settings*') ? $navLinkActive : '' }}">
       <svg width="19" height="19" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9c.26.6.77 1.05 1.4 1.2H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
       <span>Ayarlar</span>

@@ -63,7 +63,7 @@
             </div>
             <label class="flex items-start gap-2.5 text-[13px] leading-normal text-muted cursor-pointer [&_input]:w-4 [&_input]:h-4 [&_input]:mt-0.5 [&_input]:accent-accent [&_input]:shrink-0 [&_a]:text-accent [&_a]:font-semibold [&_a]:underline [&_a]:underline-offset-[3px] [&_a:hover]:text-accent-dark" data-i5="register-terms">
               <input type="checkbox" id="register-terms" name="terms" value="1" @checked(old('terms')) required>
-              <span><a href="distance-sales.html">Mesafeli Satış Sözleşmesi</a> ve <a href="privacy.html">Gizlilik Politikası</a>'nı okudum, kabul ediyorum.</span>
+              <span><a href="{{ route('distanceSales') }}">Mesafeli Satış Sözleşmesi</a> ve <a href="{{ route('privacy') }}">Gizlilik Politikası</a>'nı okudum, kabul ediyorum.</span>
             </label>
             <button data-i5="login-submit" data-i5-tags="btn btn--fill login-submit" type="submit" class="inline-flex items-center gap-2 px-6 py-3.5 font-body text-[13px] font-bold uppercase tracking-[0.06em] border-[3px] border-ink transition-[transform,box-shadow,background-color] bg-action text-on-dark shadow-brutal hover:bg-action-hover hover:-translate-x-0.5 hover:-translate-y-0.5 w-full justify-center text-center">Hesap Oluştur</button>
           </form>

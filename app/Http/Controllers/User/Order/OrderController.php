@@ -10,6 +10,7 @@ use App\Enums\Status;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\User\CheckoutStoreRequest;
 use App\Http\Services\OrderPricingService;
+use App\Mail\OrderConfirmationMail;
 use App\Models\Address;
 use App\Models\Order;
 use App\Models\OrderDetail;
@@ -18,6 +19,7 @@ use App\Models\Product;
 use App\Models\ShoppingCart;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\View\View;
 
 class OrderController extends Controller
@@ -179,6 +181,19 @@ class OrderController extends Controller
 
             return $order;
         });
+
+        $order->load([
+            'user',
+            'details.product',
+            'address.city',
+            'address.county',
+        ]);
+
+        try {
+            Mail::to($user->email)->send(new OrderConfirmationMail($order));
+        } catch (\Throwable $exception) {
+            report($exception);
+        }
 
         return redirect()
             ->route('orderShow', $order->code)

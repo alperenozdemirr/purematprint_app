@@ -8,6 +8,7 @@ use App\Http\Controllers\User\EmailVerification\EmailVerificationController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\User\Default\DefaultController;
 use App\Http\Controllers\User\Default\MaintenanceController;
+use App\Http\Controllers\User\Default\PageController;
 use App\Http\Controllers\User\Product\ProductController;
 use App\Http\Controllers\Admin\Default\DefaultController as AdminDefaultController;
 use App\Http\Controllers\Admin\Product\ProductController as AdminProductController;
@@ -24,7 +25,11 @@ use App\Http\Controllers\Admin\Collection\CollectionController as AdminCollectio
 use App\Http\Controllers\Admin\Comment\CommentController as AdminCommentController;
 use App\Http\Controllers\Admin\Setting\SettingController as AdminSettingController;
 use App\Http\Controllers\Admin\Blog\BlogController as AdminBlogController;
+use App\Http\Controllers\Admin\Company\CompanyController as AdminCompanyController;
+use App\Http\Controllers\Admin\Account\AccountController as AdminAccountController;
+use App\Http\Controllers\Admin\Newsletter\NewsletterController as AdminNewsletterController;
 use App\Http\Controllers\User\Blog\BlogController as UserBlogController;
+use App\Http\Controllers\User\Newsletter\NewsletterController as UserNewsletterController;
 
 /*
 |--------------------------------------------------------------------------
@@ -64,6 +69,13 @@ Route::get('koleksiyonlar/{slug}',[ProductController::class,'collectionShow'])->
 Route::get('arama',[ProductController::class,'searchSuggestions'])->name('searchSuggestions');
 Route::get('bloglar', [UserBlogController::class, 'index'])->name('blogList');
 Route::get('bloglar/{slug}', [UserBlogController::class, 'show'])->name('blogShow');
+Route::get('hakkimizda', [PageController::class, 'about'])->name('about');
+Route::get('iletisim', [PageController::class, 'contact'])->name('contact');
+Route::get('kargo-teslimat', [PageController::class, 'shipping'])->name('shippingInfo');
+Route::get('kvkk', [PageController::class, 'privacy'])->name('privacy');
+Route::get('cerez-politikasi', [PageController::class, 'cookies'])->name('cookies');
+Route::get('mesafeli-satis', [PageController::class, 'distanceSales'])->name('distanceSales');
+Route::post('bulten', [UserNewsletterController::class, 'store'])->name('newsletterSubscribe');
 Route::group(['middleware' => 'user'],function (){
     Route::get('sepet', [ShoppingCartController::class, 'index'])->name('cart');
     Route::post('sepet/store', [ShoppingCartController::class, 'store'])->name('cartStore');
@@ -72,6 +84,7 @@ Route::group(['middleware' => 'user'],function (){
 
     Route::get('hesabim', [AccountController::class, 'index'])->name('account');
     Route::post('hesabim/update', [AccountController::class, 'update'])->name('accountUpdate');
+    Route::post('hesabim/password', [AccountController::class, 'updatePassword'])->name('accountPasswordUpdate');
     Route::get('adreslerim', [AccountController::class, 'addressList'])->name('addressList');
     Route::get('adreslerim/yeni', [AccountController::class, 'addressCreatePage'])->name('addressCreatePage');
     Route::post('adreslerim/store', [AccountController::class, 'addressStore'])->name('addressStore');
@@ -138,6 +151,22 @@ Route::group(['prefix' => 'admin/', 'middleware' => 'admin'], function () {
     Route::get('blogs/{id}/delete', [AdminBlogController::class, 'destroy'])->name('admin.blogDelete');
     Route::get('blogs/{id}', [AdminBlogController::class, 'show'])->name('admin.blogEditPage');
 
+    Route::get('companies', [AdminCompanyController::class, 'index'])->name('admin.companyList');
+    Route::get('companies/create', [AdminCompanyController::class, 'storePage'])->name('admin.companyStorePage');
+    Route::post('companies/store', [AdminCompanyController::class, 'store'])->name('admin.companyStore');
+    Route::post('companies/reorder', [AdminCompanyController::class, 'reorder'])->name('admin.companyReorder');
+    Route::post('companies/update', [AdminCompanyController::class, 'update'])->name('admin.companyUpdate');
+    Route::get('companies/{id}/delete', [AdminCompanyController::class, 'destroy'])->name('admin.companyDelete');
+    Route::get('companies/{id}', [AdminCompanyController::class, 'show'])->name('admin.companyEditPage');
+
+    Route::get('newsletters', [AdminNewsletterController::class, 'index'])->name('admin.newsletterList');
+    Route::post('newsletters/broadcast', [AdminNewsletterController::class, 'broadcast'])->name('admin.newsletterBroadcast');
+    Route::get('newsletters/{id}/delete', [AdminNewsletterController::class, 'destroy'])->name('admin.newsletterDelete');
+
     Route::get('settings', [AdminSettingController::class, 'edit'])->name('admin.settings');
     Route::post('settings', [AdminSettingController::class, 'update'])->name('admin.settingsUpdate');
+
+    Route::get('account', [AdminAccountController::class, 'index'])->name('admin.account');
+    Route::post('account/update', [AdminAccountController::class, 'update'])->name('admin.accountUpdate');
+    Route::post('account/password', [AdminAccountController::class, 'updatePassword'])->name('admin.accountPasswordUpdate');
 });

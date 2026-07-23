@@ -21,13 +21,16 @@
     </div>
   </section>
 
+  @if ($tickerCompanies->isNotEmpty())
   <!-- Ticker -->
   <div class="overflow-hidden border-b-[3px] border-ink bg-dark text-on-dark py-3.5" data-i5="ticker">
     <div class="flex items-center w-max will-change-transform" data-i5-ticker data-i5="ticker__track">
-      <span class="shrink-0 font-body text-sm font-semibold uppercase tracking-[0.08em] whitespace-nowrap" data-i5="ticker__item">Flaw Wear</span>
-      <span class="shrink-0 font-body text-sm font-semibold uppercase tracking-[0.08em] whitespace-nowrap" data-i5="ticker__item">Unoıse</span>
+      @foreach ($tickerCompanies as $company)
+      <span class="shrink-0 font-body text-sm font-semibold uppercase tracking-[0.08em] whitespace-nowrap" data-i5="ticker__item">{{ $company->name }}</span>
+      @endforeach
     </div>
   </div>
+  @endif
 
   <!-- Best Sellers band -->
   <section data-i5="carousel-section" data-i5-tags="band section--white carousel-section" class="pt-14 mb-14 overflow-hidden min-[768px]:pt-[72px] min-[768px]:mb-[72px] bg-surface" id="cok-satanlar">

@@ -7,6 +7,7 @@ namespace App\Http\Controllers\User\Product;
 use App\Enums\Status;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\User\ProductIndexRequest;
+use App\Http\Services\FlexSearchService;
 use App\Models\Category;
 use App\Models\Collection;
 use App\Models\Product;
@@ -16,6 +17,10 @@ use Illuminate\View\View;
 
 class ProductController extends Controller
 {
+    public function __construct(protected FlexSearchService $flexSearch)
+    {
+    }
+
     public function index(ProductIndexRequest $request): View
     {
         $validated = $request->validated();
@@ -37,8 +42,13 @@ class ProductController extends Controller
             }
         }
 
+        $searchCategories = collect();
+        $searchCollections = collect();
+
         if (! empty($validated['q'])) {
-            $this->applySearchTerm($query, $validated['q']);
+            $this->flexSearch->applyProductSearch($query, $validated['q']);
+            $searchCategories = $this->flexSearch->searchCategories($validated['q'], 5);
+            $searchCollections = $this->flexSearch->searchCollections($validated['q'], 5);
         }
 
         $this->applySorting($query, $validated['siralama'] ?? 'featured');
@@ -51,7 +61,7 @@ class ProductController extends Controller
             ->orderBy('name')
             ->get();
 
-        return view('user.shops', compact('products', 'categories'));
+        return view('user.shops', compact('products', 'categories', 'searchCategories', 'searchCollections'));
     }
 
     public function show(string $slug): View
@@ -105,7 +115,7 @@ class ProductController extends Controller
             ->where('status', Status::ACTIVE);
 
         if (! empty($validated['q'])) {
-            $this->applySearchTerm($query, $validated['q']);
+            $this->flexSearch->applyProductSearch($query, $validated['q']);
         }
 
         $this->applySorting($query, $validated['siralama'] ?? 'featured');
@@ -134,43 +144,10 @@ class ProductController extends Controller
 
         $placeholder = asset('user/assets/foto5.jpeg');
 
-        $results = Product::query()
-            ->with('images')
-            ->where('status', Status::ACTIVE)
-            ->where(function ($query) use ($term) {
-                $this->applySearchTerm($query, $term);
-            })
-            ->orderByDesc('featured_status')
-            ->orderBy('title')
-            ->limit(8)
-            ->get()
-            ->map(fn (Product $product) => [
-                'title' => $product->title,
-                'code' => $product->code,
-                'url' => route('shopDetail', $product->slug),
-                'price' => number_format((float) $product->price, 0, ',', '.').' ₺',
-                'image' => $product->images->first()?->url ?? $placeholder,
-                'in_stock' => $product->stock_count > 0,
-            ]);
-
         return response()->json([
-            'results' => $results,
+            'results' => $this->flexSearch->buildSuggestions($term, $placeholder),
             'total_url' => route('shops', ['q' => $term]),
         ]);
-    }
-
-    /**
-     * @param  \Illuminate\Database\Eloquent\Builder<Product>|\Illuminate\Database\Eloquent\Relations\BelongsToMany<Product, Collection>  $query
-     */
-    private function applySearchTerm($query, string $term): void
-    {
-        $like = '%'.$term.'%';
-
-        $query->where(function ($builder) use ($like) {
-            $builder->where('title', 'like', $like)
-                ->orWhere('code', 'like', $like)
-                ->orWhere('description', 'like', $like);
-        });
     }
 
     /**

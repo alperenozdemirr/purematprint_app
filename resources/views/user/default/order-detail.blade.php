@@ -23,7 +23,7 @@
       \App\Enums\OrderStatus::COMPLETED => 3,
       default => 0,
   };
-  $waText = rawurlencode('Merhaba, '.$order->code.' numaralı siparişim hakkında bilgi almak istiyorum.');
+  $waLink = $siteSetting->whatsappLink('Merhaba, '.$order->code.' numaralı siparişim hakkında bilgi almak istiyorum.');
 @endphp
 <main id="order-detail-root" class="pt-8 pb-20">
     <div class="w-full max-w-site mx-auto px-5 lg:px-8" data-i5="container">
@@ -52,7 +52,9 @@
 
       <div class="flex flex-wrap items-center gap-2.5 mb-7 pb-6 border-b-[3px] border-ink" data-i5="order-detail__actions">
         <a data-i5="btn--outline" href="{{ route('shops') }}" class="inline-flex items-center gap-2 px-6 py-3.5 font-body text-[13px] font-bold uppercase tracking-[0.06em] border-[3px] border-ink transition-[transform,box-shadow,background-color] bg-surface text-ink shadow-ui hover:bg-hover">Tekrar Sipariş Ver</a>
-        <a data-i5="btn--outline" href="https://wa.me/905321234567?text={{ $waText }}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 px-6 py-3.5 font-body text-[13px] font-bold uppercase tracking-[0.06em] border-[3px] border-ink transition-[transform,box-shadow,background-color] bg-surface text-ink shadow-ui hover:bg-hover">WhatsApp Destek</a>
+        @if ($waLink)
+        <a data-i5="btn--outline" href="{{ $waLink }}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 px-6 py-3.5 font-body text-[13px] font-bold uppercase tracking-[0.06em] border-[3px] border-ink transition-[transform,box-shadow,background-color] bg-surface text-ink shadow-ui hover:bg-hover">WhatsApp Destek</a>
+        @endif
         <a href="{{ route('orderList') }}" class="inline-flex items-center gap-1.5 text-[13px] font-semibold text-muted ml-auto transition-colors hover:text-accent" data-i5="order-detail__back">← Tüm Siparişler</a>
       </div>
 
@@ -188,7 +190,9 @@
             </div>
             <div class="mt-5 pt-5 border-t-[3px] border-ink text-[13px] text-muted leading-normal [&_a]:inline-block [&_a]:mt-2 [&_a]:font-bold [&_a]:text-accent [&_a]:underline [&_a]:underline-offset-[3px] hover:[&_a]:text-ink" data-i5="order-summary__support">
               Sorularınız mı var?
-              <a href="https://wa.me/905321234567?text={{ $waText }}" target="_blank" rel="noopener noreferrer">WhatsApp ile destek al →</a>
+              @if ($waLink)
+              <a href="{{ $waLink }}" target="_blank" rel="noopener noreferrer">WhatsApp ile destek al →</a>
+              @endif
             </div>
           </div>
         </aside>
