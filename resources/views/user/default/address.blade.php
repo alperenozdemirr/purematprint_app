@@ -32,11 +32,12 @@
         <article class="border-[3px] border-ink shadow-brutal-sm bg-surface flex flex-col min-h-full transition-shadow hover:shadow-brutal" data-i5="address-card" data-address-id="{{ $address->id }}">
           <div class="flex items-center justify-between gap-2 px-4 py-3.5 border-b-[3px] border-ink bg-bg" data-i5="address-card__head">
             <span class="font-body text-[11px] font-bold uppercase tracking-[0.06em]" data-i5="address-card__label">{{ $address->title }}</span>
+            <span class="font-body text-[10px] font-bold uppercase tracking-[0.06em] px-2 py-1 border border-ink/20 bg-surface text-muted">{{ $address->scope_label }}</span>
           </div>
           <div class="p-4 flex-1 text-sm leading-[1.6] text-muted" data-i5="address-card__body">
             <p class="font-bold text-ink mb-1.5" data-i5="address-card__name">{{ $authUser->name }}</p>
             <p>{{ $address->content }}</p>
-            <p>{{ $address->county?->name }}, {{ $address->city?->name }}</p>
+            <p>{{ $address->formattedLocation() }}</p>
             @if ($authUser->phone)
             <p class="mt-2.5 text-[13px] font-semibold text-ink" data-i5="address-card__phone">{{ $authUser->phone }}</p>
             @endif

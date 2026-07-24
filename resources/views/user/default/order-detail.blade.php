@@ -6,18 +6,20 @@
   $placeholder = asset('user/assets/foto5.jpeg');
   $totalQty = $order->details->sum('quantity');
   $statusClass = match ($order->status) {
+      \App\Enums\OrderStatus::PENDING_PAYMENT => 'is-pending',
       \App\Enums\OrderStatus::PREPARING => 'is-processing',
       \App\Enums\OrderStatus::SHIPPED => 'is-shipped',
       \App\Enums\OrderStatus::COMPLETED => 'is-delivered',
       \App\Enums\OrderStatus::CANCELLED => 'is-cancelled',
   };
   $steps = [
-      ['label' => 'Sipariş Alındı', 'done' => true],
+      ['label' => 'Sipariş Alındı', 'done' => $order->status !== \App\Enums\OrderStatus::PENDING_PAYMENT],
       ['label' => 'Hazırlanıyor', 'done' => in_array($order->status, [\App\Enums\OrderStatus::PREPARING, \App\Enums\OrderStatus::SHIPPED, \App\Enums\OrderStatus::COMPLETED], true)],
       ['label' => 'Kargoya Verildi', 'done' => in_array($order->status, [\App\Enums\OrderStatus::SHIPPED, \App\Enums\OrderStatus::COMPLETED], true)],
       ['label' => 'Tamamlandı', 'done' => $order->status === \App\Enums\OrderStatus::COMPLETED],
   ];
   $currentStep = match ($order->status) {
+      \App\Enums\OrderStatus::PENDING_PAYMENT => 0,
       \App\Enums\OrderStatus::PREPARING => 1,
       \App\Enums\OrderStatus::SHIPPED => 2,
       \App\Enums\OrderStatus::COMPLETED => 3,
@@ -45,9 +47,9 @@
       <div class="flex flex-wrap items-start justify-between gap-4 mb-5 [&_h1]:font-heading [&_h1]:text-page-title [&_h1]:font-semibold [&_h1]:leading-[1.12] [&_h1]:tracking-[-0.02em] [&_h1]:normal-case" data-i5="order-detail__header">
         <div>
           <h1>{{ $order->code }}</h1>
-          <p class="text-[13px] text-muted mt-1.5" data-i5="order-detail__meta">{{ $order->created_at->translatedFormat('j F Y H:i') }} · {{ $totalQty }} ürün · Kredi / Banka Kartı</p>
+          <p class="text-[13px] text-muted mt-1.5" data-i5="order-detail__meta">{{ $order->created_at->translatedFormat('j F Y H:i') }} · {{ $totalQty }} ürün · {{ $order->payment?->provider?->label() ?? 'iyzico' }}</p>
         </div>
-        <span class="font-body text-[10px] font-bold uppercase tracking-[0.06em] px-2.5 py-[5px] border-2 border-ink [&.is-processing]:bg-accent/10 [&.is-processing]:border-accent [&.is-processing]:text-accent [&.is-shipped]:bg-accent/15 [&.is-shipped]:border-accent [&.is-shipped]:text-accent-dark [&.is-delivered]:bg-[rgba(21,128,61,0.1)] [&.is-delivered]:border-[#15803d] [&.is-delivered]:text-[#15803d] [&.is-cancelled]:bg-[rgba(182,29,15,0.08)] [&.is-cancelled]:border-announce [&.is-cancelled]:text-announce {{ $statusClass }}" data-i5="order-card__status">{{ $order->status->label() }}</span>
+        <span class="font-body text-[10px] font-bold uppercase tracking-[0.06em] px-2.5 py-[5px] border-2 border-ink [&.is-pending]:bg-[#fff8e6] [&.is-pending]:border-[#d97706] [&.is-pending]:text-[#92400e] [&.is-processing]:bg-accent/10 [&.is-processing]:border-accent [&.is-processing]:text-accent [&.is-shipped]:bg-accent/15 [&.is-shipped]:border-accent [&.is-shipped]:text-accent-dark [&.is-delivered]:bg-[rgba(21,128,61,0.1)] [&.is-delivered]:border-[#15803d] [&.is-delivered]:text-[#15803d] [&.is-cancelled]:bg-[rgba(182,29,15,0.08)] [&.is-cancelled]:border-announce [&.is-cancelled]:text-announce {{ $statusClass }}" data-i5="order-card__status">{{ $order->status->label() }}</span>
       </div>
 
       <div class="flex flex-wrap items-center gap-2.5 mb-7 pb-6 border-b-[3px] border-ink" data-i5="order-detail__actions">
@@ -139,13 +141,26 @@
             <div class="text-sm leading-[1.7] text-muted [&_strong]:block [&_strong]:mb-1 [&_strong]:font-semibold [&_strong]:text-ink" data-i5="order-address">
               <strong>{{ $authUser->name }}</strong>
               {{ $order->address->title }} — {{ $order->address->content }}<br>
-              {{ $order->address->county?->name }}, {{ $order->address->city?->name }}<br>
+              {{ $order->address->formattedLocation() }}<br>
               @if ($authUser->phone)
               {{ $authUser->phone }}
               @endif
             </div>
           </section>
           @endif
+
+          <section class="border-[3px] border-ink shadow-brutal-sm bg-surface p-6 [&_h2]:font-body [&_h2]:text-[13px] [&_h2]:font-bold [&_h2]:uppercase [&_h2]:tracking-[0.06em] [&_h2]:mb-5 [&_h2]:pb-3 [&_h2]:border-b-[3px] [&_h2]:border-ink" data-i5="order-detail__section">
+            <h2>Fatura Bilgileri</h2>
+            <div class="text-sm leading-[1.7] text-muted space-y-1">
+              <p><span class="font-semibold text-ink">Tip:</span> {{ $order->invoiceTypeLabel() }}</p>
+              @if ($order->isCorporateInvoice())
+                <p><span class="font-semibold text-ink">Şirket:</span> {{ $order->company_name }}</p>
+                <p><span class="font-semibold text-ink">Vergi No:</span> {{ $order->tax_number }}</p>
+              @else
+                <p><span class="font-semibold text-ink">T.C. Kimlik No:</span> {{ $order->tc_no }}</p>
+              @endif
+            </div>
+          </section>
 
           @if ($order->note)
           <section class="border-[3px] border-ink shadow-brutal-sm bg-surface p-6 [&_h2]:font-body [&_h2]:text-[13px] [&_h2]:font-bold [&_h2]:uppercase [&_h2]:tracking-[0.06em] [&_h2]:mb-5 [&_h2]:pb-3 [&_h2]:border-b-[3px] [&_h2]:border-ink" data-i5="order-detail__section">

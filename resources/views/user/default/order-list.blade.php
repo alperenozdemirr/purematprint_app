@@ -6,6 +6,7 @@
   $placeholder = asset('user/assets/foto5.jpeg');
 
   $statusFilterMap = [
+      \App\Enums\OrderStatus::PENDING_PAYMENT->value => 'pending',
       \App\Enums\OrderStatus::PREPARING->value => 'processing',
       \App\Enums\OrderStatus::SHIPPED->value => 'shipped',
       \App\Enums\OrderStatus::COMPLETED->value => 'delivered',
@@ -13,6 +14,7 @@
   ];
 
   $statusClassMap = [
+      \App\Enums\OrderStatus::PENDING_PAYMENT->value => 'is-pending',
       \App\Enums\OrderStatus::PREPARING->value => 'is-processing',
       \App\Enums\OrderStatus::SHIPPED->value => 'is-shipped',
       \App\Enums\OrderStatus::COMPLETED->value => 'is-delivered',
@@ -85,7 +87,7 @@
                     +{{ $extraCount }} ürün
                   @endif
                 </p>
-                <span>{{ $totalQty }} adet · Kredi / Banka Kartı</span>
+                <span>{{ $totalQty }} adet · {{ $order->payment?->provider?->label() ?? 'iyzico' }}</span>
               </div>
             </div>
             <div class="text-right" data-i5="order-card__side">

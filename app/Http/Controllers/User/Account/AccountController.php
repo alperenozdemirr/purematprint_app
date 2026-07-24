@@ -93,15 +93,10 @@ class AccountController extends Controller
 
     public function addressStore(AddressStoreRequest $request): RedirectResponse
     {
-        $data = $request->validated();
-
-        Address::create([
-            'user_id' => auth()->id(),
-            'title' => $data['title'],
-            'content' => $data['content'],
-            'city_id' => $data['city_id'],
-            'county_id' => $data['county_id'],
-        ]);
+        Address::create(array_merge(
+            ['user_id' => auth()->id()],
+            $request->addressAttributes(),
+        ));
 
         return redirect()
             ->route('addressList')
@@ -116,12 +111,7 @@ class AccountController extends Controller
             ->where('user_id', auth()->id())
             ->findOrFail($data['id']);
 
-        $address->update([
-            'title' => $data['title'],
-            'content' => $data['content'],
-            'city_id' => $data['city_id'],
-            'county_id' => $data['county_id'],
-        ]);
+        $address->update($request->addressAttributes());
 
         return redirect()
             ->route('addressList')

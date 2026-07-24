@@ -20,6 +20,7 @@ use App\Http\Controllers\Admin\Auth\AuthController as AdminAuthController;
 use App\Http\Controllers\User\ShoppingCart\ShoppingCartController;
 use App\Http\Controllers\User\Account\AccountController;
 use App\Http\Controllers\User\Order\OrderController as UserOrderController;
+use App\Http\Controllers\User\Order\IyzicoPaymentController;
 use App\Http\Controllers\User\Comment\CommentController as UserCommentController;
 use App\Http\Controllers\Admin\Collection\CollectionController as AdminCollectionController;
 use App\Http\Controllers\Admin\Comment\CommentController as AdminCommentController;
@@ -76,6 +77,7 @@ Route::get('kvkk', [PageController::class, 'privacy'])->name('privacy');
 Route::get('cerez-politikasi', [PageController::class, 'cookies'])->name('cookies');
 Route::get('mesafeli-satis', [PageController::class, 'distanceSales'])->name('distanceSales');
 Route::post('bulten', [UserNewsletterController::class, 'store'])->name('newsletterSubscribe');
+Route::post('payment/iyzico/callback', [IyzicoPaymentController::class, 'callback'])->name('iyzico.callback');
 Route::group(['middleware' => 'user'],function (){
     Route::get('sepet', [ShoppingCartController::class, 'index'])->name('cart');
     Route::post('sepet/store', [ShoppingCartController::class, 'store'])->name('cartStore');

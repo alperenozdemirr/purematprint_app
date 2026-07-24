@@ -5,10 +5,13 @@ declare(strict_types=1);
 namespace App\Http\Controllers\User\Order;
 
 use App\Enums\OrderStatus;
+use App\Enums\PaymentProvider;
 use App\Enums\PaymentStatus;
 use App\Enums\Status;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\User\CheckoutStoreRequest;
+use App\Http\Services\CheckoutDraftService;
+use App\Http\Services\IyzicoPaymentService;
 use App\Http\Services\OrderPricingService;
 use App\Mail\OrderConfirmationMail;
 use App\Models\Address;
@@ -17,15 +20,20 @@ use App\Models\OrderDetail;
 use App\Models\Payment;
 use App\Models\Product;
 use App\Models\ShoppingCart;
+use App\Models\User;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\View\View;
 
 class OrderController extends Controller
 {
-    public function __construct(protected OrderPricingService $pricingService)
-    {
+    public function __construct(
+        protected OrderPricingService $pricingService,
+        protected IyzicoPaymentService $iyzicoService,
+        protected CheckoutDraftService $draftService,
+    ) {
     }
 
     public function index(): View
@@ -129,6 +137,7 @@ class OrderController extends Controller
 
         $addressId = (int) $request->validated('address_id');
         $note = $request->validated('note');
+        $invoiceAttributes = $request->invoiceAttributes();
 
         foreach ($cartItems as $item) {
             if ($item->product->status !== Status::ACTIVE || $item->product->stock_count < $item->quantity) {
@@ -138,65 +147,38 @@ class OrderController extends Controller
 
         $summary = $this->pricingService->calculate($cartItems, $user);
 
-        $order = DB::transaction(function () use ($user, $cartItems, $addressId, $note, $summary) {
-            $order = Order::create([
-                'user_id' => $user->id,
-                'code' => Order::generateCode(),
-                'subtotal' => $summary['subtotal'],
-                'is_discount_applied' => $summary['discountApplied'],
-                'discount_type' => $summary['discountType'],
-                'discount_slice' => (int) round($summary['discountValue'] ?? 0),
-                'discount_amount' => $summary['discountAmount'],
-                'shipping_is_free' => $summary['shippingFree'],
-                'shipping_price' => $summary['shippingCost'],
-                'total' => $summary['total'],
-                'address_id' => $addressId,
-                'invoice_address_id' => $addressId,
-                'note' => $note,
-                'status' => OrderStatus::PREPARING,
-                'invoice_status' => false,
-            ]);
-
-            foreach ($cartItems as $item) {
-                OrderDetail::create([
-                    'order_id' => $order->id,
-                    'product_id' => $item->product_id,
-                    'price' => $item->product->price,
-                    'quantity' => $item->quantity,
-                ]);
-
-                Product::query()
-                    ->where('id', $item->product_id)
-                    ->decrement('stock_count', $item->quantity);
-            }
-
-            Payment::create([
-                'user_id' => $user->id,
-                'order_id' => $order->id,
-                'paid_amount' => $summary['total'],
-                'status' => PaymentStatus::COMPLETED,
-            ]);
-
-            ShoppingCart::query()->where('user_id', $user->id)->delete();
-
-            return $order;
-        });
-
-        $order->load([
-            'user',
-            'details.product',
-            'address.city',
-            'address.county',
-        ]);
-
-        try {
-            Mail::to($user->email)->send(new OrderConfirmationMail($order));
-        } catch (\Throwable $exception) {
-            report($exception);
+        if (! $this->iyzicoService->isConfigured()) {
+            return back()->with('error', 'Ödeme sistemi henüz yapılandırılmamış. Lütfen daha sonra tekrar deneyin.');
         }
 
-        return redirect()
-            ->route('orderShow', $order->code)
-            ->with('success', 'Ödemeniz alındı. Siparişiniz oluşturuldu.');
+        $address = Address::query()
+            ->with(['city', 'county'])
+            ->where('user_id', $user->id)
+            ->findOrFail($addressId);
+
+        $draft = $this->draftService->createDraft(
+            $user,
+            $addressId,
+            $note,
+            $invoiceAttributes,
+            $summary,
+            $cartItems,
+        );
+
+        $initialize = $this->iyzicoService->initializeCheckoutFromDraft(
+            $draft,
+            $user,
+            $address,
+            $cartItems,
+            $request->ip() ?? '127.0.0.1',
+        );
+
+        if (! $initialize['success'] || empty($initialize['token'])) {
+            return back()->with('error', $initialize['error'] ?? 'Ödeme sayfası oluşturulamadı.');
+        }
+
+        $this->draftService->store($initialize['token'], $draft);
+
+        return redirect()->away($initialize['paymentPageUrl']);
     }
 }

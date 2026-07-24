@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Enums\PaymentProvider;
 use App\Enums\PaymentStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -18,11 +19,15 @@ class Payment extends Model
         'order_id',
         'paid_amount',
         'status',
+        'provider',
+        'provider_payment_id',
+        'provider_token',
     ];
 
     protected $casts = [
         'paid_amount' => 'decimal:2',
         'status' => PaymentStatus::class,
+        'provider' => PaymentProvider::class,
     ];
 
     public function user(): BelongsTo

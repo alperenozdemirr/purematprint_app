@@ -3,6 +3,7 @@ namespace App\Enums;
 
 enum OrderStatus: string
 {
+    case PENDING_PAYMENT = 'pending_payment';
     case PREPARING = 'preparing';
     case SHIPPED = 'shipped';
     case COMPLETED = 'completed';
@@ -16,6 +17,7 @@ enum OrderStatus: string
     public function label(): string
     {
         return match ($this) {
+            self::PENDING_PAYMENT => 'Ödeme Bekleniyor',
             self::PREPARING => 'Hazırlanıyor',
             self::SHIPPED => 'Kargoya Verildi',
             self::COMPLETED => 'Tamamlandı',

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Enums\DiscountType;
+use App\Enums\InvoiceType;
 use App\Enums\OrderStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -29,6 +30,10 @@ class Order extends Model
         'shipping_price',
         'address_id',
         'invoice_address_id',
+        'invoice_type',
+        'tc_no',
+        'company_name',
+        'tax_number',
         'note',
         'status',
         'invoice_status',
@@ -39,6 +44,7 @@ class Order extends Model
         'subtotal' => 'decimal:2',
         'discount_amount' => 'decimal:2',
         'discount_type' => DiscountType::class,
+        'invoice_type' => InvoiceType::class,
         'shipping_price' => 'decimal:2',
         'is_discount_applied' => 'boolean',
         'shipping_is_free' => 'boolean',
@@ -101,5 +107,15 @@ class Order extends Model
         }
 
         return null;
+    }
+
+    public function isCorporateInvoice(): bool
+    {
+        return $this->invoice_type === InvoiceType::CORPORATE;
+    }
+
+    public function invoiceTypeLabel(): string
+    {
+        return $this->invoice_type?->label() ?? InvoiceType::INDIVIDUAL->label();
     }
 }

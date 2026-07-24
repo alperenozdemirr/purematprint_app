@@ -67,7 +67,7 @@
             @if ($order->address)
               <p class="mt-2 font-body text-[14px] font-bold text-ink">{{ $order->address->title }}</p>
               <p class="mt-1 font-body text-[13px] leading-relaxed text-ink">{{ $order->address->content }}</p>
-              <p class="mt-2 font-body text-[12px] text-muted">{{ $order->address->county?->name }} / {{ $order->address->city?->name }}</p>
+              <p class="mt-2 font-body text-[12px] text-muted">{{ $order->address->formattedLocation() }} · {{ $order->address->scope_label }}</p>
             @else
               <p class="mt-2 font-body text-[13px] text-muted">Adres bulunamadı</p>
             @endif
@@ -77,11 +77,38 @@
             @if ($order->invoiceAddress)
               <p class="mt-2 font-body text-[14px] font-bold text-ink">{{ $order->invoiceAddress->title }}</p>
               <p class="mt-1 font-body text-[13px] leading-relaxed text-ink">{{ $order->invoiceAddress->content }}</p>
-              <p class="mt-2 font-body text-[12px] text-muted">{{ $order->invoiceAddress->county?->name }} / {{ $order->invoiceAddress->city?->name }}</p>
+              <p class="mt-2 font-body text-[12px] text-muted">{{ $order->invoiceAddress->formattedLocation() }} · {{ $order->invoiceAddress->scope_label }}</p>
             @else
               <p class="mt-2 font-body text-[13px] text-muted">Adres bulunamadı</p>
             @endif
           </div>
+        </div>
+      </section>
+
+      <section class="overflow-hidden rounded-xl bg-surface shadow-card">
+        <div class="border-b border-ink/10 px-5 py-4">
+          <h3 class="font-heading text-[16px] font-bold text-ink">Fatura Bilgileri</h3>
+        </div>
+        <div class="grid grid-cols-1 gap-4 p-5 sm:grid-cols-2">
+          <div>
+            <p class="font-body text-[11px] font-bold uppercase tracking-[0.08em] text-muted">Fatura Tipi</p>
+            <p class="mt-1 font-body text-[14px] font-semibold text-ink">{{ $order->invoiceTypeLabel() }}</p>
+          </div>
+          @if ($order->isCorporateInvoice())
+            <div>
+              <p class="font-body text-[11px] font-bold uppercase tracking-[0.08em] text-muted">Şirket Adı</p>
+              <p class="mt-1 font-body text-[14px] text-ink">{{ $order->company_name }}</p>
+            </div>
+            <div>
+              <p class="font-body text-[11px] font-bold uppercase tracking-[0.08em] text-muted">Vergi Numarası</p>
+              <p class="mt-1 font-body text-[14px] text-ink">{{ $order->tax_number }}</p>
+            </div>
+          @else
+            <div>
+              <p class="font-body text-[11px] font-bold uppercase tracking-[0.08em] text-muted">T.C. Kimlik No</p>
+              <p class="mt-1 font-body text-[14px] text-ink">{{ $order->tc_no ?? '—' }}</p>
+            </div>
+          @endif
         </div>
       </section>
 

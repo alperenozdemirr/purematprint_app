@@ -14,6 +14,7 @@ class AddressSeeder extends Seeder
         $addresses = [
             [
                 'user_id' => 1,
+                'scope' => 'domestic',
                 'title' => 'Ev Adresi',
                 'content' => 'Atatürk Mah. Cumhuriyet Cad. No:12 Daire:4',
                 'city_id' => 40,
@@ -21,6 +22,7 @@ class AddressSeeder extends Seeder
             ],
             [
                 'user_id' => 1,
+                'scope' => 'domestic',
                 'title' => 'İş Adresi',
                 'content' => 'Kozyatağı Mah. İş Merkezi Sok. No:8 Kat:3',
                 'city_id' => 40,
@@ -28,6 +30,7 @@ class AddressSeeder extends Seeder
             ],
             [
                 'user_id' => 2,
+                'scope' => 'domestic',
                 'title' => 'Ev Adresi',
                 'content' => 'Yeni Mahalle 145. Sokak No:7',
                 'city_id' => 7,
@@ -35,6 +38,7 @@ class AddressSeeder extends Seeder
             ],
             [
                 'user_id' => 3,
+                'scope' => 'domestic',
                 'title' => 'Teslimat Adresi',
                 'content' => 'Güneşli Bulvarı No:22',
                 'city_id' => 40,

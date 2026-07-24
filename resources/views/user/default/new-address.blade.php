@@ -2,9 +2,12 @@
 @section('title', $address ? 'Adres Düzenle' : 'Yeni Adres Ekle')
 @section('content')
 @php
+  use App\Enums\AddressScope;
+
   $isEdit = (bool) $address;
   $addressType = 'home';
   $customLabel = '';
+  $addressScope = old('scope', $address?->scope?->value ?? AddressScope::DOMESTIC->value);
 
   if ($isEdit) {
       $addressType = match ($address->title) {
@@ -56,6 +59,19 @@
               <input type="hidden" name="id" value="{{ $address->id }}">
               @endif
 
+              <div>
+                <p class="font-body text-[11px] font-bold uppercase tracking-[0.06em] mb-2.5">Adres Kapsamı *</p>
+                <div class="flex flex-wrap gap-2" role="radiogroup" aria-label="Adres kapsamı" data-i5="address-form__scopes">
+                  @foreach (AddressScope::cases() as $scopeCase)
+                  <label class="flex items-center gap-1.5 px-3.5 py-2.5 border-[3px] border-ink shadow-brutal-sm font-body text-[11px] font-bold uppercase tracking-[0.06em] cursor-pointer transition-colors has-[:checked]:bg-action has-[:checked]:text-on-dark has-[:checked]:border-ink [&_input]:absolute [&_input]:opacity-0 [&_input]:pointer-events-none">
+                    <input type="radio" name="scope" value="{{ $scopeCase->value }}" @checked($addressScope === $scopeCase->value)>
+                    {{ $scopeCase->label() }}
+                  </label>
+                  @endforeach
+                </div>
+                @error('scope')<span class="text-xs text-announce">{{ $message }}</span>@enderror
+              </div>
+
               <div class="flex flex-wrap gap-2" role="radiogroup" aria-label="Adres tipi" data-i5="address-form__types">
                 @foreach (['home' => 'Ev', 'work' => 'İş', 'other' => 'Diğer'] as $typeValue => $typeLabel)
                 <label class="flex items-center gap-1.5 px-3.5 py-2.5 border-[3px] border-ink shadow-brutal-sm font-body text-[11px] font-bold uppercase tracking-[0.06em] cursor-pointer transition-colors has-[:checked]:bg-action has-[:checked]:text-on-dark has-[:checked]:border-ink [&_input]:absolute [&_input]:opacity-0 [&_input]:pointer-events-none" data-i5="address-form__type">
@@ -78,25 +94,51 @@
                   <textarea id="address-content" name="content" rows="3" required autocomplete="street-address" placeholder="Mahalle, sokak, bina no, daire">{{ old('content', $address?->content) }}</textarea>
                   @error('content')<span class="text-xs text-announce">{{ $message }}</span>@enderror
                 </div>
-                <div class="flex flex-col gap-1.5 [&_label]:font-body [&_label]:text-[11px] [&_label]:font-bold [&_label]:uppercase [&_label]:tracking-[0.06em] [&_select]:px-3.5 [&_select]:py-[13px] [&_select]:border-[3px] [&_select]:border-ink [&_select]:text-[15px] [&_select]:bg-surface [&_select]:outline-none focus:[&_select]:shadow-brutal-sm" data-i5="address-field">
-                  <label for="address-city">İl *</label>
-                  <select id="address-city" name="city_id" required>
-                    <option value="">İl seçin</option>
-                    @foreach ($cities as $city)
-                    <option value="{{ $city->id }}" @selected((int) old('city_id', $address?->city_id) === $city->id)>{{ $city->name }}</option>
-                    @endforeach
-                  </select>
-                  @error('city_id')<span class="text-xs text-announce">{{ $message }}</span>@enderror
+
+                <div id="domestic-fields" class="grid gap-4 min-[640px]:grid-cols-2 min-[640px]:col-span-full {{ $addressScope === AddressScope::DOMESTIC->value ? '' : 'hidden' }}">
+                  <div class="flex flex-col gap-1.5 [&_label]:font-body [&_label]:text-[11px] [&_label]:font-bold [&_label]:uppercase [&_label]:tracking-[0.06em] [&_select]:px-3.5 [&_select]:py-[13px] [&_select]:border-[3px] [&_select]:border-ink [&_select]:text-[15px] [&_select]:bg-surface [&_select]:outline-none focus:[&_select]:shadow-brutal-sm" data-i5="address-field">
+                    <label for="address-city">İl *</label>
+                    <select id="address-city" name="city_id" data-domestic-required>
+                      <option value="">İl seçin</option>
+                      @foreach ($cities as $city)
+                      <option value="{{ $city->id }}" @selected((int) old('city_id', $address?->city_id) === $city->id)>{{ $city->name }}</option>
+                      @endforeach
+                    </select>
+                    @error('city_id')<span class="text-xs text-announce">{{ $message }}</span>@enderror
+                  </div>
+                  <div class="flex flex-col gap-1.5 [&_label]:font-body [&_label]:text-[11px] [&_label]:font-bold [&_label]:uppercase [&_label]:tracking-[0.06em] [&_select]:px-3.5 [&_select]:py-[13px] [&_select]:border-[3px] [&_select]:border-ink [&_select]:text-[15px] [&_select]:bg-surface [&_select]:outline-none focus:[&_select]:shadow-brutal-sm" data-i5="address-field">
+                    <label for="address-county">İlçe *</label>
+                    <select id="address-county" name="county_id" data-domestic-required>
+                      <option value="">İlçe seçin</option>
+                      @foreach ($counties as $county)
+                      <option value="{{ $county->id }}" data-city-id="{{ $county->city_id }}" @selected((int) old('county_id', $address?->county_id) === $county->id)>{{ $county->name }}</option>
+                      @endforeach
+                    </select>
+                    @error('county_id')<span class="text-xs text-announce">{{ $message }}</span>@enderror
+                  </div>
                 </div>
-                <div class="flex flex-col gap-1.5 [&_label]:font-body [&_label]:text-[11px] [&_label]:font-bold [&_label]:uppercase [&_label]:tracking-[0.06em] [&_select]:px-3.5 [&_select]:py-[13px] [&_select]:border-[3px] [&_select]:border-ink [&_select]:text-[15px] [&_select]:bg-surface [&_select]:outline-none focus:[&_select]:shadow-brutal-sm" data-i5="address-field">
-                  <label for="address-county">İlçe *</label>
-                  <select id="address-county" name="county_id" required>
-                    <option value="">İlçe seçin</option>
-                    @foreach ($counties as $county)
-                    <option value="{{ $county->id }}" data-city-id="{{ $county->city_id }}" @selected((int) old('county_id', $address?->county_id) === $county->id)>{{ $county->name }}</option>
-                    @endforeach
-                  </select>
-                  @error('county_id')<span class="text-xs text-announce">{{ $message }}</span>@enderror
+
+                <div id="international-fields" class="grid gap-4 min-[640px]:grid-cols-2 min-[640px]:col-span-full {{ $addressScope === AddressScope::INTERNATIONAL->value ? '' : 'hidden' }}">
+                  <div class="flex flex-col gap-1.5 [&_label]:font-body [&_label]:text-[11px] [&_label]:font-bold [&_label]:uppercase [&_label]:tracking-[0.06em] [&_input]:px-3.5 [&_input]:py-[13px] [&_input]:border-[3px] [&_input]:border-ink [&_input]:text-[15px] [&_input]:bg-surface [&_input]:outline-none focus:[&_input]:shadow-brutal-sm">
+                    <label for="address-country">Ülke *</label>
+                    <input type="text" id="address-country" name="country" value="{{ old('country', $address?->country) }}" placeholder="Örn: Germany" data-international-required>
+                    @error('country')<span class="text-xs text-announce">{{ $message }}</span>@enderror
+                  </div>
+                  <div class="flex flex-col gap-1.5 [&_label]:font-body [&_label]:text-[11px] [&_label]:font-bold [&_label]:uppercase [&_label]:tracking-[0.06em] [&_input]:px-3.5 [&_input]:py-[13px] [&_input]:border-[3px] [&_input]:border-ink [&_input]:text-[15px] [&_input]:bg-surface [&_input]:outline-none focus:[&_input]:shadow-brutal-sm">
+                    <label for="address-state">Eyalet / Bölge *</label>
+                    <input type="text" id="address-state" name="state" value="{{ old('state', $address?->state) }}" placeholder="Örn: Bavaria" data-international-required>
+                    @error('state')<span class="text-xs text-announce">{{ $message }}</span>@enderror
+                  </div>
+                  <div class="flex flex-col gap-1.5 [&_label]:font-body [&_label]:text-[11px] [&_label]:font-bold [&_label]:uppercase [&_label]:tracking-[0.06em] [&_input]:px-3.5 [&_input]:py-[13px] [&_input]:border-[3px] [&_input]:border-ink [&_input]:text-[15px] [&_input]:bg-surface [&_input]:outline-none focus:[&_input]:shadow-brutal-sm">
+                    <label for="address-city-name">Şehir *</label>
+                    <input type="text" id="address-city-name" name="city_name" value="{{ old('city_name', $address?->city_name) }}" placeholder="Örn: Munich" data-international-required>
+                    @error('city_name')<span class="text-xs text-announce">{{ $message }}</span>@enderror
+                  </div>
+                  <div class="flex flex-col gap-1.5 [&_label]:font-body [&_label]:text-[11px] [&_label]:font-bold [&_label]:uppercase [&_label]:tracking-[0.06em] [&_input]:px-3.5 [&_input]:py-[13px] [&_input]:border-[3px] [&_input]:border-ink [&_input]:text-[15px] [&_input]:bg-surface [&_input]:outline-none focus:[&_input]:shadow-brutal-sm">
+                    <label for="address-postal-code">Posta Kodu (ZIP) *</label>
+                    <input type="text" id="address-postal-code" name="postal_code" value="{{ old('postal_code', $address?->postal_code) }}" placeholder="Örn: 80331" data-international-required>
+                    @error('postal_code')<span class="text-xs text-announce">{{ $message }}</span>@enderror
+                  </div>
                 </div>
               </div>
 
@@ -116,7 +158,10 @@
 <script>
 (function () {
   const typeInputs = document.querySelectorAll('input[name="type"]');
+  const scopeInputs = document.querySelectorAll('input[name="scope"]');
   const customField = document.getElementById('custom-label-field');
+  const domesticFields = document.getElementById('domestic-fields');
+  const internationalFields = document.getElementById('international-fields');
   const citySelect = document.getElementById('address-city');
   const countySelect = document.getElementById('address-county');
   const allCountyOptions = countySelect ? [...countySelect.querySelectorAll('option[data-city-id]')] : [];
@@ -125,6 +170,24 @@
     const selected = document.querySelector('input[name="type"]:checked');
     if (!customField || !selected) return;
     customField.classList.toggle('hidden', selected.value !== 'other');
+  };
+
+  const toggleScopeFields = () => {
+    const selected = document.querySelector('input[name="scope"]:checked');
+    const isDomestic = !selected || selected.value === 'domestic';
+
+    domesticFields?.classList.toggle('hidden', !isDomestic);
+    internationalFields?.classList.toggle('hidden', isDomestic);
+
+    document.querySelectorAll('[data-domestic-required]').forEach((el) => {
+      el.required = isDomestic;
+      el.disabled = !isDomestic;
+    });
+
+    document.querySelectorAll('[data-international-required]').forEach((el) => {
+      el.required = !isDomestic;
+      el.disabled = isDomestic;
+    });
   };
 
   const filterCounties = () => {
@@ -145,9 +208,11 @@
   };
 
   typeInputs.forEach((input) => input.addEventListener('change', toggleCustomLabel));
+  scopeInputs.forEach((input) => input.addEventListener('change', toggleScopeFields));
   citySelect?.addEventListener('change', filterCounties);
 
   toggleCustomLabel();
+  toggleScopeFields();
   filterCounties();
 })();
 </script>

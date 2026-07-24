@@ -52,7 +52,7 @@
               <p style="margin:0 0 20px;font-size:14px;line-height:1.7;color:#5e5a54;">
                 {{ $order->address->title }}<br>
                 {{ $order->address->content }}<br>
-                {{ $order->address->county?->name }} / {{ $order->address->city?->name }}
+                {{ $order->address->formattedLocation() }}
               </p>
               @endif
 

@@ -42,7 +42,7 @@
             <div class="rounded-lg border border-ink/10 bg-cream/40 p-4">
               <p class="font-body text-[14px] font-bold text-ink">{{ $address->title }}</p>
               <p class="mt-1 font-body text-[13px] leading-relaxed text-ink">{{ $address->content }}</p>
-              <p class="mt-2 font-body text-[12px] text-muted">{{ $address->county?->name }} / {{ $address->city?->name }}</p>
+              <p class="mt-2 font-body text-[12px] text-muted">{{ $address->formattedLocation() }} · {{ $address->scope_label }}</p>
             </div>
           @empty
             <p class="col-span-full px-1 py-4 text-center font-body text-[14px] text-muted">Kayıtlı adres bulunmuyor.</p>
