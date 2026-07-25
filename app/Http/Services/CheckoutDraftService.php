@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Services;
 
+use App\Enums\PaymentProvider;
 use App\Models\User;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
@@ -17,6 +18,7 @@ class CheckoutDraftService
         array $invoiceAttributes,
         array $summary,
         iterable $cartItems,
+        PaymentProvider $paymentProvider,
     ): array {
         $items = [];
 
@@ -25,6 +27,7 @@ class CheckoutDraftService
                 'product_id' => (int) $item->product_id,
                 'price' => (float) $item->product->price,
                 'quantity' => (int) $item->quantity,
+                'title' => (string) $item->product->title,
             ];
         }
 
@@ -36,52 +39,53 @@ class CheckoutDraftService
             'invoice' => $invoiceAttributes,
             'summary' => $summary,
             'items' => $items,
+            'payment_provider' => $paymentProvider->value,
         ];
     }
 
-    public function store(string $token, array $draft): void
+    public function store(PaymentProvider $provider, string $reference, array $draft): void
     {
-        Cache::put($this->draftKey($token), $draft, $this->ttl());
+        Cache::put($this->draftKey($provider, $reference), $draft, $this->ttl());
     }
 
-    public function get(string $token): ?array
+    public function get(PaymentProvider $provider, string $reference): ?array
     {
-        $draft = Cache::get($this->draftKey($token));
+        $draft = Cache::get($this->draftKey($provider, $reference));
 
         return is_array($draft) ? $draft : null;
     }
 
-    public function forget(string $token): void
+    public function forget(PaymentProvider $provider, string $reference): void
     {
-        Cache::forget($this->draftKey($token));
-        Cache::forget($this->completedKey($token));
+        Cache::forget($this->draftKey($provider, $reference));
+        Cache::forget($this->completedKey($provider, $reference));
     }
 
-    public function markCompleted(string $token, string $orderCode): void
+    public function markCompleted(PaymentProvider $provider, string $reference, string $orderCode): void
     {
-        Cache::put($this->completedKey($token), $orderCode, $this->ttl());
-        Cache::forget($this->draftKey($token));
+        Cache::put($this->completedKey($provider, $reference), $orderCode, $this->ttl());
+        Cache::forget($this->draftKey($provider, $reference));
     }
 
-    public function completedOrderCode(string $token): ?string
+    public function completedOrderCode(PaymentProvider $provider, string $reference): ?string
     {
-        $code = Cache::get($this->completedKey($token));
+        $code = Cache::get($this->completedKey($provider, $reference));
 
         return is_string($code) ? $code : null;
     }
 
-    private function draftKey(string $token): string
+    private function draftKey(PaymentProvider $provider, string $reference): string
     {
-        return 'iyzico_checkout_draft:'.$token;
+        return 'checkout_draft:'.$provider->value.':'.$reference;
     }
 
-    private function completedKey(string $token): string
+    private function completedKey(PaymentProvider $provider, string $reference): string
     {
-        return 'iyzico_checkout_completed:'.$token;
+        return 'checkout_completed:'.$provider->value.':'.$reference;
     }
 
     private function ttl(): \DateTimeInterface
     {
-        return now()->addMinutes((int) config('iyzico.draft_ttl_minutes', 120));
+        return now()->addMinutes((int) config('checkout.draft_ttl_minutes', 120));
     }
 }

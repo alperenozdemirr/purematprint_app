@@ -4,27 +4,18 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\User\Order;
 
-use App\Enums\OrderStatus;
 use App\Enums\PaymentProvider;
-use App\Enums\PaymentStatus;
 use App\Enums\Status;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\User\CheckoutStoreRequest;
 use App\Http\Services\CheckoutDraftService;
 use App\Http\Services\IyzicoPaymentService;
 use App\Http\Services\OrderPricingService;
-use App\Mail\OrderConfirmationMail;
+use App\Http\Services\StripePaymentService;
 use App\Models\Address;
 use App\Models\Order;
-use App\Models\OrderDetail;
-use App\Models\Payment;
-use App\Models\Product;
 use App\Models\ShoppingCart;
-use App\Models\User;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\View\View;
 
 class OrderController extends Controller
@@ -32,6 +23,7 @@ class OrderController extends Controller
     public function __construct(
         protected OrderPricingService $pricingService,
         protected IyzicoPaymentService $iyzicoService,
+        protected StripePaymentService $stripeService,
         protected CheckoutDraftService $draftService,
     ) {
     }
@@ -147,14 +139,31 @@ class OrderController extends Controller
 
         $summary = $this->pricingService->calculate($cartItems, $user);
 
-        if (! $this->iyzicoService->isConfigured()) {
-            return back()->with('error', 'Ödeme sistemi henüz yapılandırılmamış. Lütfen daha sonra tekrar deneyin.');
-        }
-
         $address = Address::query()
             ->with(['city', 'county'])
             ->where('user_id', $user->id)
             ->findOrFail($addressId);
+
+        if ($address->isInternational()) {
+            return $this->checkoutWithStripe($request, $user, $address, $cartItems, $summary, $addressId, $note, $invoiceAttributes);
+        }
+
+        return $this->checkoutWithIyzico($request, $user, $address, $cartItems, $summary, $addressId, $note, $invoiceAttributes);
+    }
+
+    private function checkoutWithIyzico(
+        CheckoutStoreRequest $request,
+        $user,
+        Address $address,
+        $cartItems,
+        array $summary,
+        int $addressId,
+        ?string $note,
+        array $invoiceAttributes,
+    ): RedirectResponse {
+        if (! $this->iyzicoService->isConfigured()) {
+            return back()->with('error', 'Yurt içi ödeme sistemi henüz yapılandırılmamış.');
+        }
 
         $draft = $this->draftService->createDraft(
             $user,
@@ -163,6 +172,7 @@ class OrderController extends Controller
             $invoiceAttributes,
             $summary,
             $cartItems,
+            PaymentProvider::IYZICO,
         );
 
         $initialize = $this->iyzicoService->initializeCheckoutFromDraft(
@@ -177,8 +187,43 @@ class OrderController extends Controller
             return back()->with('error', $initialize['error'] ?? 'Ödeme sayfası oluşturulamadı.');
         }
 
-        $this->draftService->store($initialize['token'], $draft);
+        $this->draftService->store(PaymentProvider::IYZICO, $initialize['token'], $draft);
 
         return redirect()->away($initialize['paymentPageUrl']);
+    }
+
+    private function checkoutWithStripe(
+        CheckoutStoreRequest $request,
+        $user,
+        Address $address,
+        $cartItems,
+        array $summary,
+        int $addressId,
+        ?string $note,
+        array $invoiceAttributes,
+    ): RedirectResponse {
+        if (! $this->stripeService->isConfigured()) {
+            return back()->with('error', 'Yurt dışı ödeme sistemi (Stripe) henüz yapılandırılmamış.');
+        }
+
+        $draft = $this->draftService->createDraft(
+            $user,
+            $addressId,
+            $note,
+            $invoiceAttributes,
+            $summary,
+            $cartItems,
+            PaymentProvider::STRIPE,
+        );
+
+        $session = $this->stripeService->createCheckoutSession($draft, $user, $cartItems);
+
+        if (! $session['success'] || empty($session['sessionId']) || empty($session['checkoutUrl'])) {
+            return back()->with('error', $session['error'] ?? 'Stripe ödeme sayfası oluşturulamadı.');
+        }
+
+        $this->draftService->store(PaymentProvider::STRIPE, $session['sessionId'], $draft);
+
+        return redirect()->away($session['checkoutUrl']);
     }
 }

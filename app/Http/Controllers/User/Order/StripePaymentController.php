@@ -10,36 +10,36 @@ use App\Http\Controllers\Controller;
 use App\Http\Controllers\User\Order\Concerns\RestoresPaymentSession;
 use App\Http\Services\CheckoutCompletionService;
 use App\Http\Services\CheckoutDraftService;
-use App\Http\Services\IyzicoPaymentService;
+use App\Http\Services\StripePaymentService;
 use App\Models\Order;
 use App\Models\Payment;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
-class IyzicoPaymentController extends Controller
+class StripePaymentController extends Controller
 {
     use RestoresPaymentSession;
 
     public function __construct(
-        protected IyzicoPaymentService $iyzicoService,
+        protected StripePaymentService $stripeService,
         protected CheckoutDraftService $draftService,
         protected CheckoutCompletionService $completionService,
     ) {
     }
 
-    public function callback(Request $request): RedirectResponse
+    public function success(Request $request): RedirectResponse
     {
-        $token = (string) $request->input('token', '');
-        $provider = PaymentProvider::IYZICO;
+        $sessionId = (string) $request->query('session_id', '');
+        $provider = PaymentProvider::STRIPE;
 
-        if ($token === '') {
+        if ($sessionId === '') {
             return $this->redirectToCheckout('Ödeme doğrulaması yapılamadı. Lütfen tekrar deneyin.');
         }
 
         $existingPayment = Payment::query()
             ->with(['order.user'])
-            ->where('provider_token', $token)
+            ->where('provider_token', $sessionId)
             ->where('status', PaymentStatus::COMPLETED)
             ->first();
 
@@ -49,7 +49,7 @@ class IyzicoPaymentController extends Controller
             return $this->redirectToOrder($existingPayment->order, 'success', 'Ödemeniz zaten alınmış.');
         }
 
-        $completedCode = $this->draftService->completedOrderCode($provider, $token);
+        $completedCode = $this->draftService->completedOrderCode($provider, $sessionId);
 
         if ($completedCode !== null) {
             $order = Order::query()->with('user')->where('code', $completedCode)->first();
@@ -61,7 +61,7 @@ class IyzicoPaymentController extends Controller
             }
         }
 
-        $draft = $this->draftService->get($provider, $token);
+        $draft = $this->draftService->get($provider, $sessionId);
 
         if ($draft === null) {
             return $this->redirectToCheckout('Ödeme oturumu bulunamadı veya süresi doldu. Lütfen tekrar deneyin.');
@@ -70,20 +70,20 @@ class IyzicoPaymentController extends Controller
         $user = User::query()->find($draft['user_id']);
 
         if ($user === null) {
-            $this->draftService->forget($provider, $token);
+            $this->draftService->forget($provider, $sessionId);
 
             return $this->redirectToCheckout('Kullanıcı hesabı bulunamadı.');
         }
 
-        if (! $this->iyzicoService->isConfigured()) {
-            $this->draftService->forget($provider, $token);
+        if (! $this->stripeService->isConfigured()) {
+            $this->draftService->forget($provider, $sessionId);
             $this->restoreAuthenticatedUser($request, $user);
 
-            return $this->redirectToCheckout('Ödeme sistemi yapılandırılmamış.');
+            return $this->redirectToCheckout('Stripe ödeme sistemi yapılandırılmamış.');
         }
 
         try {
-            $checkoutForm = $this->iyzicoService->retrieveCheckout($token);
+            $session = $this->stripeService->retrieveSession($sessionId);
         } catch (\Throwable $exception) {
             report($exception);
             $this->restoreAuthenticatedUser($request, $user);
@@ -91,19 +91,17 @@ class IyzicoPaymentController extends Controller
             return $this->redirectToCheckout('Ödeme sonucu alınamadı. Lütfen tekrar deneyin.');
         }
 
-        if (! $this->iyzicoService->isPaymentSuccessful($checkoutForm)) {
-            $this->draftService->forget($provider, $token);
+        if (! $this->stripeService->isPaymentSuccessful($session)) {
+            $this->draftService->forget($provider, $sessionId);
             $this->restoreAuthenticatedUser($request, $user);
 
-            return $this->redirectToCheckout(
-                $checkoutForm->getErrorMessage() ?: 'Ödeme tamamlanamadı. Sepetiniz korunmuştur, tekrar deneyebilirsiniz.'
-            );
+            return $this->redirectToCheckout('Ödeme tamamlanamadı. Sepetiniz korunmuştur, tekrar deneyebilirsiniz.');
         }
 
         $stockError = $this->completionService->validateDraftStock($draft);
 
         if ($stockError !== null) {
-            $this->draftService->forget($provider, $token);
+            $this->draftService->forget($provider, $sessionId);
             $this->restoreAuthenticatedUser($request, $user);
 
             return $this->redirectToCheckout($stockError);
@@ -112,15 +110,33 @@ class IyzicoPaymentController extends Controller
         $order = $this->completionService->completeFromDraft(
             $draft,
             $provider,
-            $token,
-            $checkoutForm->getPaymentId(),
-            (float) ($checkoutForm->getPaidPrice() ?? $draft['summary']['total']),
+            $sessionId,
+            $this->stripeService->paymentReference($session),
+            $this->stripeService->paidAmount($session) ?: (float) $draft['summary']['total'],
         );
 
-        $this->draftService->markCompleted($provider, $token, $order->code);
+        $this->draftService->markCompleted($provider, $sessionId, $order->code);
         $this->completionService->sendConfirmationEmail($order);
         $this->restoreAuthenticatedUser($request, $order->user);
 
         return $this->redirectToOrder($order, 'success', 'Ödemeniz alındı. Siparişiniz oluşturuldu.');
+    }
+
+    public function cancel(Request $request): RedirectResponse
+    {
+        $sessionId = (string) $request->query('session_id', '');
+        $provider = PaymentProvider::STRIPE;
+
+        if ($sessionId !== '') {
+            $draft = $this->draftService->get($provider, $sessionId);
+            $this->draftService->forget($provider, $sessionId);
+
+            if ($draft !== null) {
+                $user = User::query()->find($draft['user_id']);
+                $this->restoreAuthenticatedUser($request, $user);
+            }
+        }
+
+        return $this->redirectToCheckout('Ödeme iptal edildi. Sepetiniz korunmuştur.');
     }
 }

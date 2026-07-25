@@ -2,11 +2,14 @@
 @section('title','Ödeme')
 @section('content')
 @php
+  use App\Enums\AddressScope;
   use App\Enums\InvoiceType;
 
   $placeholder = asset('user/assets/foto5.jpeg');
   $selectedAddressId = (int) old('address_id', $addresses->first()?->id);
   $invoiceType = old('invoice_type', InvoiceType::INDIVIDUAL->value);
+  $selectedAddress = $addresses->firstWhere('id', $selectedAddressId) ?? $addresses->first();
+  $isInternationalCheckout = $selectedAddress?->scope === AddressScope::INTERNATIONAL;
 @endphp
 <main class="pt-8 pb-20">
     <div class="w-full max-w-site mx-auto px-5 lg:px-8" data-i5="container">
@@ -38,7 +41,7 @@
             <div class="p-5 grid gap-3">
               @foreach ($addresses as $address)
               <label class="flex gap-4 p-4 border-[3px] border-ink cursor-pointer transition-[background,box-shadow] hover:bg-hover has-[:checked]:border-accent has-[:checked]:shadow-brutal-sm" data-i5="checkout-address">
-                <input type="radio" name="address_id" value="{{ $address->id }}" class="mt-1 accent-accent" @checked($selectedAddressId === $address->id) required>
+                <input type="radio" name="address_id" value="{{ $address->id }}" class="mt-1 accent-accent checkout-address-input" data-scope="{{ $address->scope->value }}" @checked($selectedAddressId === $address->id) required>
                 <div class="flex-1 text-sm leading-relaxed">
                   <p class="font-body text-xs font-bold uppercase tracking-[0.06em] mb-1">{{ $address->title }}</p>
                   <p class="font-semibold text-ink mb-1">{{ $user->name }}</p>
@@ -115,16 +118,32 @@
               <h2>Ödeme Yöntemi</h2>
             </div>
             <div class="p-5 grid gap-4">
-              <div class="flex items-start gap-4 p-4 border-[3px] border-accent bg-accent/5" data-i5="checkout-payment">
-                <div class="shrink-0 w-10 h-10 flex items-center justify-center border-[3px] border-ink bg-surface font-body text-xs font-bold uppercase">iyz</div>
-                <div>
-                  <p class="font-body text-sm font-bold uppercase tracking-[0.04em] mb-1">iyzico ile Güvenli Ödeme</p>
-                  <p class="text-xs text-muted leading-relaxed">Ödeme Yap butonuna tıkladığınızda iyzico sandbox ödeme sayfasına yönlendirileceksiniz. Test kartları ile ödeme yapabilirsiniz.</p>
+              <div id="checkout-payment-iyzico" class="grid gap-4 {{ $isInternationalCheckout ? 'hidden' : '' }}">
+                <div class="flex items-start gap-4 p-4 border-[3px] border-accent bg-accent/5" data-i5="checkout-payment">
+                  <div class="shrink-0 w-10 h-10 flex items-center justify-center border-[3px] border-ink bg-surface font-body text-xs font-bold uppercase">iyz</div>
+                  <div>
+                    <p class="font-body text-sm font-bold uppercase tracking-[0.04em] mb-1">iyzico ile Güvenli Ödeme</p>
+                    <p class="text-xs text-muted leading-relaxed">Yurt içi teslimat adreslerinde iyzico ödeme sayfasına yönlendirilirsiniz.</p>
+                  </div>
+                </div>
+                <div class="p-4 border-[3px] border-dashed border-ink bg-bg text-xs text-muted leading-relaxed">
+                  <p class="font-bold text-ink mb-2">Sandbox test kartı</p>
+                  <p>Kart No: <strong>5528 7900 0000 0000</strong> · SKT: <strong>12/30</strong> · CVV: <strong>123</strong></p>
                 </div>
               </div>
-              <div class="p-4 border-[3px] border-dashed border-ink bg-bg text-xs text-muted leading-relaxed">
-                <p class="font-bold text-ink mb-2">Sandbox test kartı</p>
-                <p>Kart No: <strong>5528 7900 0000 0000</strong> · SKT: <strong>12/30</strong> · CVV: <strong>123</strong></p>
+
+              <div id="checkout-payment-stripe" class="grid gap-4 {{ $isInternationalCheckout ? '' : 'hidden' }}">
+                <div class="flex items-start gap-4 p-4 border-[3px] border-accent bg-accent/5" data-i5="checkout-payment">
+                  <div class="shrink-0 w-10 h-10 flex items-center justify-center border-[3px] border-ink bg-[#635bff] text-white font-body text-xs font-bold uppercase">str</div>
+                  <div>
+                    <p class="font-body text-sm font-bold uppercase tracking-[0.04em] mb-1">Stripe ile Güvenli Ödeme</p>
+                    <p class="text-xs text-muted leading-relaxed">Yurt dışı teslimat adreslerinde Stripe ödeme sayfasına yönlendirilirsiniz.</p>
+                  </div>
+                </div>
+                <div class="p-4 border-[3px] border-dashed border-ink bg-bg text-xs text-muted leading-relaxed">
+                  <p class="font-bold text-ink mb-2">Stripe test kartı</p>
+                  <p>Kart No: <strong>4242 4242 4242 4242</strong> · SKT: gelecekte herhangi bir tarih · CVV: herhangi 3 hane</p>
+                </div>
               </div>
             </div>
           </section>
@@ -177,8 +196,8 @@
             <span>{{ number_format($total, 0, ',', '.') }} ₺</span>
           </div>
 
-          <button type="submit" data-i5="checkout-submit" class="mt-6 w-full inline-flex items-center justify-center gap-2 px-6 py-3.5 font-body text-[13px] font-bold uppercase tracking-[0.06em] border-[3px] border-ink bg-action text-on-dark shadow-brutal hover:bg-action-hover hover:-translate-x-0.5 hover:-translate-y-0.5 transition-[transform,box-shadow,background-color]">
-            iyzico ile Öde
+          <button type="submit" id="checkout-submit" data-i5="checkout-submit" class="mt-6 w-full inline-flex items-center justify-center gap-2 px-6 py-3.5 font-body text-[13px] font-bold uppercase tracking-[0.06em] border-[3px] border-ink bg-action text-on-dark shadow-brutal hover:bg-action-hover hover:-translate-x-0.5 hover:-translate-y-0.5 transition-[transform,box-shadow,background-color]">
+            {{ $isInternationalCheckout ? 'Stripe ile Öde' : 'iyzico ile Öde' }}
           </button>
           <a href="{{ route('cart') }}" class="block text-center mt-4 text-[13px] font-semibold text-muted underline underline-offset-[3px] hover:text-accent">Sepete Dön</a>
         </aside>
@@ -214,6 +233,26 @@
 
   invoiceTypeInputs.forEach((input) => input.addEventListener('change', toggleInvoiceFields));
   toggleInvoiceFields();
+
+  const addressInputs = document.querySelectorAll('.checkout-address-input');
+  const paymentIyzico = document.getElementById('checkout-payment-iyzico');
+  const paymentStripe = document.getElementById('checkout-payment-stripe');
+  const submitButton = document.getElementById('checkout-submit');
+
+  const togglePaymentMethod = () => {
+    const selected = document.querySelector('.checkout-address-input:checked');
+    const isInternational = selected?.dataset.scope === 'international';
+
+    paymentIyzico?.classList.toggle('hidden', !!isInternational);
+    paymentStripe?.classList.toggle('hidden', !isInternational);
+
+    if (submitButton) {
+      submitButton.textContent = isInternational ? 'Stripe ile Öde' : 'iyzico ile Öde';
+    }
+  };
+
+  addressInputs.forEach((input) => input.addEventListener('change', togglePaymentMethod));
+  togglePaymentMethod();
 })();
 </script>
 @endpush
