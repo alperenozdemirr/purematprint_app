@@ -106,13 +106,15 @@ class AddressStoreRequest extends FormRequest
         ];
 
         if ($scope === AddressScope::DOMESTIC) {
+            $postalCode = trim((string) ($data['postal_code'] ?? ''));
+
             return array_merge($attributes, [
                 'city_id' => $data['city_id'],
                 'county_id' => $data['county_id'],
                 'country' => null,
                 'state' => null,
                 'city_name' => null,
-                'postal_code' => null,
+                'postal_code' => $postalCode !== '' ? $postalCode : '54000',
             ]);
         }
 

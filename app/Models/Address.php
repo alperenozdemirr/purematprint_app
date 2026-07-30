@@ -70,6 +70,7 @@ class Address extends Model
         return collect([
             $this->county?->name,
             $this->city?->name,
+            $this->postal_code,
         ])->filter()->implode(', ');
     }
 

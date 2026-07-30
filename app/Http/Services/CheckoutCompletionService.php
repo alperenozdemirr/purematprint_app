@@ -8,17 +8,20 @@ use App\Enums\OrderStatus;
 use App\Enums\PaymentProvider;
 use App\Enums\PaymentStatus;
 use App\Enums\Status;
-use App\Mail\OrderConfirmationMail;
+use App\Http\Services\OrderEmailService;
 use App\Models\Order;
 use App\Models\OrderDetail;
 use App\Models\Payment;
 use App\Models\Product;
 use App\Models\ShoppingCart;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Mail;
 
 class CheckoutCompletionService
 {
+    public function __construct(protected OrderEmailService $orderEmailService)
+    {
+    }
+
     public function validateDraftStock(array $draft): ?string
     {
         foreach ($draft['items'] as $item) {
@@ -96,17 +99,6 @@ class CheckoutCompletionService
 
     public function sendConfirmationEmail(Order $order): void
     {
-        $order->load([
-            'user',
-            'details.product',
-            'address.city',
-            'address.county',
-        ]);
-
-        try {
-            Mail::to($order->user->email)->send(new OrderConfirmationMail($order));
-        } catch (\Throwable $exception) {
-            report($exception);
-        }
+        $this->orderEmailService->sendConfirmationIfNeeded($order);
     }
 }

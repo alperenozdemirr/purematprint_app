@@ -26,6 +26,7 @@ use App\Http\Controllers\User\Comment\CommentController as UserCommentController
 use App\Http\Controllers\Admin\Collection\CollectionController as AdminCollectionController;
 use App\Http\Controllers\Admin\Comment\CommentController as AdminCommentController;
 use App\Http\Controllers\Admin\Setting\SettingController as AdminSettingController;
+use App\Http\Controllers\Admin\Setting\ShipinkSettingController as AdminShipinkSettingController;
 use App\Http\Controllers\Admin\Blog\BlogController as AdminBlogController;
 use App\Http\Controllers\Admin\Company\CompanyController as AdminCompanyController;
 use App\Http\Controllers\Admin\Account\AccountController as AdminAccountController;
@@ -143,6 +144,13 @@ Route::group(['prefix' => 'admin/', 'middleware' => 'admin'], function () {
     Route::get('orders', [AdminOrderController::class, 'index'])->name('admin.orderList');
     Route::post('orders/update', [AdminOrderController::class, 'update'])->name('admin.orderUpdate');
     Route::get('orders/{code}', [AdminOrderController::class, 'show'])->name('admin.orderDetailPage');
+    Route::post('orders/{code}/shipink/create', [AdminOrderController::class, 'createShipinkShipment'])->name('admin.orderShipinkCreate');
+    Route::post('orders/{code}/shipink/sync', [AdminOrderController::class, 'syncShipinkShipment'])->name('admin.orderShipinkSync');
+    Route::post('orders/{code}/shipink/cancel', [AdminOrderController::class, 'cancelShipinkShipment'])->name('admin.orderShipinkCancel');
+
+    Route::get('shipink-settings', [AdminShipinkSettingController::class, 'edit'])->name('admin.shipinkSettings');
+    Route::post('shipink-settings', [AdminShipinkSettingController::class, 'update'])->name('admin.shipinkSettingsUpdate');
+    Route::post('shipink-settings/refresh', [AdminShipinkSettingController::class, 'refresh'])->name('admin.shipinkSettingsRefresh');
 
     Route::get('users', [AdminUserController::class, 'index'])->name('admin.userList');
     Route::post('users/update', [AdminUserController::class, 'update'])->name('admin.userUpdate');

@@ -116,6 +116,11 @@
                     </select>
                     @error('county_id')<span class="text-xs text-announce">{{ $message }}</span>@enderror
                   </div>
+                  <div class="flex flex-col gap-1.5 [&_label]:font-body [&_label]:text-[11px] [&_label]:font-bold [&_label]:uppercase [&_label]:tracking-[0.06em] [&_input]:px-3.5 [&_input]:py-[13px] [&_input]:border-[3px] [&_input]:border-ink [&_input]:text-[15px] [&_input]:bg-surface [&_input]:outline-none focus:[&_input]:shadow-brutal-sm" data-i5="address-field">
+                    <label for="address-domestic-postal-code">Posta Kodu</label>
+                    <input type="text" id="address-domestic-postal-code" name="postal_code" value="{{ old('postal_code', $address?->postal_code ?? '54000') }}" placeholder="Örn: 54000" maxlength="32" data-domestic-postal>
+                    @error('postal_code')<span class="text-xs text-announce">{{ $message }}</span>@enderror
+                  </div>
                 </div>
 
                 <div id="international-fields" class="grid gap-4 min-[640px]:grid-cols-2 min-[640px]:col-span-full {{ $addressScope === AddressScope::INTERNATIONAL->value ? '' : 'hidden' }}">
@@ -181,6 +186,10 @@
 
     document.querySelectorAll('[data-domestic-required]').forEach((el) => {
       el.required = isDomestic;
+      el.disabled = !isDomestic;
+    });
+
+    document.querySelectorAll('[data-domestic-postal]').forEach((el) => {
       el.disabled = !isDomestic;
     });
 

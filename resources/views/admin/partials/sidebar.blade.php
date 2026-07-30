@@ -50,6 +50,10 @@
       <svg width="19" height="19" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4zM3 6h18M16 10a4 4 0 0 1-8 0"/></svg>
       <span>Siparişler</span>
     </a>
+    <a href="{{ route('admin.shipinkSettings') }}" class="{{ $navLink }} {{ request()->routeIs('admin.shipinkSettings*') ? $navLinkActive : '' }}">
+      <svg width="19" height="19" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      <span>Shipink Ayarları</span>
+    </a>
     <a href="{{ route('admin.commentList') }}" class="{{ $navLink }} {{ request()->routeIs('admin.comment*') ? $navLinkActive : '' }}">
       <svg width="19" height="19" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
       <span>Yorumlar</span>

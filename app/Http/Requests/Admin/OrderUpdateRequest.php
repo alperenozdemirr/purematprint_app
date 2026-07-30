@@ -22,6 +22,8 @@ class OrderUpdateRequest extends FormRequest
             'status' => ['required', Rule::in(OrderStatus::values())],
             'invoice_status' => 'nullable|boolean',
             'note' => 'nullable|string|max:1000',
+            'tracking_number' => 'nullable|string|max:100',
+            'tracking_url' => 'nullable|url|max:500',
         ];
     }
 }

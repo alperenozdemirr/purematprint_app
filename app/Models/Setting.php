@@ -36,6 +36,17 @@ class Setting extends Model
         'whatsapp_phone',
         'short_info',
         'logo_id',
+        'shipink_warehouse_id',
+        'shipink_warehouse_name',
+        'shipink_carrier_account_id',
+        'shipink_carrier_account_label',
+        'shipink_carrier_service_id',
+        'shipink_card_id',
+        'shipink_card_label',
+        'shipink_default_weight',
+        'shipink_default_length',
+        'shipink_default_width',
+        'shipink_default_height',
     ];
 
     protected $casts = [
@@ -49,6 +60,10 @@ class Setting extends Model
         'shipping_free_limit_enabled' => 'boolean',
         'shipping_free_limit' => 'decimal:2',
         'logo_id' => 'integer',
+        'shipink_default_weight' => 'integer',
+        'shipink_default_length' => 'integer',
+        'shipink_default_width' => 'integer',
+        'shipink_default_height' => 'integer',
     ];
 
     public function logo(): BelongsTo

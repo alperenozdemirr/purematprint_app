@@ -4,6 +4,13 @@
 @section('breadcrumb', 'Satış / Siparişler / ' . $order->code)
 
 @section('content')
+  @if (session('success'))
+    <div class="mb-5 rounded-lg border border-success/20 bg-success/10 px-4 py-3 font-body text-[13px] font-semibold text-success">{{ session('success') }}</div>
+  @endif
+  @if (session('error'))
+    <div class="mb-5 rounded-lg border border-danger/20 bg-danger/10 px-4 py-3 font-body text-[13px] font-semibold text-danger">{{ session('error') }}</div>
+  @endif
+
   <div class="mb-6 flex items-center gap-3">
     <a href="{{ route('admin.orderList') }}" aria-label="Geri"
        class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-cream text-ink transition-colors hover:bg-hover">
@@ -161,6 +168,102 @@
     </div>
 
     <aside class="flex flex-col gap-6">
+      {{-- Kargo yönetimi --}}
+      <section class="overflow-hidden rounded-xl bg-surface shadow-card">
+        <div class="border-b border-ink/10 px-5 py-4">
+          <h3 class="font-heading text-[16px] font-bold text-ink">Kargo Yönetimi</h3>
+        </div>
+        <div class="space-y-4 p-5">
+          @if ($order->isDomesticShipment())
+            @php
+              $carrierLabel = $order->shippingCarrierLabel() ?? 'Shipink Kargo';
+            @endphp
+            <div class="rounded-lg border border-accent/20 bg-accent/5 p-4">
+              <p class="font-body text-[12px] font-bold uppercase tracking-[0.06em] text-accent">Yurt İçi · Shipink · {{ $carrierLabel }}</p>
+              @if ($order->hasShipinkShipment())
+                <p class="mt-2 font-body text-[13px] font-semibold text-success">Kargoya verildi</p>
+                @if ($order->shipped_at)
+                  <p class="mt-1 font-body text-[12px] text-muted">{{ $order->shipped_at->format('d.m.Y H:i') }} tarihinde kargoya verildi</p>
+                @endif
+              @else
+                <p class="mt-2 font-body text-[13px] leading-relaxed text-muted">
+                  Kargo oluşturulduktan sonra sipariş otomatik olarak kargoya verildi durumuna geçer.
+                </p>
+              @endif
+            </div>
+
+            @if ($order->tracking_number || $order->tracking_url)
+              <div class="space-y-2 font-body text-[13px]">
+                @if ($order->tracking_number)
+                  <div>
+                    <p class="text-[11px] font-bold uppercase tracking-[0.08em] text-muted">Takip No</p>
+                    <p class="mt-1 font-semibold text-ink">{{ $order->tracking_number }}</p>
+                  </div>
+                @endif
+                @if ($order->tracking_url)
+                  <a href="{{ $order->tracking_url }}" target="_blank" rel="noopener noreferrer" class="inline-flex font-semibold text-accent hover:underline">Kargo Takip Linki</a>
+                @endif
+                @if ($order->shipping_label_url)
+                  <a href="{{ $order->shipping_label_url }}" target="_blank" rel="noopener noreferrer" class="inline-flex font-semibold text-accent hover:underline">Kargo Etiketi (PDF)</a>
+                @endif
+                @if ($order->shipping_synced_at)
+                  <p class="text-[12px] text-muted">Son sync: {{ $order->shipping_synced_at->format('d.m.Y H:i') }}</p>
+                @endif
+              </div>
+            @endif
+
+            <div class="flex flex-col gap-2">
+              @if ($order->canCreateShipinkShipment() && $shipinkConfigured)
+                <form action="{{ route('admin.orderShipinkCreate', $order->code) }}" method="POST">
+                  @csrf
+                  <button type="submit" class="inline-flex w-full items-center justify-center rounded-lg bg-accent px-5 py-3 font-body text-[13px] font-bold uppercase tracking-[0.06em] text-on-dark transition-colors hover:bg-accent-dark">
+                    Shipink ile Kargo Oluştur
+                  </button>
+                </form>
+              @elseif ($order->canCreateShipinkShipment() && ! $shipinkConfigured)
+                <p class="rounded-lg border border-danger/20 bg-danger/10 px-3 py-2 font-body text-[12px] text-danger">
+                  Shipink ayarları eksik.
+                  <a href="{{ route('admin.shipinkSettings') }}" class="font-bold underline">Shipink Ayarları</a>
+                  sayfasından depo ve kargo hesabını seçin.
+                </p>
+              @endif
+
+              @if ($order->hasShipinkShipment())
+                <form action="{{ route('admin.orderShipinkSync', $order->code) }}" method="POST">
+                  @csrf
+                  <button type="submit" class="inline-flex w-full items-center justify-center rounded-lg border border-ink/15 bg-cream px-5 py-3 font-body text-[13px] font-bold uppercase tracking-[0.06em] text-ink transition-colors hover:bg-hover">
+                    Durumu Senkronize Et
+                  </button>
+                </form>
+
+                @if ($order->canCancelShipinkShipment())
+                  <form action="{{ route('admin.orderShipinkCancel', $order->code) }}" method="POST" onsubmit="return confirm('Kargo gönderisini iptal etmek istediğinize emin misiniz?');">
+                    @csrf
+                    <button type="submit" class="inline-flex w-full items-center justify-center rounded-lg border border-danger/30 bg-danger/5 px-5 py-3 font-body text-[13px] font-bold uppercase tracking-[0.06em] text-danger transition-colors hover:bg-danger/10">
+                      Kargoyu İptal Et
+                    </button>
+                  </form>
+                  @if ($order->shipinkCancelDeadline())
+                    <p class="font-body text-[11px] text-muted">İptal için son süre: {{ $order->shipinkCancelDeadline()->format('d.m.Y H:i') }}</p>
+                  @endif
+                @elseif ($order->shipment_created_at)
+                  <p class="rounded-lg border border-ink/10 bg-cream/60 px-3 py-2 font-body text-[12px] text-muted">
+                    Kargo iptal süresi doldu. Gönderi artık iptal edilemez.
+                  </p>
+                @endif
+              @endif
+            </div>
+          @else
+            <div class="rounded-lg border border-ink/10 bg-cream/40 p-4">
+              <p class="font-body text-[12px] font-bold uppercase tracking-[0.06em] text-muted">Yurt Dışı · Manuel Kargo</p>
+              <p class="mt-2 font-body text-[13px] leading-relaxed text-muted">
+                Yurt dışı siparişlerde kargo durumu ve takip bilgileri manuel yönetilir.
+              </p>
+            </div>
+          @endif
+        </div>
+      </section>
+
       {{-- Durum güncelleme --}}
       <form action="{{ route('admin.orderUpdate') }}" method="POST" class="overflow-hidden rounded-xl bg-surface shadow-card">
         @csrf
@@ -171,13 +274,34 @@
         <div class="space-y-4 p-5">
           <div>
             <label for="status" class="mb-1.5 block font-body text-[13px] font-bold text-ink">Sipariş Durumu</label>
-            <select id="status" name="status" class="w-full rounded-lg border border-ink/10 bg-cream px-3.5 py-2.5 font-body text-[14px] font-medium text-ink outline-none focus:border-accent">
-              @foreach ($orderStatuses as $orderStatus)
-                <option value="{{ $orderStatus->value }}" @selected(old('status', $order->status?->value) === $orderStatus->value)>{{ $orderStatus->label() }}</option>
-              @endforeach
-            </select>
+            @if ($order->isDomesticShipment())
+              <input type="hidden" name="status" value="{{ $order->status?->value }}">
+              <div class="w-full rounded-lg border border-ink/10 bg-cream/60 px-3.5 py-2.5 font-body text-[14px] font-semibold text-ink">
+                {{ $order->status?->label() }}
+              </div>
+              <p class="mt-1.5 font-body text-[12px] text-muted">Yurt içi siparişlerde durum Shipink ile otomatik güncellenir.</p>
+            @else
+              <select id="status" name="status" class="w-full rounded-lg border border-ink/10 bg-cream px-3.5 py-2.5 font-body text-[14px] font-medium text-ink outline-none focus:border-accent">
+                @foreach ($orderStatuses as $orderStatus)
+                  <option value="{{ $orderStatus->value }}" @selected(old('status', $order->status?->value) === $orderStatus->value)>{{ $orderStatus->label() }}</option>
+                @endforeach
+              </select>
+            @endif
             @error('status') <p class="mt-1.5 font-body text-[12px] font-medium text-danger">{{ $message }}</p> @enderror
           </div>
+
+          @if ($order->isInternationalShipment())
+          <div>
+            <label for="tracking_number" class="mb-1.5 block font-body text-[13px] font-bold text-ink">Takip Numarası</label>
+            <input type="text" id="tracking_number" name="tracking_number" value="{{ old('tracking_number', $order->tracking_number) }}" class="w-full rounded-lg border border-ink/10 bg-cream px-3.5 py-2.5 font-body text-[14px] text-ink outline-none focus:border-accent" placeholder="Opsiyonel">
+            @error('tracking_number') <p class="mt-1.5 font-body text-[12px] font-medium text-danger">{{ $message }}</p> @enderror
+          </div>
+          <div>
+            <label for="tracking_url" class="mb-1.5 block font-body text-[13px] font-bold text-ink">Takip Linki</label>
+            <input type="url" id="tracking_url" name="tracking_url" value="{{ old('tracking_url', $order->tracking_url) }}" class="w-full rounded-lg border border-ink/10 bg-cream px-3.5 py-2.5 font-body text-[14px] text-ink outline-none focus:border-accent" placeholder="https://...">
+            @error('tracking_url') <p class="mt-1.5 font-body text-[12px] font-medium text-danger">{{ $message }}</p> @enderror
+          </div>
+          @endif
 
           <div>
             <label class="mb-2 flex cursor-pointer items-center gap-2.5">

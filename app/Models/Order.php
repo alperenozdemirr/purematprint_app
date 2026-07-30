@@ -37,6 +37,21 @@ class Order extends Model
         'note',
         'status',
         'invoice_status',
+        'shipink_order_id',
+        'shipink_shipment_id',
+        'shipping_carrier',
+        'shipment_created_at',
+        'tracking_number',
+        'tracking_url',
+        'shipping_label_url',
+        'shipped_at',
+        'delivered_at',
+        'shipping_synced_at',
+        'confirmation_email_sent_at',
+        'shipped_email_sent_at',
+        'shipped_email_shipment_id',
+        'delivered_email_sent_at',
+        'carrier_picked_up_at',
     ];
 
     protected $casts = [
@@ -49,6 +64,14 @@ class Order extends Model
         'is_discount_applied' => 'boolean',
         'shipping_is_free' => 'boolean',
         'invoice_status' => 'boolean',
+        'shipped_at' => 'datetime',
+        'delivered_at' => 'datetime',
+        'shipping_synced_at' => 'datetime',
+        'shipment_created_at' => 'datetime',
+        'confirmation_email_sent_at' => 'datetime',
+        'shipped_email_sent_at' => 'datetime',
+        'delivered_email_sent_at' => 'datetime',
+        'carrier_picked_up_at' => 'datetime',
         'status' => OrderStatus::class,
     ];
 
@@ -117,5 +140,73 @@ class Order extends Model
     public function invoiceTypeLabel(): string
     {
         return $this->invoice_type?->label() ?? InvoiceType::INDIVIDUAL->label();
+    }
+
+    public function isDomesticShipment(): bool
+    {
+        return $this->address?->isDomestic() ?? false;
+    }
+
+    public function isInternationalShipment(): bool
+    {
+        return $this->address?->isInternational() ?? false;
+    }
+
+    public function hasShipinkShipment(): bool
+    {
+        return filled($this->shipink_shipment_id);
+    }
+
+    public function canCreateShipinkShipment(): bool
+    {
+        return $this->isDomesticShipment()
+            && $this->status === OrderStatus::PREPARING
+            && ! $this->hasShipinkShipment();
+    }
+
+    public function shippingCarrierLabel(): ?string
+    {
+        if (! filled($this->shipping_carrier)) {
+            return null;
+        }
+
+        return match (strtolower((string) $this->shipping_carrier)) {
+            'ptt' => 'PTT Kargo',
+            'aras' => 'Aras Kargo',
+            'hepsijet' => 'Hepsijet',
+            'yurtici' => 'Yurtiçi Kargo',
+            'mng' => 'MNG Kargo',
+            'surat' => 'Sürat Kargo',
+            'ups' => 'UPS',
+            'fedex' => 'FedEx',
+            'dhl' => 'DHL',
+            default => ucfirst((string) $this->shipping_carrier).' Kargo',
+        };
+    }
+
+    public function canCancelShipinkShipment(): bool
+    {
+        if (! $this->hasShipinkShipment() || $this->shipment_created_at === null) {
+            return false;
+        }
+
+        if (in_array($this->status, [OrderStatus::COMPLETED, OrderStatus::CANCELLED], true)) {
+            return false;
+        }
+
+        $minutes = (int) config('shipink.shipment_cancel_minutes', 60);
+
+        return $this->shipment_created_at->copy()->addMinutes($minutes)->isFuture();
+    }
+
+    public function shipinkCancelDeadline(): ?\Illuminate\Support\Carbon
+    {
+        if ($this->shipment_created_at === null) {
+            return null;
+        }
+
+        $minutes = (int) config('shipink.shipment_cancel_minutes', 60);
+
+        return $this->shipment_created_at->copy()->addMinutes($minutes);
     }
 }

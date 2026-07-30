@@ -199,6 +199,20 @@
               <span>Sipariş Durumu</span>
               <strong>{{ $order->status->label() }}</strong>
             </div>
+            @if ($order->tracking_url || $order->hasShipinkShipment())
+            <div class="mt-4 p-4 border-[3px] border-ink bg-bg text-sm" data-i5="order-tracking">
+              <p class="font-body text-[11px] font-bold uppercase tracking-[0.06em] mb-2">Kargo Takibi</p>
+              @if ($order->shippingCarrierLabel())
+              <p class="text-muted mb-2">Kargo Firması: <strong class="text-ink">{{ $order->shippingCarrierLabel() }}</strong></p>
+              @endif
+              @if ($order->tracking_number)
+              <p class="text-muted mb-2">Takip No: <strong class="text-ink">{{ $order->tracking_number }}</strong></p>
+              @endif
+              @if ($order->tracking_url)
+              <a href="{{ $order->tracking_url }}" target="_blank" rel="noopener noreferrer" class="font-semibold text-accent underline underline-offset-[3px] hover:text-ink">Kargonu Takip Et →</a>
+              @endif
+            </div>
+            @endif
             <div class="flex justify-between gap-3 pt-4 mt-2 border-t-[3px] border-ink font-body text-lg font-bold" data-i5="order-summary__total">
               <span>Toplam</span>
               <span>{{ number_format((float) $order->total, 0, ',', '.') }} ₺</span>
