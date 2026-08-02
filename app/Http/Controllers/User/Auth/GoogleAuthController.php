@@ -7,12 +7,12 @@ namespace App\Http\Controllers\User\Auth;
 use App\Enums\Status;
 use App\Enums\UserType;
 use App\Http\Controllers\Controller;
+use App\Http\Services\QueuedMailService;
 use App\Mail\WelcomeUserMail;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use Laravel\Socialite\Facades\Socialite;
 use Throwable;
@@ -101,7 +101,7 @@ class GoogleAuthController extends Controller
 
         if ($isNewUser) {
             try {
-                Mail::to($user->email)->send(new WelcomeUserMail($user->name));
+                app(QueuedMailService::class)->queue($user->email, new WelcomeUserMail($user->name));
             } catch (Throwable) {
                 // Kayıt tamamlandı; hoş geldiniz maili gönderilemese de akış devam eder.
             }

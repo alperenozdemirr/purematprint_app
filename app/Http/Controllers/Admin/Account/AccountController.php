@@ -7,9 +7,9 @@ namespace App\Http\Controllers\Admin\Account;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\AccountUpdateRequest;
 use App\Http\Requests\Admin\PasswordUpdateRequest;
+use App\Http\Services\QueuedMailService;
 use App\Mail\PasswordChangedMail;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\View\View;
 
 class AccountController extends Controller
@@ -44,7 +44,7 @@ class AccountController extends Controller
     protected function sendPasswordChangedMail($user): void
     {
         try {
-            Mail::to($user->email)->send(new PasswordChangedMail(
+            app(QueuedMailService::class)->queue($user->email, new PasswordChangedMail(
                 $user,
                 now()->timezone(config('app.timezone'))->format('d.m.Y H:i'),
                 'admin',

@@ -106,4 +106,15 @@ return [
         'table' => 'failed_jobs',
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Mail Queue
+    |--------------------------------------------------------------------------
+    |
+    | Horizon / Redis ortamında mail job'larının işleneceği kuyruk adı.
+    |
+    */
+
+    'mail_queue' => env('MAIL_QUEUE', 'default'),
+
 ];

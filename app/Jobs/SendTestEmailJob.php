@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Jobs;
 
+use App\Http\Services\QueuedMailService;
 use App\Mail\TestQueueMail;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -18,6 +19,7 @@ class SendTestEmailJob implements ShouldQueue
 
     public function __construct(public string $recipient = 'ozdemiiralperen@gmail.com')
     {
+        $this->onQueue(app(QueuedMailService::class)->queueName());
     }
 
     public function handle(): void

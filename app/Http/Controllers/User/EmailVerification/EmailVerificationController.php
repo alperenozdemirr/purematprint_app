@@ -7,6 +7,7 @@ namespace App\Http\Controllers\User\EmailVerification;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\User\Auth\AuthController;
 use App\Http\Requests\User\RegisterVerifyRequest;
+use App\Http\Services\QueuedMailService;
 use App\Mail\VerifyEmailMail;
 use App\Models\EmailVerification;
 use App\Models\User;
@@ -14,7 +15,6 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\View\View;
 use Throwable;
 
@@ -83,7 +83,7 @@ class EmailVerificationController extends Controller
         );
 
         try {
-            Mail::to($email)->send(new VerifyEmailMail($code));
+            app(QueuedMailService::class)->queue($email, new VerifyEmailMail($code));
         } catch (Throwable) {
             return response()->json([
                 'status' => false,

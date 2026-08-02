@@ -8,12 +8,12 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\User\AccountUpdateRequest;
 use App\Http\Requests\User\AddressStoreRequest;
 use App\Http\Requests\User\PasswordUpdateRequest;
+use App\Http\Services\QueuedMailService;
 use App\Mail\PasswordChangedMail;
 use App\Models\Address;
 use App\Models\City;
 use App\Models\County;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\View\View;
 
 class AccountController extends Controller
@@ -42,7 +42,7 @@ class AccountController extends Controller
         ]);
 
         try {
-            Mail::to($user->email)->send(new PasswordChangedMail(
+            app(QueuedMailService::class)->queue($user->email, new PasswordChangedMail(
                 $user,
                 now()->timezone(config('app.timezone'))->format('d.m.Y H:i'),
             ));

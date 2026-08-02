@@ -6,10 +6,10 @@ namespace App\Http\Controllers\Admin\Newsletter;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\NewsletterBroadcastRequest;
+use App\Http\Services\QueuedMailService;
 use App\Mail\NewsletterBroadcastMail;
 use App\Models\Newsletter;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\View\View;
 
 class NewsletterController extends Controller
@@ -40,7 +40,7 @@ class NewsletterController extends Controller
 
         foreach ($emails as $email) {
             try {
-                Mail::to($email)->send(new NewsletterBroadcastMail(
+                app(QueuedMailService::class)->queue($email, new NewsletterBroadcastMail(
                     $validated['subject'],
                     $validated['content'],
                 ));

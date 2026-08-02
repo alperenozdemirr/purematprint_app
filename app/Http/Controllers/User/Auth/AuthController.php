@@ -9,6 +9,7 @@ use App\Enums\UserType;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\User\AuthenticateRequest;
 use App\Http\Requests\User\RegisterRequest;
+use App\Http\Services\QueuedMailService;
 use App\Mail\WelcomeUserMail;
 use App\Models\EmailVerification;
 use App\Models\User;
@@ -16,7 +17,6 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Crypt;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\View\View;
 use Throwable;
 
@@ -105,7 +105,7 @@ class AuthController extends Controller
             ]);
 
             try {
-                Mail::to($email)->send(new WelcomeUserMail($name));
+                app(QueuedMailService::class)->queue($email, new WelcomeUserMail($name));
             } catch (Throwable) {
                 // Kayıt tamamlandı; hoş geldiniz maili gönderilemese de akış devam eder.
             }

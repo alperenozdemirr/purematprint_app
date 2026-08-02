@@ -7,12 +7,12 @@ namespace App\Http\Controllers\User\Auth;
 use App\Enums\Status;
 use App\Enums\UserType;
 use App\Http\Controllers\Controller;
+use App\Http\Services\QueuedMailService;
 use App\Mail\PasswordChangedMail;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Foundation\Auth\ResetsPasswords;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
 
@@ -61,7 +61,7 @@ class ResetPasswordController extends Controller
         event(new PasswordReset($user));
 
         try {
-            Mail::to($user->email)->send(new PasswordChangedMail(
+            app(QueuedMailService::class)->queue($user->email, new PasswordChangedMail(
                 $user,
                 now()->timezone(config('app.timezone'))->format('d.m.Y H:i'),
             ));

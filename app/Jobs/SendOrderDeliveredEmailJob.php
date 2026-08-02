@@ -5,29 +5,23 @@ declare(strict_types=1);
 namespace App\Jobs;
 
 use App\Enums\OrderStatus;
+use App\Http\Services\QueuedMailService;
 use App\Mail\OrderDeliveredMail;
 use App\Models\Order;
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Mail;
 
-class SendOrderDeliveredEmailJob implements ShouldQueue, ShouldBeUnique
+class SendOrderDeliveredEmailJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    public int $uniqueFor = 3600;
-
     public function __construct(public int $orderId)
     {
-    }
-
-    public function uniqueId(): string
-    {
-        return 'order-delivered-'.$this->orderId;
+        $this->onQueue(app(QueuedMailService::class)->queueName());
     }
 
     public function handle(): void
