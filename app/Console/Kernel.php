@@ -13,6 +13,10 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule): void
     {
         $schedule->command('orders:process-notifications')->everyMinute();
+
+        $schedule->command('queue:work --stop-when-empty --max-time=55 --max-jobs=100')
+            ->everyMinute()
+            ->withoutOverlapping();
     }
 
     /**

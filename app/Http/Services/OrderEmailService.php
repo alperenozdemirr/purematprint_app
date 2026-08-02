@@ -5,11 +5,10 @@ declare(strict_types=1);
 namespace App\Http\Services;
 
 use App\Enums\OrderStatus;
-use App\Mail\OrderConfirmationMail;
-use App\Mail\OrderDeliveredMail;
-use App\Mail\OrderShippedMail;
+use App\Jobs\SendOrderConfirmationEmailJob;
+use App\Jobs\SendOrderDeliveredEmailJob;
+use App\Jobs\SendOrderShippedEmailJob;
 use App\Models\Order;
-use Illuminate\Support\Facades\Mail;
 
 class OrderEmailService
 {
@@ -20,9 +19,7 @@ class OrderEmailService
     {
         $order->loadMissing([
             'user',
-            'details.product',
-            'address.city',
-            'address.county',
+            'address',
             'payment',
         ]);
 
@@ -39,40 +36,13 @@ class OrderEmailService
             return false;
         }
 
-        if ($order->confirmation_email_sent_at !== null) {
+        if ($order->confirmation_email_sent_at !== null || ! filled($order->user?->email)) {
             return false;
         }
 
-        if (! filled($order->user?->email)) {
-            return false;
-        }
+        SendOrderConfirmationEmailJob::dispatch($order->id);
 
-        if (! $order->relationLoaded('details')) {
-            $order->load(['details.product', 'address.city', 'address.county']);
-        }
-
-        $claimed = Order::query()
-            ->where('id', $order->id)
-            ->whereNull('confirmation_email_sent_at')
-            ->update(['confirmation_email_sent_at' => now()]);
-
-        if ($claimed === 0) {
-            return false;
-        }
-
-        try {
-            Mail::to($order->user->email)->send(new OrderConfirmationMail($order));
-
-            return true;
-        } catch (\Throwable $exception) {
-            Order::query()
-                ->where('id', $order->id)
-                ->update(['confirmation_email_sent_at' => null]);
-
-            report($exception);
-
-            return false;
-        }
+        return true;
     }
 
     public function sendShippedIfNeeded(Order $order): bool
@@ -81,52 +51,15 @@ class OrderEmailService
             return false;
         }
 
-        if (! $this->shouldSendShippedEmail($order)) {
+        if (! $this->shouldSendShippedEmail($order) || ! filled($order->user?->email)) {
             return false;
-        }
-
-        if (! filled($order->user?->email)) {
-            return false;
-        }
-
-        if (! $order->relationLoaded('details')) {
-            $order->load(['details.product', 'address.city', 'address.county']);
         }
 
         $shipmentKey = $this->shippedEmailShipmentKey($order);
 
-        $claimed = Order::query()
-            ->where('id', $order->id)
-            ->where(function ($query) use ($shipmentKey) {
-                $query->whereNull('shipped_email_shipment_id')
-                    ->orWhere('shipped_email_shipment_id', '!=', $shipmentKey);
-            })
-            ->update([
-                'shipped_email_sent_at' => now(),
-                'shipped_email_shipment_id' => $shipmentKey,
-            ]);
+        SendOrderShippedEmailJob::dispatch($order->id, $shipmentKey);
 
-        if ($claimed === 0) {
-            return false;
-        }
-
-        try {
-            Mail::to($order->user->email)->send(new OrderShippedMail($order));
-
-            return true;
-        } catch (\Throwable $exception) {
-            Order::query()
-                ->where('id', $order->id)
-                ->where('shipped_email_shipment_id', $shipmentKey)
-                ->update([
-                    'shipped_email_sent_at' => null,
-                    'shipped_email_shipment_id' => null,
-                ]);
-
-            report($exception);
-
-            return false;
-        }
+        return true;
     }
 
     public function sendDeliveredIfNeeded(Order $order): bool
@@ -135,7 +68,7 @@ class OrderEmailService
             return false;
         }
 
-        if ($order->delivered_email_sent_at !== null) {
+        if ($order->delivered_email_sent_at !== null || ! filled($order->user?->email)) {
             return false;
         }
 
@@ -143,39 +76,12 @@ class OrderEmailService
             return false;
         }
 
-        if (! filled($order->user?->email)) {
-            return false;
-        }
+        SendOrderDeliveredEmailJob::dispatch($order->id);
 
-        if (! $order->relationLoaded('details')) {
-            $order->load(['details.product', 'address.city', 'address.county']);
-        }
-
-        $claimed = Order::query()
-            ->where('id', $order->id)
-            ->whereNull('delivered_email_sent_at')
-            ->update(['delivered_email_sent_at' => now()]);
-
-        if ($claimed === 0) {
-            return false;
-        }
-
-        try {
-            Mail::to($order->user->email)->send(new OrderDeliveredMail($order));
-
-            return true;
-        } catch (\Throwable $exception) {
-            Order::query()
-                ->where('id', $order->id)
-                ->update(['delivered_email_sent_at' => null]);
-
-            report($exception);
-
-            return false;
-        }
+        return true;
     }
 
-    private function shouldSendShippedEmail(Order $order): bool
+    public function shouldSendShippedEmail(Order $order): bool
     {
         if ($order->isDomesticShipment()) {
             if ($order->carrier_picked_up_at === null) {
@@ -194,7 +100,7 @@ class OrderEmailService
         return $order->shipped_email_sent_at === null;
     }
 
-    private function shippedEmailShipmentKey(Order $order): string
+    public function shippedEmailShipmentKey(Order $order): string
     {
         if ($order->isDomesticShipment()) {
             return (string) ($order->shipink_shipment_id ?? 'none');

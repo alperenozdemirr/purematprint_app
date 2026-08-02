@@ -37,8 +37,18 @@ class ForgotPasswordController extends Controller
 
         if ($user) {
             try {
-                Password::broker('users')->sendResetLink(['email' => $email]);
-            } catch (Throwable) {
+                $status = Password::broker('users')->sendResetLink(['email' => $email]);
+
+                if ($status !== Password::RESET_LINK_SENT) {
+                    report(new \RuntimeException('Password reset link failed: '.$status));
+
+                    return back()
+                        ->withInput($request->only('email'))
+                        ->with('error', 'Sıfırlama bağlantısı gönderilemedi. İnternet ve mail ayarlarınızı kontrol edip tekrar deneyin.');
+                }
+            } catch (Throwable $exception) {
+                report($exception);
+
                 return back()
                     ->withInput($request->only('email'))
                     ->with('error', 'Sıfırlama bağlantısı gönderilemedi. İnternet ve mail ayarlarınızı kontrol edip tekrar deneyin.');
