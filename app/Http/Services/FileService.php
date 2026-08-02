@@ -1,104 +1,111 @@
 <?php
+
+declare(strict_types=1);
+
 namespace App\Http\Services;
 
 use App\Enums\ContentType;
 use App\Enums\FileType;
 use App\Models\File;
+use App\Support\MediaPath;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 
 class FileService
 {
-    protected const fileDirectory = "shared_directory/files/users";
-    protected const userImageDirectory = "shared_directory/images/users";
-    protected const productDirectory = "shared_directory/images/products";
-    protected const bannerDirectory = "shared_directory/images/banners";
-    protected const collectionDirectory = "shared_directory/images/collections";
-    protected const blogDirectory = "shared_directory/images/blogs";
-    protected const otherDirectory = "shared_directory/images/other";
-    //protected const categoryIconDirectory = "shared_directory/image/category";
     protected const addToDatabase = true;
 
-
-    public function imageUpload($file, $contentType = null,$keyId = null,$number = null)
+    public function imageUpload($file, $contentType = null, $keyId = null, $number = null)
     {
         $file_type = FileType::IMAGE;
         $baseDirectory = null;
         $user = null;
-        if ($contentType == null || $contentType == ContentType::USER){
-            $baseDirectory = self::userImageDirectory;
+
+        if ($contentType == null || $contentType == ContentType::USER) {
+            $baseDirectory = MediaPath::USER;
             $contentType = ContentType::USER;
             $user = Auth::user()->id;
-        }elseif ($contentType == ContentType::OTHER){
-            $baseDirectory = self::otherDirectory;
+        } elseif ($contentType == ContentType::OTHER) {
+            $baseDirectory = MediaPath::OTHER;
             $contentType = ContentType::OTHER;
-        }elseif ($contentType == ContentType::PRODUCT){
-            $baseDirectory = self::productDirectory;
+        } elseif ($contentType == ContentType::PRODUCT) {
+            $baseDirectory = MediaPath::PRODUCT;
             $contentType = ContentType::PRODUCT;
-        }elseif ($contentType == ContentType::BANNER){
-            $baseDirectory = self::bannerDirectory;
+        } elseif ($contentType == ContentType::BANNER) {
+            $baseDirectory = MediaPath::BANNER;
             $contentType = ContentType::BANNER;
-        }elseif ($contentType == ContentType::COLLECTION){
-            $baseDirectory = self::collectionDirectory;
+        } elseif ($contentType == ContentType::COLLECTION) {
+            $baseDirectory = MediaPath::COLLECTION;
             $contentType = ContentType::COLLECTION;
-        }elseif ($contentType == ContentType::BLOG){
-            $baseDirectory = self::blogDirectory;
+        } elseif ($contentType == ContentType::BLOG) {
+            $baseDirectory = MediaPath::BLOG;
             $contentType = ContentType::BLOG;
         }
-
-        $fileName = $file->hashName();
 
         if ($baseDirectory === null) {
             throw new \InvalidArgumentException('Geçersiz içerik tipi veya dosya yolu.');
         }
 
-        $targetDir = public_path($baseDirectory);
-        if (! is_dir($targetDir)) {
-            mkdir($targetDir, 0755, true);
+        $fileName = $file->hashName();
+        $relativePath = $baseDirectory.'/'.$fileName;
+
+        $content = file_get_contents($file->getRealPath());
+
+        if ($content === false) {
+            throw new \RuntimeException('Dosya okunamadı.');
         }
 
-        $file->move($targetDir, $fileName);
-        if (self::addToDatabase){
-            return $this->storeFile($fileName,$file_type,$contentType,$user,$keyId, $number);
+        Storage::disk('r2')->put($relativePath, $content);
+
+        if (self::addToDatabase) {
+            return $this->storeFile($fileName, $file_type, $contentType, $user, $keyId, $number);
         }
+
         return false;
     }
 
-    protected function storeFile($fileName,$file_type,$content_type,$user = null, $keyId = null,$number = null)
+    public function putBinary(string $baseDirectory, string $fileName, string $content): string
     {
-        $fileRecord = File::create([
+        $relativePath = $baseDirectory.'/'.$fileName;
+        Storage::disk('r2')->put($relativePath, $content);
+
+        return $relativePath;
+    }
+
+    protected function storeFile($fileName, $file_type, $content_type, $user = null, $keyId = null, $number = null)
+    {
+        return File::create([
             'file_name' => $fileName,
             'user_id' => $user,
             'key_id' => $keyId,
             'file_type' => $file_type,
-            'content_type' =>$content_type,
-            'number' =>$number,
+            'content_type' => $content_type,
+            'number' => $number,
         ]);
-
-        return $fileRecord;
     }
 
     public function imageDelete($imageId, $contentType = null)
     {
-        $baseDirectory = null;
-        if ($contentType == null || $contentType == ContentType::USER){
-            $baseDirectory = self::userImageDirectory;
-        }elseif ($contentType == ContentType::OTHER){
-            $baseDirectory = self::otherDirectory;
-        }elseif ($contentType == ContentType::PRODUCT){
-            $baseDirectory = self::productDirectory;
-        }elseif ($contentType == ContentType::BANNER){
-            $baseDirectory = self::bannerDirectory;
-        }elseif ($contentType == ContentType::COLLECTION){
-            $baseDirectory = self::collectionDirectory;
-        }elseif ($contentType == ContentType::BLOG){
-            $baseDirectory = self::blogDirectory;
-        }
+        $baseDirectory = match (true) {
+            $contentType == null, $contentType == ContentType::USER => MediaPath::USER,
+            $contentType == ContentType::OTHER => MediaPath::OTHER,
+            $contentType == ContentType::PRODUCT => MediaPath::PRODUCT,
+            $contentType == ContentType::BANNER => MediaPath::BANNER,
+            $contentType == ContentType::COLLECTION => MediaPath::COLLECTION,
+            $contentType == ContentType::BLOG => MediaPath::BLOG,
+            default => null,
+        };
+
         $deleteItem = File::find($imageId);
-        if ($deleteItem && $baseDirectory !== null){
-            $fileFullPath = public_path($baseDirectory . '/' . $deleteItem->file_name);
+
+        if ($deleteItem && $baseDirectory !== null) {
+            $relativePath = $baseDirectory.'/'.$deleteItem->file_name;
             $deleteItem->delete();
-            unlink($fileFullPath);
+            Storage::disk('r2')->delete($relativePath);
+
             return true;
-        }else return false;
+        }
+
+        return false;
     }
 }

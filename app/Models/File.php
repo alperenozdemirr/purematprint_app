@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
-use App\Enums\ContentType;
+use App\Support\MediaPath;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -23,15 +23,11 @@ class File extends Model
 
     public function getUrlAttribute(): string
     {
-        $directory = match ($this->content_type) {
-            ContentType::PRODUCT->value => 'shared_directory/images/products',
-            ContentType::BANNER->value => 'shared_directory/images/banners',
-            ContentType::COLLECTION->value => 'shared_directory/images/collections',
-            ContentType::BLOG->value => 'shared_directory/images/blogs',
-            ContentType::USER->value => 'shared_directory/images/users',
-            default => 'shared_directory/images/other',
-        };
+        return MediaPath::url($this->content_type, $this->file_name);
+    }
 
-        return asset($directory . '/' . $this->file_name);
+    public function storagePath(): string
+    {
+        return MediaPath::relativePath($this->content_type, $this->file_name);
     }
 }

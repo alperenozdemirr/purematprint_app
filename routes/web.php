@@ -33,6 +33,7 @@ use App\Http\Controllers\Admin\Account\AccountController as AdminAccountControll
 use App\Http\Controllers\Admin\Newsletter\NewsletterController as AdminNewsletterController;
 use App\Http\Controllers\User\Blog\BlogController as UserBlogController;
 use App\Http\Controllers\User\Newsletter\NewsletterController as UserNewsletterController;
+use App\Http\Controllers\MediaController;
 
 /*
 |--------------------------------------------------------------------------
@@ -44,6 +45,10 @@ use App\Http\Controllers\User\Newsletter\NewsletterController as UserNewsletterC
 | be assigned to the "web" middleware group. Make something great!
 |
 */
+
+Route::match(['GET', 'HEAD'], '/media/{path}', [MediaController::class, 'show'])
+    ->where('path', '.*')
+    ->name('media.show');
 
 Route::get('/',[DefaultController::class,'index'])->name('index');
 Route::get('bakim', MaintenanceController::class)->name('maintenance');
