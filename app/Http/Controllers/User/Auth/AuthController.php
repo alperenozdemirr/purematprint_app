@@ -127,9 +127,9 @@ class AuthController extends Controller
 
     public function logout(Request $request): RedirectResponse
     {
-        Auth::logout();
+        Auth::guard('web')->logout();
 
-        $request->session()->invalidate();
+        // Admin oturumunu bozmamak için session invalidate edilmez.
         $request->session()->regenerateToken();
 
         return redirect()

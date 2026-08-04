@@ -48,6 +48,22 @@ class CheckoutStoreRequest extends FormRequest
                 'regex:/^[0-9]{10,11}$/',
             ],
             'note' => ['nullable', 'string', 'max:500'],
+            'order_files' => ['nullable', 'array', 'max:1'],
+            'order_files.*' => [
+                'file',
+                'max:204800',
+                function (string $attribute, mixed $value, \Closure $fail): void {
+                    if (! $value instanceof \Illuminate\Http\UploadedFile) {
+                        return;
+                    }
+
+                    $extension = strtolower((string) $value->getClientOriginalExtension());
+
+                    if (! in_array($extension, \App\Http\Services\CheckoutOrderFileService::ALLOWED_EXTENSIONS, true)) {
+                        $fail('Yalnızca .png, .pdf, .psd dosyaları yüklenebilir.');
+                    }
+                },
+            ],
         ];
     }
 
@@ -60,6 +76,8 @@ class CheckoutStoreRequest extends FormRequest
             'company_name' => 'şirket adı',
             'tax_number' => 'vergi numarası',
             'note' => 'sipariş notu',
+            'order_files' => 'sipariş dosyaları',
+            'order_files.*' => 'sipariş dosyası',
         ];
     }
 
@@ -67,6 +85,9 @@ class CheckoutStoreRequest extends FormRequest
     {
         return [
             'tax_number.regex' => 'Vergi numarası 10 veya 11 haneli olmalıdır.',
+            'order_files.max' => 'En fazla 1 dosya yükleyebilirsiniz.',
+            'order_files.*.max' => 'Dosya en fazla 200MB olabilir.',
+            'order_files.*.file' => 'Geçerli bir dosya yükleyin.',
         ];
     }
 

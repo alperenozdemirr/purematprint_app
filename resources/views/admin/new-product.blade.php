@@ -60,6 +60,41 @@
                 @error('stock_count') <p class="mt-1.5 font-body text-[12px] font-medium text-danger">{{ $message }}</p> @enderror
               </div>
             </div>
+
+            <div>
+              <p class="mb-3 font-body text-[13px] font-bold text-ink">Kargo Ölçüleri <span class="font-medium text-muted">(opsiyonel)</span></p>
+              <div class="grid grid-cols-2 gap-4 sm:grid-cols-4">
+                <div>
+                  <label for="shipping_weight" class="mb-1.5 block font-body text-[12px] font-bold text-muted">Ağırlık (kg)</label>
+                  <input type="number" step="0.001" min="0.001" id="shipping_weight" name="shipping_weight" value="{{ old('shipping_weight') }}"
+                         class="w-full rounded-lg border border-ink/10 bg-cream px-3 py-2.5 font-body text-[14px] text-ink outline-none focus:border-accent"
+                         placeholder="1.000">
+                  @error('shipping_weight') <p class="mt-1 font-body text-[11px] text-danger">{{ $message }}</p> @enderror
+                </div>
+                <div>
+                  <label for="shipping_length" class="mb-1.5 block font-body text-[12px] font-bold text-muted">Boy (cm)</label>
+                  <input type="number" min="1" id="shipping_length" name="shipping_length" value="{{ old('shipping_length') }}"
+                         class="w-full rounded-lg border border-ink/10 bg-cream px-3 py-2.5 font-body text-[14px] text-ink outline-none focus:border-accent"
+                         placeholder="20">
+                  @error('shipping_length') <p class="mt-1 font-body text-[11px] text-danger">{{ $message }}</p> @enderror
+                </div>
+                <div>
+                  <label for="shipping_width" class="mb-1.5 block font-body text-[12px] font-bold text-muted">En (cm)</label>
+                  <input type="number" min="1" id="shipping_width" name="shipping_width" value="{{ old('shipping_width') }}"
+                         class="w-full rounded-lg border border-ink/10 bg-cream px-3 py-2.5 font-body text-[14px] text-ink outline-none focus:border-accent"
+                         placeholder="15">
+                  @error('shipping_width') <p class="mt-1 font-body text-[11px] text-danger">{{ $message }}</p> @enderror
+                </div>
+                <div>
+                  <label for="shipping_height" class="mb-1.5 block font-body text-[12px] font-bold text-muted">Yükseklik (cm)</label>
+                  <input type="number" min="1" id="shipping_height" name="shipping_height" value="{{ old('shipping_height') }}"
+                         class="w-full rounded-lg border border-ink/10 bg-cream px-3 py-2.5 font-body text-[14px] text-ink outline-none focus:border-accent"
+                         placeholder="10">
+                  @error('shipping_height') <p class="mt-1 font-body text-[11px] text-danger">{{ $message }}</p> @enderror
+                </div>
+              </div>
+              <p class="mt-2 font-body text-[12px] text-muted">Kargo oluştururken sipariş ürünlerinden otomatik paket ölçüsü hesaplanır.</p>
+            </div>
           </div>
         </section>
 
@@ -81,13 +116,14 @@
         <section class="overflow-hidden rounded-xl bg-surface shadow-card">
           <div class="border-b border-ink/10 px-5 py-4">
             <h3 class="font-heading text-[16px] font-bold text-ink">Ürün Görselleri</h3>
+            <p class="mt-1 font-body text-[12px] text-muted">Sürükleyerek sıralayın. İlk görsel kapak olur.</p>
           </div>
           <div class="p-5">
             <label for="images"
                    class="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-ink/15 bg-cream px-4 py-10 text-center transition-colors hover:border-accent/40 hover:bg-hover/50">
               <svg width="34" height="34" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" class="text-muted"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
               <span class="font-body text-[14px] font-bold text-ink">Görselleri sürükleyin veya seçin</span>
-              <span class="font-body text-[12px] text-muted">PNG, JPG, WEBP — en fazla 2MB. İlk görsel kapak olur.</span>
+              <span class="font-body text-[12px] text-muted">PNG, JPG, WEBP — en fazla 2MB. Seçtikten sonra sıralayabilirsiniz.</span>
               <input type="file" id="images" name="images[]" accept="image/*" multiple class="hidden" data-image-input>
             </label>
             @error('images') <p class="mt-1.5 font-body text-[12px] font-medium text-danger">{{ $message }}</p> @enderror
@@ -163,6 +199,7 @@
 @endsection
 
 @section('scripts')
+  <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
   <script>
     (function () {
       const form = document.querySelector('[data-product-form]');
@@ -170,20 +207,52 @@
 
       const imageInput = form.querySelector('[data-image-input]');
       const preview = form.querySelector('[data-image-preview]');
-      imageInput.addEventListener('change', () => {
+      let selectedFiles = [];
+      let previewSortable = null;
+
+      const syncInputFiles = () => {
+        const dt = new DataTransfer();
+        selectedFiles.forEach((file) => dt.items.add(file));
+        imageInput.files = dt.files;
+      };
+
+      const renderPreview = () => {
         preview.innerHTML = '';
-        const files = Array.from(imageInput.files);
-        if (!files.length) { preview.classList.add('hidden'); return; }
+        if (!selectedFiles.length) {
+          preview.classList.add('hidden');
+          return;
+        }
         preview.classList.remove('hidden');
-        files.forEach((file, i) => {
-          const url = URL.createObjectURL(file);
+        selectedFiles.forEach((file, i) => {
           const cell = document.createElement('div');
-          cell.className = 'relative aspect-square overflow-hidden rounded-lg bg-cream';
-          cell.innerHTML = '<img src="' + url + '" class="h-full w-full object-cover" alt="">' +
+          cell.className = 'relative aspect-square cursor-grab overflow-hidden rounded-lg bg-cream active:cursor-grabbing';
+          cell.innerHTML = '<img src="' + URL.createObjectURL(file) + '" class="pointer-events-none h-full w-full object-cover" alt="">' +
             (i === 0 ? '<span class="absolute left-1 top-1 rounded bg-accent px-1.5 py-0.5 font-body text-[10px] font-bold uppercase text-on-dark">Kapak</span>' : '');
           preview.appendChild(cell);
         });
+      };
+
+      const ensureSortable = () => {
+        if (typeof Sortable === 'undefined' || previewSortable) return;
+        previewSortable = Sortable.create(preview, {
+          animation: 150,
+          onEnd: (evt) => {
+            if (evt.oldIndex === evt.newIndex) return;
+            const moved = selectedFiles.splice(evt.oldIndex, 1)[0];
+            selectedFiles.splice(evt.newIndex, 0, moved);
+            syncInputFiles();
+            renderPreview();
+          }
+        });
+      };
+
+      imageInput.addEventListener('change', () => {
+        selectedFiles = Array.from(imageInput.files);
+        renderPreview();
+        ensureSortable();
       });
+
+      form.addEventListener('submit', () => syncInputFiles());
     })();
   </script>
 @endsection

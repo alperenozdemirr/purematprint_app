@@ -7,6 +7,7 @@ namespace App\Models;
 use App\Enums\DiscountType;
 use App\Enums\InvoiceType;
 use App\Enums\OrderStatus;
+use App\Enums\ContentType;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -48,6 +49,7 @@ class Order extends Model
         'delivered_at',
         'shipping_synced_at',
         'confirmation_email_sent_at',
+        'admin_notification_sent_at',
         'shipped_email_sent_at',
         'shipped_email_shipment_id',
         'delivered_email_sent_at',
@@ -69,6 +71,7 @@ class Order extends Model
         'shipping_synced_at' => 'datetime',
         'shipment_created_at' => 'datetime',
         'confirmation_email_sent_at' => 'datetime',
+        'admin_notification_sent_at' => 'datetime',
         'shipped_email_sent_at' => 'datetime',
         'delivered_email_sent_at' => 'datetime',
         'carrier_picked_up_at' => 'datetime',
@@ -98,6 +101,13 @@ class Order extends Model
     public function payment(): HasOne
     {
         return $this->hasOne(Payment::class);
+    }
+
+    public function orderFiles(): HasMany
+    {
+        return $this->hasMany(File::class, 'key_id')
+            ->where('content_type', ContentType::ORDER_FILE->value)
+            ->orderBy('number');
     }
 
     public static function generateCode(): string
@@ -208,5 +218,34 @@ class Order extends Model
         $minutes = (int) config('shipink.shipment_cancel_minutes', 60);
 
         return $this->shipment_created_at->copy()->addMinutes($minutes);
+    }
+
+    public function needsShipinkShipment(): bool
+    {
+        return $this->isDomesticShipment()
+            && $this->status === OrderStatus::PREPARING
+            && ! $this->hasShipinkShipment();
+    }
+
+    public function isShippingSyncStale(): bool
+    {
+        if (! $this->hasShipinkShipment()) {
+            return false;
+        }
+
+        if (in_array($this->status, [OrderStatus::COMPLETED, OrderStatus::CANCELLED], true)) {
+            return false;
+        }
+
+        $hours = max(1, (int) config('shipink.stale_sync_hours', 6));
+        $threshold = now()->subHours($hours);
+        $reference = $this->shipping_synced_at ?? $this->shipment_created_at;
+
+        return $reference !== null && $reference->lt($threshold);
+    }
+
+    public function canBeCancelledByAdmin(): bool
+    {
+        return ! in_array($this->status, [OrderStatus::COMPLETED, OrderStatus::CANCELLED], true);
     }
 }

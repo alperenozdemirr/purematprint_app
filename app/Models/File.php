@@ -14,6 +14,7 @@ class File extends Model
 
     protected $fillable = [
         'file_name',
+        'original_name',
         'user_id',
         'key_id',
         'file_type',
@@ -24,6 +25,11 @@ class File extends Model
     public function getUrlAttribute(): string
     {
         return MediaPath::url($this->content_type, $this->file_name);
+    }
+
+    public function displayName(): string
+    {
+        return filled($this->original_name) ? (string) $this->original_name : (string) $this->file_name;
     }
 
     public function storagePath(): string

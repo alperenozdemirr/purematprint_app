@@ -68,7 +68,7 @@ Route::get('auth/google', [GoogleAuthController::class, 'redirect'])->name('goog
 Route::get('auth/google/callback', [GoogleAuthController::class, 'callback'])->name('google.callback');
 Route::get('admin/login', [AdminAuthController::class, 'loginPage'])->name('admin.loginPage');
 Route::post('admin/login', [AdminAuthController::class, 'authenticate'])->name('admin.authenticate');
-Route::post('admin/logout', [AdminAuthController::class, 'logout'])->middleware('auth')->name('admin.logout');
+Route::post('admin/logout', [AdminAuthController::class, 'logout'])->middleware('auth:admin')->name('admin.logout');
 
 Route::get('tum-urunler',[ProductController::class,'index'])->name('shops');
 Route::get('tum-urunler/{slug}',[ProductController::class,'show'])->name('shopDetail','slug');
@@ -105,6 +105,7 @@ Route::group(['middleware' => 'user'],function (){
 
     Route::get('siparislerim', [UserOrderController::class, 'index'])->name('orderList');
     Route::get('siparislerim/{code}', [UserOrderController::class, 'show'])->name('orderShow');
+    Route::get('siparislerim/{code}/dosya/{fileId}', [UserOrderController::class, 'downloadFile'])->name('orderFileDownload');
     Route::post('siparislerim/yorum', [UserCommentController::class, 'store'])->name('commentStore');
     Route::get('odeme', [UserOrderController::class, 'checkoutPage'])->name('checkout');
     Route::post('odeme', [UserOrderController::class, 'checkoutStore'])->name('checkoutStore');
@@ -148,10 +149,12 @@ Route::group(['prefix' => 'admin/', 'middleware' => 'admin'], function () {
 
     Route::get('orders', [AdminOrderController::class, 'index'])->name('admin.orderList');
     Route::post('orders/update', [AdminOrderController::class, 'update'])->name('admin.orderUpdate');
+    Route::get('orders/{code}/dosya/{fileId}', [AdminOrderController::class, 'downloadFile'])->name('admin.orderFileDownload');
     Route::get('orders/{code}', [AdminOrderController::class, 'show'])->name('admin.orderDetailPage');
     Route::post('orders/{code}/shipink/create', [AdminOrderController::class, 'createShipinkShipment'])->name('admin.orderShipinkCreate');
     Route::post('orders/{code}/shipink/sync', [AdminOrderController::class, 'syncShipinkShipment'])->name('admin.orderShipinkSync');
     Route::post('orders/{code}/shipink/cancel', [AdminOrderController::class, 'cancelShipinkShipment'])->name('admin.orderShipinkCancel');
+    Route::post('orders/{code}/cancel', [AdminOrderController::class, 'cancelOrder'])->name('admin.orderCancel');
 
     Route::get('shipink-settings', [AdminShipinkSettingController::class, 'edit'])->name('admin.shipinkSettings');
     Route::post('shipink-settings', [AdminShipinkSettingController::class, 'update'])->name('admin.shipinkSettingsUpdate');

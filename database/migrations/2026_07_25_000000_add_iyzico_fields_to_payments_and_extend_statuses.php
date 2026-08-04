@@ -11,11 +11,13 @@ return new class extends Migration
 {
     public function up(): void
     {
-        $orderStatuses = implode("','", OrderStatus::values());
-        DB::statement("ALTER TABLE orders MODIFY COLUMN status ENUM('{$orderStatuses}') NOT NULL DEFAULT '".OrderStatus::PREPARING->value."'");
+        if (Schema::getConnection()->getDriverName() !== 'sqlite') {
+            $orderStatuses = implode("','", OrderStatus::values());
+            DB::statement("ALTER TABLE orders MODIFY COLUMN status ENUM('{$orderStatuses}') NOT NULL DEFAULT '".OrderStatus::PREPARING->value."'");
 
-        $paymentStatuses = implode("','", PaymentStatus::values());
-        DB::statement("ALTER TABLE payments MODIFY COLUMN status ENUM('{$paymentStatuses}') NOT NULL DEFAULT '".PaymentStatus::PENDING->value."'");
+            $paymentStatuses = implode("','", PaymentStatus::values());
+            DB::statement("ALTER TABLE payments MODIFY COLUMN status ENUM('{$paymentStatuses}') NOT NULL DEFAULT '".PaymentStatus::PENDING->value."'");
+        }
 
         Schema::table('payments', function (Blueprint $table) {
             $table->string('provider', 32)->nullable()->after('status');
@@ -30,7 +32,9 @@ return new class extends Migration
             $table->dropColumn(['provider', 'provider_payment_id', 'provider_token']);
         });
 
-        DB::statement("ALTER TABLE orders MODIFY COLUMN status ENUM('preparing','shipped','completed','cancelled') NOT NULL DEFAULT 'preparing'");
-        DB::statement("ALTER TABLE payments MODIFY COLUMN status ENUM('completed','refunded') NOT NULL DEFAULT 'completed'");
+        if (Schema::getConnection()->getDriverName() !== 'sqlite') {
+            DB::statement("ALTER TABLE orders MODIFY COLUMN status ENUM('preparing','shipped','completed','cancelled') NOT NULL DEFAULT 'preparing'");
+            DB::statement("ALTER TABLE payments MODIFY COLUMN status ENUM('completed','refunded') NOT NULL DEFAULT 'completed'");
+        }
     }
 };

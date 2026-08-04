@@ -3,6 +3,7 @@
 use App\Enums\OrderStatus;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
@@ -36,11 +37,15 @@ return new class extends Migration
             $usedCodes[] = $newCode;
         }
 
-        DB::statement("ALTER TABLE orders MODIFY status ENUM('preparing','shipped','completed','cancelled') NOT NULL DEFAULT 'preparing'");
+        if (Schema::getConnection()->getDriverName() !== 'sqlite') {
+            DB::statement("ALTER TABLE orders MODIFY status ENUM('preparing','shipped','completed','cancelled') NOT NULL DEFAULT 'preparing'");
+        }
     }
 
     public function down(): void
     {
-        DB::statement("ALTER TABLE orders MODIFY status ENUM('payment_pending','preparing','shipped','completed','cancelled') NOT NULL DEFAULT 'preparing'");
+        if (Schema::getConnection()->getDriverName() !== 'sqlite') {
+            DB::statement("ALTER TABLE orders MODIFY status ENUM('payment_pending','preparing','shipped','completed','cancelled') NOT NULL DEFAULT 'preparing'");
+        }
     }
 };

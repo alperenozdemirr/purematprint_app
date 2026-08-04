@@ -11,6 +11,7 @@ use App\Http\Controllers\User\Order\Concerns\RestoresPaymentSession;
 use App\Http\Services\CheckoutCompletionService;
 use App\Http\Services\CheckoutDraftService;
 use App\Http\Services\StripePaymentService;
+use App\Jobs\UploadOrderFilesJob;
 use App\Models\Order;
 use App\Models\Payment;
 use App\Models\User;
@@ -114,6 +115,12 @@ class StripePaymentController extends Controller
             $this->stripeService->paymentReference($session),
             $this->stripeService->paidAmount($session) ?: (float) $draft['summary']['total'],
         );
+
+        $pendingFiles = is_array($draft['files'] ?? null) ? $draft['files'] : [];
+
+        if ($pendingFiles !== []) {
+            UploadOrderFilesJob::dispatch($order->id, $pendingFiles);
+        }
 
         $this->draftService->markCompleted($provider, $sessionId, $order->code);
         $this->completionService->sendConfirmationEmail($order);

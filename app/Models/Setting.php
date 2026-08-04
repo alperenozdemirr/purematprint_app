@@ -27,6 +27,7 @@ class Setting extends Model
         'shipping_free_limit_enabled',
         'shipping_free_limit',
         'email',
+        'order_notification_emails',
         'address',
         'mobile_phone',
         'business_phone',
@@ -40,6 +41,7 @@ class Setting extends Model
         'shipink_warehouse_name',
         'shipink_carrier_account_id',
         'shipink_carrier_account_label',
+        'shipink_carrier_provider',
         'shipink_carrier_service_id',
         'shipink_card_id',
         'shipink_card_label',
@@ -64,6 +66,7 @@ class Setting extends Model
         'shipink_default_length' => 'integer',
         'shipink_default_width' => 'integer',
         'shipink_default_height' => 'integer',
+        'order_notification_emails' => 'array',
     ];
 
     public function logo(): BelongsTo
@@ -197,5 +200,21 @@ class Setting extends Model
         }
 
         return "Standart siparişler 3–5 iş günü içinde kargoya verilir. Tüm siparişlerde {$fee} kargo ücreti uygulanır.";
+    }
+
+    /**
+     * @return list<string>
+     */
+    public function orderNotificationEmails(): array
+    {
+        $emails = is_array($this->order_notification_emails) ? $this->order_notification_emails : [];
+
+        return collect($emails)
+            ->map(fn ($email) => strtolower(trim((string) $email)))
+            ->filter(fn (string $email) => filter_var($email, FILTER_VALIDATE_EMAIL) !== false)
+            ->unique()
+            ->take(4)
+            ->values()
+            ->all();
     }
 }

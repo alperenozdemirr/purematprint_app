@@ -4,14 +4,20 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Admin\Comment;
 
+use App\Enums\ContentType;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\CommentUpdateRequest;
+use App\Http\Services\FileService;
 use App\Models\Comment;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 
 class CommentController extends Controller
 {
+    public function __construct(protected FileService $fileService)
+    {
+    }
+
     public function index(): View
     {
         $comments = Comment::query()
@@ -19,6 +25,7 @@ class CommentController extends Controller
                 'user',
                 'product',
                 'orderDetail.order',
+                'images',
             ])
             ->latest()
             ->paginate(15);
@@ -45,7 +52,13 @@ class CommentController extends Controller
 
     public function destroy(int $id): RedirectResponse
     {
-        Comment::query()->findOrFail($id)->delete();
+        $comment = Comment::query()->with('images')->findOrFail($id);
+
+        foreach ($comment->images as $image) {
+            $this->fileService->imageDelete($image->id, ContentType::COMMENT);
+        }
+
+        $comment->delete();
 
         return redirect()->route('admin.commentList')->with('success', 'Yorum silindi.');
     }

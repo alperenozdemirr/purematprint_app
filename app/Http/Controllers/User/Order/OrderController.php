@@ -9,7 +9,9 @@ use App\Enums\Status;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\User\CheckoutStoreRequest;
 use App\Http\Services\CheckoutDraftService;
+use App\Http\Services\CheckoutOrderFileService;
 use App\Http\Services\IyzicoPaymentService;
+use App\Http\Services\OrderFileDownloadService;
 use App\Http\Services\OrderPricingService;
 use App\Http\Services\StripePaymentService;
 use App\Models\Address;
@@ -17,6 +19,7 @@ use App\Models\Order;
 use App\Models\ShoppingCart;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class OrderController extends Controller
 {
@@ -25,6 +28,8 @@ class OrderController extends Controller
         protected IyzicoPaymentService $iyzicoService,
         protected StripePaymentService $stripeService,
         protected CheckoutDraftService $draftService,
+        protected CheckoutOrderFileService $orderFileService,
+        protected OrderFileDownloadService $orderFileDownloadService,
     ) {
     }
 
@@ -49,8 +54,9 @@ class OrderController extends Controller
                 'address.city',
                 'address.county',
                 'details.product.images',
-                'details.comment',
+                'details.comment.images',
                 'payment',
+                'orderFiles',
             ])
             ->where('user_id', auth()->id())
             ->where('code', $code)
@@ -60,6 +66,16 @@ class OrderController extends Controller
             'order' => $order,
             'activeNav' => 'orders',
         ]);
+    }
+
+    public function downloadFile(string $code, int $fileId): StreamedResponse
+    {
+        $order = Order::query()
+            ->where('user_id', auth()->id())
+            ->where('code', $code)
+            ->firstOrFail();
+
+        return $this->orderFileDownloadService->download($order, $fileId);
     }
 
     public function checkoutPage(): View|RedirectResponse
@@ -175,6 +191,11 @@ class OrderController extends Controller
             PaymentProvider::IYZICO,
         );
 
+        $draft['files'] = $this->orderFileService->storeTemporary(
+            $draft['draft_id'],
+            $request->file('order_files')
+        );
+
         $initialize = $this->iyzicoService->initializeCheckoutFromDraft(
             $draft,
             $user,
@@ -184,6 +205,8 @@ class OrderController extends Controller
         );
 
         if (! $initialize['success'] || empty($initialize['token'])) {
+            $this->orderFileService->cleanupDraftFiles($draft);
+
             return back()->with('error', $initialize['error'] ?? 'Ödeme sayfası oluşturulamadı.');
         }
 
@@ -216,9 +239,16 @@ class OrderController extends Controller
             PaymentProvider::STRIPE,
         );
 
+        $draft['files'] = $this->orderFileService->storeTemporary(
+            $draft['draft_id'],
+            $request->file('order_files')
+        );
+
         $session = $this->stripeService->createCheckoutSession($draft, $user, $cartItems);
 
         if (! $session['success'] || empty($session['sessionId']) || empty($session['checkoutUrl'])) {
+            $this->orderFileService->cleanupDraftFiles($draft);
+
             return back()->with('error', $session['error'] ?? 'Stripe ödeme sayfası oluşturulamadı.');
         }
 

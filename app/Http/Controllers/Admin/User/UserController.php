@@ -87,7 +87,7 @@ class UserController extends Controller
 
         $user = User::query()->findOrFail($validated['id']);
 
-        if ($user->id === Auth::id()) {
+        if ($user->id === Auth::guard('admin')->id()) {
             if ($validated['status'] === Status::PASSIVE->value) {
                 return back()->with('error', 'Kendi hesabınızı pasife alamazsınız.');
             }
@@ -114,7 +114,7 @@ class UserController extends Controller
     {
         $user = User::query()->findOrFail($id);
 
-        if ($user->id === Auth::id()) {
+        if ($user->id === Auth::guard('admin')->id()) {
             return redirect()
                 ->route('admin.userDetailPage', $user->id)
                 ->with('error', 'Kendi hesabınızı silemezsiniz.');

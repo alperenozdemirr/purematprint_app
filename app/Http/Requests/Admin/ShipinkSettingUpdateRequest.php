@@ -23,6 +23,7 @@ class ShipinkSettingUpdateRequest extends FormRequest
             'shipink_warehouse_name' => ['nullable', 'string', 'max:255'],
             'shipink_carrier_account_id' => ['nullable', 'uuid'],
             'shipink_carrier_account_label' => ['nullable', 'string', 'max:255'],
+            'shipink_carrier_provider' => ['nullable', 'string', 'max:32'],
             'shipink_carrier_service_id' => ['nullable', 'string', 'max:100'],
             'shipink_card_id' => ['nullable', 'uuid'],
             'shipink_card_label' => ['nullable', 'string', 'max:255'],
@@ -42,5 +43,21 @@ class ShipinkSettingUpdateRequest extends FormRequest
             'shipink_sender_state' => ['nullable', 'string', 'max:100'],
             'shipink_sender_zip' => ['nullable', 'string', 'max:20'],
         ];
+    }
+
+    public function withValidator($validator): void
+    {
+        $validator->after(function ($validator) {
+            if (strtolower((string) $this->input('shipink_carrier_provider')) !== 'shipink') {
+                return;
+            }
+
+            if (! filled($this->input('shipink_card_id'))) {
+                $validator->errors()->add(
+                    'shipink_card_id',
+                    'Shipink anlaşmalı kargo hesabı için ödeme kartı seçimi zorunludur.'
+                );
+            }
+        });
     }
 }

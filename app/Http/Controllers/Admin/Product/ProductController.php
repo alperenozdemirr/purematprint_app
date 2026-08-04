@@ -71,6 +71,10 @@ class ProductController extends Controller
             'code' => $code,
             'price' => $validated['price'],
             'stock_count' => $validated['stock_count'] ?? 0,
+            'shipping_weight' => $validated['shipping_weight'] ?? null,
+            'shipping_length' => $validated['shipping_length'] ?? null,
+            'shipping_width' => $validated['shipping_width'] ?? null,
+            'shipping_height' => $validated['shipping_height'] ?? null,
             'category_id' => $validated['category_id'],
             'status' => $validated['status'],
             'featured_status' => $request->boolean('featured_status'),
@@ -110,12 +114,18 @@ class ProductController extends Controller
             'slug' => $this->generateProductSlug($validated['title'], $product->code),
             'price' => $validated['price'],
             'stock_count' => $validated['stock_count'] ?? 0,
+            'shipping_weight' => $validated['shipping_weight'] ?? null,
+            'shipping_length' => $validated['shipping_length'] ?? null,
+            'shipping_width' => $validated['shipping_width'] ?? null,
+            'shipping_height' => $validated['shipping_height'] ?? null,
             'category_id' => $validated['category_id'],
             'status' => $validated['status'],
             'featured_status' => $request->boolean('featured_status'),
             'introduction_status' => $request->boolean('introduction_status'),
             'description' => $validated['description'] ?? null,
         ]);
+
+        $this->reorderExistingImages($product, $validated['existing_image_order'] ?? []);
 
         $number = (int) File::query()
             ->where('key_id', $product->id)
@@ -158,6 +168,36 @@ class ProductController extends Controller
 
         return redirect()->route('admin.productEditPage', $product->slug)
             ->with('success', 'Görsel silindi.');
+    }
+
+    /**
+     * @param  list<int|string>  $orderedIds
+     */
+    private function reorderExistingImages(Product $product, array $orderedIds): void
+    {
+        if ($orderedIds === []) {
+            return;
+        }
+
+        $validIds = File::query()
+            ->where('key_id', $product->id)
+            ->where('content_type', ContentType::PRODUCT->value)
+            ->whereIn('id', $orderedIds)
+            ->pluck('id')
+            ->all();
+
+        $number = 0;
+
+        foreach ($orderedIds as $imageId) {
+            $imageId = (int) $imageId;
+
+            if (! in_array($imageId, $validIds, true)) {
+                continue;
+            }
+
+            $number++;
+            File::query()->whereKey($imageId)->update(['number' => $number]);
+        }
     }
 
     private function generateUniqueProductNumber(): string

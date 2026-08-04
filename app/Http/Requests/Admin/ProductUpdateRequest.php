@@ -27,8 +27,14 @@ class ProductUpdateRequest extends FormRequest
             'featured_status' => 'nullable|boolean',
             'introduction_status' => 'nullable|boolean',
             'description' => 'nullable|string',
+            'shipping_weight' => 'nullable|numeric|min:0.001|max:100',
+            'shipping_length' => 'nullable|integer|min:1|max:300',
+            'shipping_width' => 'nullable|integer|min:1|max:300',
+            'shipping_height' => 'nullable|integer|min:1|max:300',
             'images' => 'nullable|array',
             'images.*' => 'image|max:2048',
+            'existing_image_order' => 'nullable|array',
+            'existing_image_order.*' => 'integer|exists:files,id',
         ];
     }
 }

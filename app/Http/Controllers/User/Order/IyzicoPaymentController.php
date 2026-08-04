@@ -11,6 +11,7 @@ use App\Http\Controllers\User\Order\Concerns\RestoresPaymentSession;
 use App\Http\Services\CheckoutCompletionService;
 use App\Http\Services\CheckoutDraftService;
 use App\Http\Services\IyzicoPaymentService;
+use App\Jobs\UploadOrderFilesJob;
 use App\Models\Order;
 use App\Models\Payment;
 use App\Models\User;
@@ -116,6 +117,12 @@ class IyzicoPaymentController extends Controller
             $checkoutForm->getPaymentId(),
             (float) ($checkoutForm->getPaidPrice() ?? $draft['summary']['total']),
         );
+
+        $pendingFiles = is_array($draft['files'] ?? null) ? $draft['files'] : [];
+
+        if ($pendingFiles !== []) {
+            UploadOrderFilesJob::dispatch($order->id, $pendingFiles);
+        }
 
         $this->draftService->markCompleted($provider, $token, $order->code);
         $this->completionService->sendConfirmationEmail($order);

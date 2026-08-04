@@ -29,7 +29,7 @@
 
   <div class="overflow-hidden rounded-xl bg-surface shadow-card">
     <div class="overflow-x-auto">
-      <table class="w-full min-w-[960px] border-collapse text-left">
+      <table class="w-full min-w-[1100px] border-collapse text-left">
         <thead>
           <tr class="bg-cream/60 [&_th]:px-4 [&_th]:py-3.5 [&_th]:font-body [&_th]:text-[11px] [&_th]:font-bold [&_th]:uppercase [&_th]:tracking-[0.08em] [&_th]:text-muted">
             <th>Sipariş</th>
@@ -37,6 +37,7 @@
             <th>Tarih</th>
             <th>Tutar</th>
             <th>Durum</th>
+            <th>Kargo</th>
             <th class="text-right">İşlem</th>
           </tr>
         </thead>
@@ -70,6 +71,29 @@
                 </span>
               </td>
               <td>
+                @if ($order->address?->isDomestic())
+                  @if ($order->needsShipinkShipment())
+                    <span class="inline-flex rounded-md bg-warning/10 px-2 py-1 font-body text-[11px] font-bold text-warning">Kargo bekliyor</span>
+                  @elseif ($order->hasShipinkShipment())
+                    <p class="font-body text-[13px] font-semibold text-ink">{{ $order->shippingCarrierLabel() ?? 'Shipink' }}</p>
+                    @if ($order->tracking_number)
+                      <p class="font-body text-[12px] text-muted">{{ $order->tracking_number }}</p>
+                    @endif
+                    @if ($order->isShippingSyncStale())
+                      <span class="mt-1 inline-flex rounded-md bg-danger/10 px-2 py-0.5 font-body text-[10px] font-bold text-danger">Sync gecikmiş</span>
+                    @endif
+                  @else
+                    <span class="font-body text-[12px] text-muted">—</span>
+                  @endif
+                @else
+                  @if ($order->tracking_number)
+                    <p class="font-body text-[13px] font-semibold text-ink">{{ $order->tracking_number }}</p>
+                  @else
+                    <span class="font-body text-[12px] text-muted">Manuel</span>
+                  @endif
+                @endif
+              </td>
+              <td>
                 <div class="flex justify-end">
                   <a href="{{ route('admin.orderDetailPage', $order->code) }}" class="inline-flex items-center gap-1.5 rounded-lg bg-cream px-3 py-2 font-body text-[12px] font-bold text-ink transition-colors hover:bg-accent hover:text-on-dark">
                     Detay
@@ -80,7 +104,7 @@
             </tr>
           @empty
             <tr>
-              <td colspan="6" class="px-4 py-10 text-center font-body text-[14px] text-muted">Henüz sipariş bulunmuyor.</td>
+              <td colspan="7" class="px-4 py-10 text-center font-body text-[14px] text-muted">Henüz sipariş bulunmuyor.</td>
             </tr>
           @endforelse
         </tbody>

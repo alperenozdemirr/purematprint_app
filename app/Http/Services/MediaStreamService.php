@@ -52,6 +52,10 @@ class MediaStreamService
             'mov' => 'video/quicktime',
             'webm' => 'video/webm',
             'pdf' => 'application/pdf',
+            'tif', 'tiff' => 'image/tiff',
+            'eps' => 'application/postscript',
+            'ai' => 'application/postscript',
+            'psd' => 'image/vnd.adobe.photoshop',
             default => $mime,
         };
     }

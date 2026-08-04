@@ -18,6 +18,10 @@ class MediaPath
 
     public const BLOG = 'shared_directory/images/blogs';
 
+    public const COMMENT = 'shared_directory/images/comments';
+
+    public const ORDER_FILE = 'shared_directory/files/order_files';
+
     public const OTHER = 'shared_directory/images/other';
 
     public const ALLOWED_PREFIX = 'shared_directory/';
@@ -31,6 +35,8 @@ class MediaPath
             ContentType::BANNER->value => self::BANNER,
             ContentType::COLLECTION->value => self::COLLECTION,
             ContentType::BLOG->value => self::BLOG,
+            ContentType::COMMENT->value => self::COMMENT,
+            ContentType::ORDER_FILE->value => self::ORDER_FILE,
             ContentType::USER->value => self::USER,
             default => self::OTHER,
         };

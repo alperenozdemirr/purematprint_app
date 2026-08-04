@@ -132,6 +132,40 @@
 
     <section class="overflow-hidden rounded-xl bg-surface shadow-card">
       <div class="border-b border-ink/10 px-5 py-4">
+        <h3 class="font-heading text-[16px] font-bold text-ink">Sipariş Bildirimleri</h3>
+      </div>
+      <div class="grid gap-5 p-5">
+        <p class="font-body text-[13px] leading-relaxed text-muted">
+          Yeni sipariş geldiğinde bu adreslere <strong>“Yeni Sipariş Aldınız”</strong> bildirimi gider. En fazla 4 e-posta adresi girebilirsiniz. Boş bırakılan alanlar yok sayılır.
+        </p>
+        @php
+          $notificationEmails = old('order_notification_emails', $setting->order_notification_emails ?? []);
+          if (! is_array($notificationEmails)) {
+              $notificationEmails = [];
+          }
+        @endphp
+        <div class="grid gap-4 md:grid-cols-2">
+          @foreach (range(0, 3) as $index)
+            <div>
+              <label for="order_notification_email_{{ $index }}" class="mb-1.5 block font-body text-[13px] font-bold text-ink">Bildirim E-postası {{ $index + 1 }}</label>
+              <input type="email"
+                     id="order_notification_email_{{ $index }}"
+                     name="order_notification_emails[]"
+                     value="{{ $notificationEmails[$index] ?? '' }}"
+                     class="w-full rounded-lg border border-ink/10 bg-cream px-3.5 py-2.5 font-body text-[14px] text-ink outline-none focus:border-accent focus:ring-2 focus:ring-accent/15"
+                     placeholder="ornek@firma.com">
+              @error('order_notification_emails.'.$index)
+                <p class="mt-1.5 font-body text-[12px] font-medium text-danger">{{ $message }}</p>
+              @enderror
+            </div>
+          @endforeach
+        </div>
+        @error('order_notification_emails') <p class="font-body text-[12px] font-medium text-danger">{{ $message }}</p> @enderror
+      </div>
+    </section>
+
+    <section class="overflow-hidden rounded-xl bg-surface shadow-card">
+      <div class="border-b border-ink/10 px-5 py-4">
         <h3 class="font-heading text-[16px] font-bold text-ink">İletişim Bilgileri</h3>
       </div>
       <div class="grid gap-5 p-5 md:grid-cols-2">

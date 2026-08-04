@@ -109,9 +109,18 @@
                 @endif
               </div>
               <p class="text-sm text-muted leading-relaxed">{{ $existingComment->content }}</p>
+              @if ($existingComment->images->isNotEmpty())
+                <div class="mt-3 flex flex-wrap gap-2">
+                  @foreach ($existingComment->images as $commentImage)
+                    <a href="{{ $commentImage->url }}" target="_blank" rel="noopener noreferrer" class="block h-16 w-16 overflow-hidden border-2 border-ink bg-surface">
+                      <img src="{{ $commentImage->url }}" alt="" class="h-full w-full object-cover">
+                    </a>
+                  @endforeach
+                </div>
+              @endif
             </div>
             @elseif ($canReview)
-            <form action="{{ route('commentStore') }}" method="POST" class="mt-4 border-[3px] border-ink bg-bg p-4" data-i5="order-review-form">
+            <form action="{{ route('commentStore') }}" method="POST" enctype="multipart/form-data" class="mt-4 border-[3px] border-ink bg-bg p-4" data-i5="order-review-form">
               @csrf
               <input type="hidden" name="order_detail_id" value="{{ $detail->id }}">
               <p class="mb-3 font-body text-[11px] font-bold uppercase tracking-[0.06em] text-muted">Bu ürünü değerlendir</p>
@@ -125,6 +134,14 @@
                           class="w-full border-[3px] border-ink bg-surface px-3 py-2.5 text-sm text-ink outline-none transition-shadow focus:shadow-brutal-sm"
                           placeholder="Ürün hakkındaki deneyiminizi paylaşın...">{{ old('content') }}</textarea>
                 @error('content') <p class="mt-1.5 text-[12px] font-semibold text-announce">{{ $message }}</p> @enderror
+              </div>
+              <div class="mb-3">
+                <label for="comment-images-{{ $detail->id }}" class="mb-1.5 block text-[12px] font-bold uppercase tracking-[0.04em] text-muted">Görseller (opsiyonel)</label>
+                <input type="file" id="comment-images-{{ $detail->id }}" name="images[]" accept="image/*" multiple
+                       class="w-full border-[3px] border-ink bg-surface px-3 py-2.5 text-sm text-ink file:mr-3 file:border-0 file:bg-accent file:px-3 file:py-1.5 file:text-[11px] file:font-bold file:uppercase file:text-on-dark">
+                <p class="mt-1.5 text-[11px] text-muted">En fazla 4 görsel, her biri max 2MB</p>
+                @error('images') <p class="mt-1.5 text-[12px] font-semibold text-announce">{{ $message }}</p> @enderror
+                @error('images.*') <p class="mt-1.5 text-[12px] font-semibold text-announce">{{ $message }}</p> @enderror
               </div>
               <button type="submit" class="inline-flex items-center gap-2 px-4 py-2.5 font-body text-[11px] font-bold uppercase tracking-[0.04em] border-[3px] border-ink bg-accent text-on-dark shadow-brutal-sm transition-colors hover:bg-action">
                 Değerlendirmeyi Gönder
@@ -166,6 +183,29 @@
           <section class="border-[3px] border-ink shadow-brutal-sm bg-surface p-6 [&_h2]:font-body [&_h2]:text-[13px] [&_h2]:font-bold [&_h2]:uppercase [&_h2]:tracking-[0.06em] [&_h2]:mb-5 [&_h2]:pb-3 [&_h2]:border-b-[3px] [&_h2]:border-ink" data-i5="order-detail__section">
             <h2>Sipariş Notu</h2>
             <p class="text-sm text-muted leading-relaxed">{{ $order->note }}</p>
+          </section>
+          @endif
+
+          @if ($order->orderFiles->isNotEmpty())
+          <section class="border-[3px] border-ink shadow-brutal-sm bg-surface p-6 [&_h2]:font-body [&_h2]:text-[13px] [&_h2]:font-bold [&_h2]:uppercase [&_h2]:tracking-[0.06em] [&_h2]:mb-5 [&_h2]:pb-3 [&_h2]:border-b-[3px] [&_h2]:border-ink" data-i5="order-detail__section">
+            <h2>Yüklenen Dosyalar</h2>
+            <ul class="grid gap-3">
+              @foreach ($order->orderFiles as $orderFile)
+                @php
+                  $ext = strtolower(pathinfo($orderFile->displayName(), PATHINFO_EXTENSION));
+                  $canPreview = in_array($ext, ['png', 'pdf'], true);
+                @endphp
+                <li class="flex flex-wrap items-center justify-between gap-3 border-[2px] border-ink bg-bg px-4 py-3">
+                  <span class="text-sm font-semibold text-ink break-all">{{ $orderFile->displayName() }}</span>
+                  <span class="flex flex-wrap gap-2">
+                    @if ($canPreview)
+                      <a href="{{ $orderFile->url }}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center px-3 py-1.5 font-body text-[11px] font-bold uppercase tracking-[0.06em] border-[2px] border-ink bg-surface hover:bg-hover">Görüntüle</a>
+                    @endif
+                    <a href="{{ route('orderFileDownload', ['code' => $order->code, 'fileId' => $orderFile->id]) }}" class="inline-flex items-center px-3 py-1.5 font-body text-[11px] font-bold uppercase tracking-[0.06em] border-[2px] border-ink bg-action text-on-dark hover:bg-action-hover">İndir</a>
+                  </span>
+                </li>
+              @endforeach
+            </ul>
           </section>
           @endif
         </div>

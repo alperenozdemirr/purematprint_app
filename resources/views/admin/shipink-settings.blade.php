@@ -122,6 +122,7 @@
             @endforeach
           </select>
           <input type="hidden" id="shipink_carrier_account_label" name="shipink_carrier_account_label" value="{{ old('shipink_carrier_account_label', $setting->shipink_carrier_account_label) }}">
+          <input type="hidden" id="shipink_carrier_provider" name="shipink_carrier_provider" value="{{ old('shipink_carrier_provider', $setting->shipink_carrier_provider) }}">
           @if ($setting->shipink_carrier_account_id && ! $connection['ok'])
             <p class="mt-1.5 font-body text-[12px] text-muted">Kayıtlı: {{ $setting->shipink_carrier_account_label ?: $setting->shipink_carrier_account_id }}</p>
           @endif
@@ -314,6 +315,7 @@
   const warehouseNameInput = document.getElementById('shipink_warehouse_name');
   const accountSelect = document.getElementById('shipink_carrier_account_id');
   const accountLabelInput = document.getElementById('shipink_carrier_account_label');
+  const accountProviderInput = document.getElementById('shipink_carrier_provider');
   const serviceSelect = document.getElementById('shipink_carrier_service_id');
   const cardSelect = document.getElementById('shipink_card_id');
   const cardLabelInput = document.getElementById('shipink_card_label');
@@ -357,6 +359,10 @@
       cardHint.classList.remove('hidden');
     } else {
       cardHint.classList.add('hidden');
+    }
+
+    if (accountProviderInput) {
+      accountProviderInput.value = provider;
     }
   };
 

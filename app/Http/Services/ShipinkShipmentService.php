@@ -6,6 +6,8 @@ namespace App\Http\Services;
 
 use App\Enums\OrderStatus;
 use App\Models\Order;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use RuntimeException;
 
@@ -15,35 +17,66 @@ class ShipinkShipmentService
         protected ShipinkApiService $api,
         protected ShipinkConfigService $config,
         protected ShipinkWarehouseService $warehouseService,
+        protected OrderPackageCalculator $packageCalculator,
     ) {
     }
 
     public function isConfigured(): bool
     {
-        return $this->api->isConfigured();
+        return $this->config->isConfigured();
     }
 
     /**
+     * @return list<string>
+     */
+    public function configurationIssues(): array
+    {
+        return $this->config->configurationIssues();
+    }
+
+    /**
+     * @param  array{weight?: int|float|string, length?: int|float|string, width?: int|float|string, height?: int|float|string}|null  $packageOverride
      * @return array{success: bool, message: string}
      */
-    public function createShipmentForOrder(Order $order): array
+    public function createShipmentForOrder(Order $order, ?array $packageOverride = null): array
     {
         if (! $this->isConfigured()) {
-            return ['success' => false, 'message' => 'Shipink yapılandırması eksik.'];
+            $issues = $this->configurationIssues();
+            $message = $issues !== []
+                ? implode(' ', $issues)
+                : 'Shipink yapılandırması eksik.';
+
+            return ['success' => false, 'message' => $message];
         }
 
         if (! $order->isDomesticShipment()) {
             return ['success' => false, 'message' => 'Shipink yalnızca yurt içi siparişler için kullanılabilir.'];
         }
 
-        if ($order->hasShipinkShipment()) {
-            return ['success' => false, 'message' => 'Bu sipariş için kargo zaten oluşturulmuş.'];
-        }
-
         if ($order->status !== OrderStatus::PREPARING) {
             return ['success' => false, 'message' => 'Kargo yalnızca hazırlanan siparişler için oluşturulabilir.'];
         }
 
+        $lockSeconds = (int) config('shipink.create_lock_seconds', 120);
+        $lock = Cache::lock('shipink:create-shipment:'.$order->id, $lockSeconds);
+
+        if (! $lock->get()) {
+            return ['success' => false, 'message' => 'Bu sipariş için kargo oluşturma işlemi zaten devam ediyor. Lütfen birkaç saniye bekleyin.'];
+        }
+
+        try {
+            return $this->createShipmentForOrderWithinLock($order, $packageOverride);
+        } finally {
+            $lock->release();
+        }
+    }
+
+    /**
+     * @param  array{weight?: int|float|string, length?: int|float|string, width?: int|float|string, height?: int|float|string}|null  $packageOverride
+     * @return array{success: bool, message: string}
+     */
+    private function createShipmentForOrderWithinLock(Order $order, ?array $packageOverride = null): array
+    {
         $order->loadMissing(['user', 'address.city', 'address.county', 'details.product']);
 
         if ($order->user === null || $order->address === null) {
@@ -65,35 +98,54 @@ class ShipinkShipmentService
         }
 
         try {
-            if (! filled($order->shipink_order_id)) {
-                $shipinkOrder = $this->api->createOrder($this->buildOrderPayload($order));
-                $order->shipink_order_id = (string) ($shipinkOrder['id'] ?? '');
+            return DB::transaction(function () use ($order) {
+                /** @var Order $lockedOrder */
+                $lockedOrder = Order::query()->lockForUpdate()->findOrFail($order->id);
+                $lockedOrder->loadMissing(['user', 'address.city', 'address.county', 'details.product']);
 
-                if (filled($order->shipink_order_id)) {
-                    $order->save();
+                if ($lockedOrder->hasShipinkShipment()) {
+                    return ['success' => false, 'message' => 'Bu sipariş için kargo zaten oluşturulmuş.'];
                 }
-            }
 
-            if (! filled($order->shipink_order_id)) {
-                return ['success' => false, 'message' => 'Shipink sipariş ID alınamadı.'];
-            }
+                if ($lockedOrder->status !== OrderStatus::PREPARING) {
+                    return ['success' => false, 'message' => 'Kargo yalnızca hazırlanan siparişler için oluşturulabilir.'];
+                }
 
-            $this->warehouseService->ensureReady($this->config->warehouseId());
+                if ($this->recoverExistingShipment($lockedOrder)) {
+                    $carrierLabel = $lockedOrder->shippingCarrierLabel() ?? 'Kargo';
 
-            $carrierAccount = $this->resolveCarrierAccount();
-            $shipment = $this->api->createShipment($this->buildShipmentPayload($order, $carrierAccount));
+                    return ['success' => true, 'message' => "{$carrierLabel} gönderisi mevcut Shipink kaydından geri yüklendi."];
+                }
 
-            $this->applyShipmentData($order, $shipment);
-            $order->shipping_carrier = (string) ($carrierAccount['carrier_id'] ?? $this->config->carrierId());
-            $order->status = OrderStatus::SHIPPED;
-            $order->shipped_at = now();
-            $order->shipment_created_at = now();
-            $order->shipping_synced_at = now();
-            $order->save();
+                if (! filled($lockedOrder->shipink_order_id)) {
+                    $shipinkOrder = $this->api->createOrder($this->buildOrderPayload($lockedOrder));
+                    $lockedOrder->shipink_order_id = (string) ($shipinkOrder['id'] ?? '');
+                    $lockedOrder->save();
+                }
 
-            $carrierLabel = $order->shippingCarrierLabel() ?? 'Kargo';
+                if (! filled($lockedOrder->shipink_order_id)) {
+                    return ['success' => false, 'message' => 'Shipink sipariş ID alınamadı.'];
+                }
 
-            return ['success' => true, 'message' => "{$carrierLabel} gönderisi Shipink üzerinden oluşturuldu. Sipariş kargoya verildi olarak işaretlendi."];
+                $this->warehouseService->ensureReady($this->config->warehouseId());
+
+                $carrierAccount = $this->resolveCarrierAccount();
+                $shipment = $this->api->createShipment(
+                    $this->buildShipmentPayload($lockedOrder, $carrierAccount, $packageOverride)
+                );
+
+                $this->applyShipmentData($lockedOrder, $shipment);
+                $lockedOrder->shipping_carrier = (string) ($carrierAccount['carrier_id'] ?? $this->config->carrierId());
+                $lockedOrder->status = OrderStatus::SHIPPED;
+                $lockedOrder->shipped_at = now();
+                $lockedOrder->shipment_created_at = now();
+                $lockedOrder->shipping_synced_at = now();
+                $lockedOrder->save();
+
+                $carrierLabel = $lockedOrder->shippingCarrierLabel() ?? 'Kargo';
+
+                return ['success' => true, 'message' => "{$carrierLabel} gönderisi Shipink üzerinden oluşturuldu. Sipariş kargoya verildi olarak işaretlendi."];
+            });
         } catch (\Throwable $exception) {
             report($exception);
 
@@ -106,11 +158,33 @@ class ShipinkShipmentService
      */
     public function cancelShipmentForOrder(Order $order): array
     {
+        return $this->cancelActiveShipment($order, enforceTimeLimit: true);
+    }
+
+    /**
+     * Sipariş iptal edilirken aktif kargoyu kapatır (süre sınırı uygulanmaz).
+     *
+     * @return array{success: bool, message: string}
+     */
+    public function cancelShipmentForCancelledOrder(Order $order): array
+    {
+        if (! $order->hasShipinkShipment()) {
+            return ['success' => true, 'message' => 'Aktif kargo kaydı yok.'];
+        }
+
+        return $this->cancelActiveShipment($order, enforceTimeLimit: false);
+    }
+
+    /**
+     * @return array{success: bool, message: string}
+     */
+    private function cancelActiveShipment(Order $order, bool $enforceTimeLimit): array
+    {
         if (! $order->hasShipinkShipment()) {
             return ['success' => false, 'message' => 'Bu sipariş için iptal edilecek kargo kaydı bulunamadı.'];
         }
 
-        if (! $order->canCancelShipinkShipment()) {
+        if ($enforceTimeLimit && ! $order->canCancelShipinkShipment()) {
             $minutes = (int) config('shipink.shipment_cancel_minutes', 60);
 
             return ['success' => false, 'message' => "Kargo iptali yalnızca oluşturulduktan sonraki {$minutes} dakika içinde yapılabilir."];
@@ -118,25 +192,20 @@ class ShipinkShipmentService
 
         try {
             $this->api->deleteShipment((string) $order->shipink_shipment_id);
-
-            $order->shipink_shipment_id = null;
-            $order->shipping_carrier = null;
-            $order->tracking_number = null;
-            $order->tracking_url = null;
-            $order->shipping_label_url = null;
-            $order->shipped_at = null;
-            $order->shipment_created_at = null;
-            $order->shipping_synced_at = null;
-            $order->carrier_picked_up_at = null;
-            $order->status = OrderStatus::PREPARING;
-            $order->save();
-
-            return ['success' => true, 'message' => 'Kargo gönderisi iptal edildi. Sipariş tekrar hazırlanıyor durumuna alındı.'];
         } catch (\Throwable $exception) {
-            report($exception);
+            if ($enforceTimeLimit) {
+                report($exception);
 
-            return ['success' => false, 'message' => $exception->getMessage()];
+                return ['success' => false, 'message' => $exception->getMessage()];
+            }
+
+            report($exception);
         }
+
+        $this->resetLocalShipmentState($order, revertStatus: true);
+        $order->save();
+
+        return ['success' => true, 'message' => 'Kargo gönderisi iptal edildi. Sipariş tekrar hazırlanıyor durumuna alındı.'];
     }
 
     public function syncOrderShipment(Order $order): bool
@@ -221,6 +290,14 @@ class ShipinkShipmentService
 
         $trackingStatus = strtolower((string) ($shipment['tracking']['status'] ?? ''));
 
+        if ($this->isCarrierCancelledStatus($trackingStatus)) {
+            if ($order->hasShipinkShipment()) {
+                $this->resetLocalShipmentState($order, revertStatus: true);
+            }
+
+            return;
+        }
+
         if ($this->isDeliveredStatus($trackingStatus) || filled($shipment['delivered_at'] ?? null)) {
             $order->status = OrderStatus::COMPLETED;
             $order->delivered_at ??= now();
@@ -230,11 +307,114 @@ class ShipinkShipmentService
             return;
         }
 
+        if ($this->isCarrierProblemStatus($trackingStatus)) {
+            if ($order->status !== OrderStatus::COMPLETED) {
+                $order->status = OrderStatus::SHIPPED;
+            }
+
+            if ($this->isCarrierPickedUpStatus($trackingStatus)) {
+                $order->carrier_picked_up_at ??= now();
+                $order->shipped_at ??= now();
+            }
+
+            return;
+        }
+
         if ($this->isCarrierPickedUpStatus($trackingStatus)) {
             $order->carrier_picked_up_at ??= now();
             $order->status = OrderStatus::SHIPPED;
             $order->shipped_at ??= now();
         }
+    }
+
+    private function resetLocalShipmentState(Order $order, bool $revertStatus): void
+    {
+        $order->shipink_order_id = null;
+        $order->shipink_shipment_id = null;
+        $order->shipping_carrier = null;
+        $order->tracking_number = null;
+        $order->tracking_url = null;
+        $order->shipping_label_url = null;
+        $order->shipped_at = null;
+        $order->delivered_at = null;
+        $order->shipment_created_at = null;
+        $order->shipping_synced_at = null;
+        $order->carrier_picked_up_at = null;
+        $order->shipped_email_shipment_id = null;
+
+        if ($revertStatus && $order->status !== OrderStatus::CANCELLED) {
+            $order->status = OrderStatus::PREPARING;
+        }
+    }
+
+    private function recoverExistingShipment(Order $order): bool
+    {
+        if (! filled($order->shipink_order_id) || $order->hasShipinkShipment()) {
+            return false;
+        }
+
+        try {
+            $shipinkOrder = $this->api->getOrder((string) $order->shipink_order_id);
+        } catch (\Throwable $exception) {
+            report($exception);
+
+            return false;
+        }
+
+        $shipments = is_array($shipinkOrder['shipments'] ?? null) ? $shipinkOrder['shipments'] : [];
+        $latestShipment = $shipments[0] ?? null;
+
+        if (! is_array($latestShipment) || ! filled($latestShipment['id'] ?? null)) {
+            return false;
+        }
+
+        $shipmentId = (string) $latestShipment['id'];
+
+        try {
+            $shipment = $this->api->getShipment($shipmentId);
+        } catch (\Throwable $exception) {
+            report($exception);
+
+            return false;
+        }
+
+        $this->applyShipmentData($order, $shipment);
+        $this->applyTrackingStatus($order, $shipment);
+        $order->status = OrderStatus::SHIPPED;
+        $order->shipped_at ??= now();
+        $order->shipment_created_at ??= now();
+        $order->shipping_synced_at = now();
+        $order->save();
+
+        return true;
+    }
+
+    private function isCarrierCancelledStatus(string $status): bool
+    {
+        return in_array($status, [
+            'cancelled',
+            'canceled',
+            'void',
+            'shipment_cancelled',
+            'label_cancelled',
+            'cancelled_by_carrier',
+        ], true);
+    }
+
+    private function isCarrierProblemStatus(string $status): bool
+    {
+        return in_array($status, [
+            'returned',
+            'return_to_sender',
+            'returning',
+            'undeliverable',
+            'delivery_failed',
+            'failed',
+            'exception',
+            'lost',
+            'refused',
+            'damaged',
+        ], true);
     }
 
     private function isCarrierPickedUpStatus(string $status): bool
@@ -252,11 +432,6 @@ class ShipinkShipmentService
     private function isDeliveredStatus(string $status): bool
     {
         return in_array($status, ['delivered', 'completed', 'delivery_completed'], true);
-    }
-
-    private function isShippedStatus(string $status): bool
-    {
-        return $this->isCarrierPickedUpStatus($status);
     }
 
     /**
@@ -405,9 +580,10 @@ class ShipinkShipmentService
 
     /**
      * @param  array<string, mixed>  $carrierAccount
+     * @param  array{weight?: int|float|string, length?: int|float|string, width?: int|float|string, height?: int|float|string}|null  $packageOverride
      * @return array<string, mixed>
      */
-    private function buildShipmentPayload(Order $order, array $carrierAccount): array
+    private function buildShipmentPayload(Order $order, array $carrierAccount, ?array $packageOverride = null): array
     {
         $carrierAccountId = (string) ($carrierAccount['id'] ?? '');
         $carrierServiceId = $this->resolveCarrierServiceId($carrierAccount);
@@ -418,7 +594,7 @@ class ShipinkShipmentService
             'carrier_service_id' => $carrierServiceId,
             'carrier_account_id' => $carrierAccountId,
             'warehouse_id' => $this->config->warehouseId(),
-            'packages' => [$this->buildPackagePayload()],
+            'packages' => [$this->buildPackagePayload($order, $packageOverride)],
         ];
 
         if (($carrierAccount['provider'] ?? '') === 'shipink') {
@@ -531,19 +707,37 @@ class ShipinkShipmentService
     }
 
     /**
+     * @param  array{weight?: int|float|string, length?: int|float|string, width?: int|float|string, height?: int|float|string}|null  $packageOverride
      * @return array<string, int|string>
      */
-    private function buildPackagePayload(): array
+    private function buildPackagePayload(Order $order, ?array $packageOverride = null): array
     {
-        $package = $this->config->defaultPackage();
+        $calculated = $this->packageCalculator->calculate($order);
+
+        $package = [
+            'weight' => (int) ($calculated['weight'] ?? 1),
+            'length' => (int) ($calculated['length'] ?? 20),
+            'width' => (int) ($calculated['width'] ?? 15),
+            'height' => (int) ($calculated['height'] ?? 10),
+            'weight_unit' => (string) ($calculated['weight_unit'] ?? 'kg'),
+            'dimension_unit' => (string) ($calculated['dimension_unit'] ?? 'cm'),
+        ];
+
+        if (is_array($packageOverride)) {
+            foreach (['weight', 'length', 'width', 'height'] as $key) {
+                if (isset($packageOverride[$key]) && is_numeric($packageOverride[$key]) && (float) $packageOverride[$key] > 0) {
+                    $package[$key] = (int) ceil((float) $packageOverride[$key]);
+                }
+            }
+        }
 
         return [
-            'weight' => (int) ($package['weight'] ?? 1),
-            'weight_unit' => (string) ($package['weight_unit'] ?? 'kg'),
-            'length' => (int) ($package['length'] ?? 20),
-            'width' => (int) ($package['width'] ?? 15),
-            'height' => (int) ($package['height'] ?? 10),
-            'dimension_unit' => (string) ($package['dimension_unit'] ?? 'cm'),
+            'weight' => max(1, (int) $package['weight']),
+            'weight_unit' => (string) $package['weight_unit'],
+            'length' => max(1, (int) $package['length']),
+            'width' => max(1, (int) $package['width']),
+            'height' => max(1, (int) $package['height']),
+            'dimension_unit' => (string) $package['dimension_unit'],
         ];
     }
 

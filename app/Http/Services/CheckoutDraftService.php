@@ -57,6 +57,12 @@ class CheckoutDraftService
 
     public function forget(PaymentProvider $provider, string $reference): void
     {
+        $draft = $this->get($provider, $reference);
+
+        if ($draft !== null) {
+            app(CheckoutOrderFileService::class)->cleanupDraftFiles($draft);
+        }
+
         Cache::forget($this->draftKey($provider, $reference));
         Cache::forget($this->completedKey($provider, $reference));
     }

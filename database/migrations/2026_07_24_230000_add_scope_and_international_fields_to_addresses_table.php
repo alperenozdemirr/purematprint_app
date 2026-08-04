@@ -19,6 +19,10 @@ return new class extends Migration
             $table->string('postal_code', 32)->nullable()->after('city_name');
         });
 
+        if (Schema::getConnection()->getDriverName() === 'sqlite') {
+            return;
+        }
+
         Schema::table('addresses', function (Blueprint $table) {
             $table->foreignId('city_id')->nullable()->change();
             $table->foreignId('county_id')->nullable()->change();
@@ -29,6 +33,13 @@ return new class extends Migration
     {
         Schema::table('addresses', function (Blueprint $table) {
             $table->dropColumn(['scope', 'country', 'state', 'city_name', 'postal_code']);
+        });
+
+        if (Schema::getConnection()->getDriverName() === 'sqlite') {
+            return;
+        }
+
+        Schema::table('addresses', function (Blueprint $table) {
             $table->foreignId('city_id')->nullable(false)->change();
             $table->foreignId('county_id')->nullable(false)->change();
         });

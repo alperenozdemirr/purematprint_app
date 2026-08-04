@@ -23,6 +23,10 @@ class Product extends Model
         'price',
         'description',
         'stock_count',
+        'shipping_weight',
+        'shipping_length',
+        'shipping_width',
+        'shipping_height',
         'category_id',
         'status',
         'featured_status',
@@ -31,6 +35,10 @@ class Product extends Model
 
     protected $casts = [
         'price' => 'decimal:2',
+        'shipping_weight' => 'decimal:3',
+        'shipping_length' => 'integer',
+        'shipping_width' => 'integer',
+        'shipping_height' => 'integer',
         'featured_status' => 'boolean',
         'introduction_status' => 'boolean',
         'status' => Status::class,

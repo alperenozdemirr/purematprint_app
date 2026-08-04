@@ -4,6 +4,7 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\Response;
 use App\Enums\UserType;
 use App\Enums\Status;
@@ -17,7 +18,7 @@ class Admin
      */
     public function handle(Request $request, Closure $next): Response
     {
-        $user = $request->user();
+        $user = Auth::guard('admin')->user();
 
         if ($user && $user->type === UserType::ADMIN && $user->status === Status::ACTIVE) {
             return $next($request);

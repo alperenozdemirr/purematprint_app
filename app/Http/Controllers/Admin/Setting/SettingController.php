@@ -43,6 +43,14 @@ class SettingController extends Controller
 
         $setting = Setting::current()->load('logo');
 
+        $notificationEmails = collect($validated['order_notification_emails'] ?? [])
+            ->map(fn ($email) => strtolower(trim((string) $email)))
+            ->filter()
+            ->unique()
+            ->take(4)
+            ->values()
+            ->all();
+
         $attributes = [
             'site_open' => (bool) ($validated['site_open'] ?? false),
             'discount_enabled' => $discountEnabled,
@@ -56,6 +64,7 @@ class SettingController extends Controller
                 ? ($validated['shipping_free_limit'] ?? null)
                 : null,
             'email' => $validated['email'] ?? null,
+            'order_notification_emails' => $notificationEmails !== [] ? $notificationEmails : null,
             'address' => $validated['address'] ?? null,
             'mobile_phone' => $validated['mobile_phone'] ?? null,
             'business_phone' => $validated['business_phone'] ?? null,

@@ -14,6 +14,8 @@ return [
         'name' => env('SHIPINK_SALES_CHANNEL_NAME', env('APP_NAME', 'PureMatPrint')),
     ],
     'shipment_cancel_minutes' => (int) env('SHIPINK_SHIPMENT_CANCEL_MINUTES', 60),
+    'stale_sync_hours' => (int) env('SHIPINK_STALE_SYNC_HOURS', 6),
+    'create_lock_seconds' => (int) env('SHIPINK_CREATE_LOCK_SECONDS', 120),
 
     'default_package' => [
         'weight' => (int) env('SHIPINK_DEFAULT_WEIGHT', 1),

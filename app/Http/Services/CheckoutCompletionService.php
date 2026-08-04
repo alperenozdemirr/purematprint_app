@@ -100,5 +100,6 @@ class CheckoutCompletionService
     public function sendConfirmationEmail(Order $order): void
     {
         $this->orderEmailService->sendConfirmationIfNeeded($order);
+        $this->orderEmailService->sendAdminNewOrderNotificationIfNeeded($order);
     }
 }

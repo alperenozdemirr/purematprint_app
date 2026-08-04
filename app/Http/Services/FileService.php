@@ -10,6 +10,7 @@ use App\Models\File;
 use App\Support\MediaPath;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class FileService
 {
@@ -40,6 +41,9 @@ class FileService
         } elseif ($contentType == ContentType::BLOG) {
             $baseDirectory = MediaPath::BLOG;
             $contentType = ContentType::BLOG;
+        } elseif ($contentType == ContentType::COMMENT) {
+            $baseDirectory = MediaPath::COMMENT;
+            $contentType = ContentType::COMMENT;
         }
 
         if ($baseDirectory === null) {
@@ -64,6 +68,51 @@ class FileService
         return false;
     }
 
+    /**
+     * Yerel diskteki bir dosyayı R2'ye (order_file) yükler. Büyük dosyalar için stream kullanır.
+     */
+    public function uploadOrderFileFromLocalPath(
+        string $localRelativePath,
+        int $orderId,
+        int $number,
+        string $originalName,
+        ?int $userId = null,
+    ): File {
+        $extension = strtolower(pathinfo($originalName, PATHINFO_EXTENSION) ?: pathinfo($localRelativePath, PATHINFO_EXTENSION));
+        $fileName = Str::uuid()->toString().($extension !== '' ? '.'.$extension : '');
+        $relativePath = MediaPath::ORDER_FILE.'/'.$fileName;
+
+        $absolutePath = Storage::disk('local')->path($localRelativePath);
+
+        if (! is_file($absolutePath)) {
+            throw new \RuntimeException('Geçici sipariş dosyası bulunamadı: '.$localRelativePath);
+        }
+
+        $stream = fopen($absolutePath, 'rb');
+
+        if ($stream === false) {
+            throw new \RuntimeException('Sipariş dosyası okunamadı.');
+        }
+
+        try {
+            Storage::disk('r2')->put($relativePath, $stream);
+        } finally {
+            if (is_resource($stream)) {
+                fclose($stream);
+            }
+        }
+
+        return $this->storeFile(
+            $fileName,
+            FileType::FILE,
+            ContentType::ORDER_FILE,
+            $userId,
+            $orderId,
+            $number,
+            $originalName,
+        );
+    }
+
     public function putBinary(string $baseDirectory, string $fileName, string $content): string
     {
         $relativePath = $baseDirectory.'/'.$fileName;
@@ -72,10 +121,18 @@ class FileService
         return $relativePath;
     }
 
-    protected function storeFile($fileName, $file_type, $content_type, $user = null, $keyId = null, $number = null)
-    {
+    protected function storeFile(
+        $fileName,
+        $file_type,
+        $content_type,
+        $user = null,
+        $keyId = null,
+        $number = null,
+        ?string $originalName = null,
+    ) {
         return File::create([
             'file_name' => $fileName,
+            'original_name' => $originalName,
             'user_id' => $user,
             'key_id' => $keyId,
             'file_type' => $file_type,
@@ -93,6 +150,8 @@ class FileService
             $contentType == ContentType::BANNER => MediaPath::BANNER,
             $contentType == ContentType::COLLECTION => MediaPath::COLLECTION,
             $contentType == ContentType::BLOG => MediaPath::BLOG,
+            $contentType == ContentType::COMMENT => MediaPath::COMMENT,
+            $contentType == ContentType::ORDER_FILE => MediaPath::ORDER_FILE,
             default => null,
         };
 

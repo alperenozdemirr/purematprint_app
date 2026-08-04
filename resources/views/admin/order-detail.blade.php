@@ -165,6 +165,39 @@
           </table>
         </div>
       </section>
+
+      {{-- Sipariş dosyaları --}}
+      <section class="overflow-hidden rounded-xl bg-surface shadow-card">
+        <div class="border-b border-ink/10 px-5 py-4">
+          <h3 class="font-heading text-[16px] font-bold text-ink">Yüklenen Dosyalar</h3>
+        </div>
+        <div class="p-5">
+          @if ($order->orderFiles->isEmpty())
+            <p class="font-body text-[13px] text-muted">Bu siparişe dosya yüklenmemiş.</p>
+          @else
+            <ul class="space-y-3">
+              @foreach ($order->orderFiles as $orderFile)
+                @php
+                  $ext = strtolower(pathinfo($orderFile->displayName(), PATHINFO_EXTENSION));
+                  $canPreview = in_array($ext, ['png', 'pdf'], true);
+                @endphp
+                <li class="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-ink/10 bg-cream/40 px-4 py-3">
+                  <div class="min-w-0">
+                    <p class="font-body text-[14px] font-semibold text-ink break-all">{{ $orderFile->displayName() }}</p>
+                    <p class="mt-0.5 font-body text-[11px] uppercase tracking-[0.06em] text-muted">{{ $ext !== '' ? '.'.$ext : 'dosya' }}</p>
+                  </div>
+                  <div class="flex flex-wrap gap-2">
+                    @if ($canPreview)
+                      <a href="{{ $orderFile->url }}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center rounded-lg border border-ink/15 bg-surface px-3 py-2 font-body text-[12px] font-bold text-ink hover:bg-hover">Görüntüle</a>
+                    @endif
+                    <a href="{{ route('admin.orderFileDownload', ['code' => $order->code, 'fileId' => $orderFile->id]) }}" class="inline-flex items-center rounded-lg bg-accent px-3 py-2 font-body text-[12px] font-bold text-on-dark hover:bg-accent-dark">İndir</a>
+                  </div>
+                </li>
+              @endforeach
+            </ul>
+          @endif
+        </div>
+      </section>
     </div>
 
     <aside class="flex flex-col gap-6">
@@ -209,14 +242,77 @@
                 @if ($order->shipping_synced_at)
                   <p class="text-[12px] text-muted">Son sync: {{ $order->shipping_synced_at->format('d.m.Y H:i') }}</p>
                 @endif
+                @if ($order->isShippingSyncStale())
+                  <p class="rounded-lg border border-warning/30 bg-warning/10 px-3 py-2 text-[12px] font-semibold text-warning">
+                    Kargo durumu {{ config('shipink.stale_sync_hours', 6) }} saatten uzun süredir güncellenmedi. “Durumu Senkronize Et” ile kontrol edin.
+                  </p>
+                @endif
               </div>
             @endif
 
             <div class="flex flex-col gap-2">
               @if ($order->canCreateShipinkShipment() && $shipinkConfigured)
-                <form action="{{ route('admin.orderShipinkCreate', $order->code) }}" method="POST">
+                <form action="{{ route('admin.orderShipinkCreate', $order->code) }}" method="POST" class="js-shipink-create-form space-y-3">
                   @csrf
-                  <button type="submit" class="inline-flex w-full items-center justify-center rounded-lg bg-accent px-5 py-3 font-body text-[13px] font-bold uppercase tracking-[0.06em] text-on-dark transition-colors hover:bg-accent-dark">
+                  @if ($packageEstimate)
+                    <div class="rounded-lg border border-ink/10 bg-cream/50 p-3">
+                      <p class="mb-2 font-body text-[11px] font-bold uppercase tracking-[0.06em] text-muted">Paket Ölçüsü</p>
+                      <p class="mb-3 font-body text-[12px] text-muted">
+                        @if ($packageEstimate['source'] === 'calculated')
+                          Sipariş ürünlerinden hesaplandı
+                        @elseif ($packageEstimate['source'] === 'partial')
+                          Kısmi hesap + varsayılanlar
+                        @else
+                          Shipink varsayılan paket
+                        @endif
+                        · Desi: {{ number_format((float) $packageEstimate['desi'], 2, ',', '.') }}
+                      </p>
+                      @if (! empty($packageEstimate['items']))
+                        <ul class="mb-3 space-y-1 font-body text-[11px] text-muted">
+                          @foreach ($packageEstimate['items'] as $pkgItem)
+                            <li>
+                              {{ $pkgItem['title'] }} × {{ $pkgItem['quantity'] }}
+                              @if ($pkgItem['normalized'])
+                                — {{ $pkgItem['normalized']['length'] }}×{{ $pkgItem['normalized']['width'] }}×{{ $pkgItem['normalized']['height'] }} cm
+                              @else
+                                — ölçü yok
+                              @endif
+                              @if ($pkgItem['weight'])
+                                · {{ rtrim(rtrim(number_format((float) $pkgItem['weight'], 3, '.', ''), '0'), '.') }} kg
+                              @endif
+                            </li>
+                          @endforeach
+                        </ul>
+                      @endif
+                      @if (! empty($packageEstimate['warnings']))
+                        <p class="mb-3 font-body text-[11px] text-warning">{{ implode(' ', array_slice($packageEstimate['warnings'], 0, 2)) }}</p>
+                      @endif
+                      <div class="grid grid-cols-2 gap-2">
+                        <div>
+                          <label class="mb-1 block font-body text-[11px] font-bold text-muted">Ağırlık (kg)</label>
+                          <input type="number" step="0.1" min="0.1" name="package_weight" value="{{ old('package_weight', $packageEstimate['weight']) }}"
+                                 class="w-full rounded-md border border-ink/10 bg-surface px-2.5 py-2 font-body text-[13px] text-ink outline-none focus:border-accent">
+                        </div>
+                        <div>
+                          <label class="mb-1 block font-body text-[11px] font-bold text-muted">Boy (cm)</label>
+                          <input type="number" min="1" name="package_length" value="{{ old('package_length', $packageEstimate['length']) }}"
+                                 class="w-full rounded-md border border-ink/10 bg-surface px-2.5 py-2 font-body text-[13px] text-ink outline-none focus:border-accent">
+                        </div>
+                        <div>
+                          <label class="mb-1 block font-body text-[11px] font-bold text-muted">En (cm)</label>
+                          <input type="number" min="1" name="package_width" value="{{ old('package_width', $packageEstimate['width']) }}"
+                                 class="w-full rounded-md border border-ink/10 bg-surface px-2.5 py-2 font-body text-[13px] text-ink outline-none focus:border-accent">
+                        </div>
+                        <div>
+                          <label class="mb-1 block font-body text-[11px] font-bold text-muted">Yükseklik (cm)</label>
+                          <input type="number" min="1" name="package_height" value="{{ old('package_height', $packageEstimate['height']) }}"
+                                 class="w-full rounded-md border border-ink/10 bg-surface px-2.5 py-2 font-body text-[13px] text-ink outline-none focus:border-accent">
+                        </div>
+                      </div>
+                      <p class="mt-2 font-body text-[11px] text-muted">İsterseniz değerleri güncelleyip gönderin.</p>
+                    </div>
+                  @endif
+                  <button type="submit" class="js-shipink-create-btn inline-flex w-full items-center justify-center rounded-lg bg-accent px-5 py-3 font-body text-[13px] font-bold uppercase tracking-[0.06em] text-on-dark transition-colors hover:bg-accent-dark disabled:cursor-not-allowed disabled:opacity-60">
                     Shipink ile Kargo Oluştur
                   </button>
                 </form>
@@ -260,6 +356,15 @@
                 Yurt dışı siparişlerde kargo durumu ve takip bilgileri manuel yönetilir.
               </p>
             </div>
+          @endif
+
+          @if ($order->canBeCancelledByAdmin())
+            <form action="{{ route('admin.orderCancel', $order->code) }}" method="POST" onsubmit="return confirm('Bu siparişi iptal etmek istediğinize emin misiniz? Aktif kargo varsa Shipink üzerinden de iptal edilmeye çalışılır.');">
+              @csrf
+              <button type="submit" class="inline-flex w-full items-center justify-center rounded-lg border border-danger/30 bg-danger/5 px-5 py-3 font-body text-[13px] font-bold uppercase tracking-[0.06em] text-danger transition-colors hover:bg-danger/10">
+                Siparişi İptal Et
+              </button>
+            </form>
           @endif
         </div>
       </section>
@@ -356,4 +461,20 @@
       </section>
     </aside>
   </div>
+@endsection
+
+@section('scripts')
+<script>
+(() => {
+  document.querySelectorAll('.js-shipink-create-form').forEach((form) => {
+    form.addEventListener('submit', () => {
+      const button = form.querySelector('.js-shipink-create-btn');
+      if (button) {
+        button.disabled = true;
+        button.textContent = 'Oluşturuluyor...';
+      }
+    });
+  });
+})();
+</script>
 @endsection

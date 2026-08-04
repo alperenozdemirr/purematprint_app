@@ -17,20 +17,20 @@ class AccountController extends Controller
     public function index(): View
     {
         return view('admin.account', [
-            'user' => auth()->user(),
+            'user' => auth('admin')->user(),
         ]);
     }
 
     public function update(AccountUpdateRequest $request): RedirectResponse
     {
-        auth()->user()->update($request->validated());
+        auth('admin')->user()->update($request->validated());
 
         return back()->with('success', 'Hesap bilgileriniz güncellendi.');
     }
 
     public function updatePassword(PasswordUpdateRequest $request): RedirectResponse
     {
-        $user = auth()->user();
+        $user = auth('admin')->user();
 
         $user->update([
             'password' => $request->validated('password'),

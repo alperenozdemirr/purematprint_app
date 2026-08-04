@@ -5,10 +5,13 @@ declare(strict_types=1);
 namespace App\Http\Services;
 
 use App\Enums\OrderStatus;
+use App\Jobs\SendNewOrderAdminNotificationJob;
 use App\Jobs\SendOrderConfirmationEmailJob;
 use App\Jobs\SendOrderDeliveredEmailJob;
 use App\Jobs\SendOrderShippedEmailJob;
 use App\Models\Order;
+use App\Models\Setting;
+use Illuminate\Support\Facades\Cache;
 
 class OrderEmailService
 {
@@ -41,6 +44,31 @@ class OrderEmailService
         }
 
         SendOrderConfirmationEmailJob::dispatch($order->id);
+
+        return true;
+    }
+
+    public function sendAdminNewOrderNotificationIfNeeded(Order $order): bool
+    {
+        if ($order->status === OrderStatus::CANCELLED) {
+            return false;
+        }
+
+        $order->refresh();
+
+        if ($order->admin_notification_sent_at !== null) {
+            return false;
+        }
+
+        if (Setting::current()->orderNotificationEmails() === []) {
+            return false;
+        }
+
+        if (! Cache::add('admin-notification:dispatch:'.$order->id, true, now()->addMinutes(5))) {
+            return false;
+        }
+
+        SendNewOrderAdminNotificationJob::dispatch($order->id);
 
         return true;
     }

@@ -37,6 +37,16 @@ class ShipinkConfigService
         return $this->resolve('shipink_carrier_account_id', 'shipink.carrier_account_id');
     }
 
+    public function carrierProvider(): ?string
+    {
+        return $this->resolve('shipink_carrier_provider', 'shipink.carrier_provider');
+    }
+
+    public function carrierRequiresPaymentCard(): bool
+    {
+        return strtolower((string) ($this->carrierProvider() ?? '')) === 'shipink';
+    }
+
     public function carrierId(): string
     {
         return (string) config('shipink.carrier_id', 'aras');
@@ -89,9 +99,43 @@ class ShipinkConfigService
 
     public function isConfigured(): bool
     {
-        return $this->hasCredentials()
-            && $this->isValidUuid($this->warehouseId())
-            && $this->isValidUuid($this->carrierAccountId());
+        if (! $this->hasCredentials()
+            || ! $this->isValidUuid($this->warehouseId())
+            || ! $this->isValidUuid($this->carrierAccountId())) {
+            return false;
+        }
+
+        if ($this->carrierRequiresPaymentCard() && ! $this->isValidUuid($this->cardId())) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * @return list<string>
+     */
+    public function configurationIssues(): array
+    {
+        $issues = [];
+
+        if (! $this->hasCredentials()) {
+            $issues[] = 'Shipink API kullanıcı adı ve şifresi eksik.';
+        }
+
+        if (! $this->isValidUuid($this->warehouseId())) {
+            $issues[] = 'Depo seçimi eksik veya geçersiz.';
+        }
+
+        if (! $this->isValidUuid($this->carrierAccountId())) {
+            $issues[] = 'Kargo hesabı seçimi eksik veya geçersiz.';
+        }
+
+        if ($this->carrierRequiresPaymentCard() && ! $this->isValidUuid($this->cardId())) {
+            $issues[] = 'Shipink anlaşmalı kargo hesabı için ödeme kartı seçimi zorunludur.';
+        }
+
+        return $issues;
     }
 
     public function isValidUuid(?string $value): bool

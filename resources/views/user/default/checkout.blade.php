@@ -30,7 +30,7 @@
       <div class="mb-5 p-3.5 border-[3px] border-ink bg-bg text-sm font-semibold text-announce" role="alert">{{ session('error') }}</div>
       @endif
 
-      <form id="checkout-form" action="{{ route('checkoutStore') }}" method="post" class="grid gap-10 min-[960px]:grid-cols-[1fr_380px] min-[960px]:gap-12 min-[960px]:items-start">
+      <form id="checkout-form" action="{{ route('checkoutStore') }}" method="post" enctype="multipart/form-data" class="grid gap-10 min-[960px]:grid-cols-[1fr_380px] min-[960px]:gap-12 min-[960px]:items-start">
         @csrf
 
         <div class="grid gap-6">
@@ -110,6 +110,27 @@
             <div class="p-5">
               <textarea name="note" rows="3" class="w-full px-3.5 py-[13px] border-[3px] border-ink text-[15px] bg-surface outline-none focus:shadow-brutal-sm" placeholder="Teslimat veya baskı ile ilgili notunuz (opsiyonel)">{{ old('note') }}</textarea>
               @error('note')<span class="text-xs text-announce">{{ $message }}</span>@enderror
+            </div>
+          </section>
+
+          <section class="border-[3px] border-ink shadow-brutal-sm bg-surface overflow-hidden" data-i5="checkout-section">
+            <div class="px-5 py-4 border-b-[3px] border-ink bg-bg [&_h2]:font-body [&_h2]:text-[13px] [&_h2]:font-bold [&_h2]:uppercase [&_h2]:tracking-[0.06em]">
+              <h2>Baskı Dosyaları <span class="font-normal normal-case tracking-normal text-muted">(opsiyonel)</span></h2>
+            </div>
+            <div class="p-5 grid gap-3">
+              <p class="text-xs text-muted leading-relaxed">
+                İsterseniz baskı dosyanızı buradan yükleyin. En fazla 1 dosya, en fazla 200MB.
+                Desteklenen: .png, .pdf, .psd
+              </p>
+              <input
+                type="file"
+                id="order_files"
+                name="order_files[]"
+                accept=".png,.pdf,.psd,image/png,application/pdf"
+                class="w-full text-sm file:mr-4 file:px-4 file:py-2 file:border-[3px] file:border-ink file:bg-bg file:font-body file:text-[11px] file:font-bold file:uppercase file:tracking-[0.06em] file:cursor-pointer"
+              >
+              @error('order_files')<span class="text-xs text-announce">{{ $message }}</span>@enderror
+              @error('order_files.*')<span class="text-xs text-announce">{{ $message }}</span>@enderror
             </div>
           </section>
 
@@ -253,6 +274,38 @@
 
   addressInputs.forEach((input) => input.addEventListener('change', togglePaymentMethod));
   togglePaymentMethod();
+
+  const orderFilesInput = document.getElementById('order_files');
+  orderFilesInput?.addEventListener('change', () => {
+    if (!orderFilesInput.files) {
+      return;
+    }
+
+    if (orderFilesInput.files.length > 1) {
+      alert('En fazla 1 dosya yükleyebilirsiniz.');
+      orderFilesInput.value = '';
+      return;
+    }
+
+    const maxBytes = 200 * 1024 * 1024;
+    const allowed = ['png', 'pdf', 'psd'];
+
+    for (const file of orderFilesInput.files) {
+      const ext = (file.name.split('.').pop() || '').toLowerCase();
+
+      if (!allowed.includes(ext)) {
+        alert('Desteklenmeyen dosya: ' + file.name);
+        orderFilesInput.value = '';
+        return;
+      }
+
+      if (file.size > maxBytes) {
+        alert('Dosya 200MB sınırını aşıyor: ' + file.name);
+        orderFilesInput.value = '';
+        return;
+      }
+    }
+  });
 })();
 </script>
 @endpush

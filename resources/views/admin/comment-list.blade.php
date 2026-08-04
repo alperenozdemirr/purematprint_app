@@ -38,6 +38,15 @@
               </td>
               <td>
                 <p class="max-w-[260px] font-body text-[13px] text-ink">{{ $comment->content }}</p>
+                @if ($comment->images->isNotEmpty())
+                  <div class="mt-2 flex flex-wrap gap-1.5">
+                    @foreach ($comment->images as $image)
+                      <a href="{{ $image->url }}" target="_blank" rel="noopener noreferrer" class="block h-10 w-10 overflow-hidden rounded border border-ink/10 bg-cream">
+                        <img src="{{ $image->url }}" alt="" class="h-full w-full object-cover">
+                      </a>
+                    @endforeach
+                  </div>
+                @endif
                 <p class="mt-1 font-body text-[11px] text-muted">{{ $comment->created_at->format('d.m.Y H:i') }}</p>
               </td>
               <td class="font-body text-[13px] text-ink">

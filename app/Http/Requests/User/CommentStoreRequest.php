@@ -20,6 +20,8 @@ class CommentStoreRequest extends FormRequest
             'order_detail_id' => ['required', 'integer', 'exists:order_details,id'],
             'rating' => ['required', 'numeric', 'min:0.5', 'max:5'],
             'content' => ['required', 'string', 'max:255'],
+            'images' => ['nullable', 'array', 'max:4'],
+            'images.*' => ['image', 'max:2048'],
         ];
     }
 
@@ -42,6 +44,9 @@ class CommentStoreRequest extends FormRequest
             'rating.min' => 'Puan en az 0.5 olmalıdır.',
             'rating.max' => 'Puan en fazla 5 olabilir.',
             'content.required' => 'Yorum metni zorunludur.',
+            'images.max' => 'En fazla 4 görsel yükleyebilirsiniz.',
+            'images.*.image' => 'Yalnızca görsel dosyaları yükleyebilirsiniz.',
+            'images.*.max' => 'Her görsel en fazla 2MB olabilir.',
         ];
     }
 }

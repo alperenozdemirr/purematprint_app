@@ -48,6 +48,8 @@ class SettingUpdateRequest extends FormRequest
             'shipping_free_limit_enabled' => ['boolean'],
             'shipping_free_limit' => ['nullable', 'numeric', 'min:0', 'required_if:shipping_free_limit_enabled,1'],
             'email' => ['nullable', 'email', 'max:255'],
+            'order_notification_emails' => ['nullable', 'array', 'max:4'],
+            'order_notification_emails.*' => ['nullable', 'email', 'max:255'],
             'address' => ['nullable', 'string', 'max:500'],
             'mobile_phone' => ['nullable', 'string', 'max:50'],
             'business_phone' => ['nullable', 'string', 'max:50'],
@@ -64,6 +66,7 @@ class SettingUpdateRequest extends FormRequest
     {
         return [
             'discount_value.max' => 'Yüzdelik indirim en fazla 100 olabilir.',
+            'order_notification_emails.max' => 'En fazla 4 bildirim e-posta adresi girebilirsiniz.',
         ];
     }
 }

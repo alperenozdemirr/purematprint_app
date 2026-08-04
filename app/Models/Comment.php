@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Enums\ContentType;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Comment extends Model
 {
@@ -39,5 +41,12 @@ class Comment extends Model
     public function orderDetail(): BelongsTo
     {
         return $this->belongsTo(OrderDetail::class);
+    }
+
+    public function images(): HasMany
+    {
+        return $this->hasMany(File::class, 'key_id')
+            ->where('content_type', ContentType::COMMENT->value)
+            ->orderBy('number');
     }
 }

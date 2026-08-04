@@ -61,6 +61,7 @@ class ShipinkSettingController extends Controller
             'shipink_warehouse_name' => $validated['shipink_warehouse_name'] ?? null,
             'shipink_carrier_account_id' => $validated['shipink_carrier_account_id'] ?? null,
             'shipink_carrier_account_label' => $validated['shipink_carrier_account_label'] ?? null,
+            'shipink_carrier_provider' => $validated['shipink_carrier_provider'] ?? null,
             'shipink_carrier_service_id' => $validated['shipink_carrier_service_id'] ?? null,
             'shipink_card_id' => $validated['shipink_card_id'] ?? null,
             'shipink_card_label' => $validated['shipink_card_label'] ?? null,

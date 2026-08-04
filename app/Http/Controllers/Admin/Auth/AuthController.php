@@ -17,7 +17,7 @@ class AuthController extends Controller
 {
     public function loginPage(): View|RedirectResponse
     {
-        $user = Auth::user();
+        $user = Auth::guard('admin')->user();
 
         if ($user && $user->type === UserType::ADMIN && $user->status === Status::ACTIVE) {
             return redirect()->route('admin.index');
@@ -30,12 +30,20 @@ class AuthController extends Controller
     {
         $credentials = $request->validated();
 
-        if (Auth::attempt([
+        if (Auth::guard('admin')->attempt([
             'email' => $credentials['email'],
             'password' => $credentials['password'],
             'type' => UserType::ADMIN->value,
             'status' => Status::ACTIVE->value,
         ], $request->boolean('remember'))) {
+            // Eski tek-guard döneminden web oturumunda kalan admin kimliğini temizle;
+            // müşteri (USER) oturumuna dokunma.
+            $webUser = Auth::guard('web')->user();
+
+            if ($webUser && $webUser->type === UserType::ADMIN) {
+                Auth::guard('web')->logout();
+            }
+
             $request->session()->regenerate();
 
             return redirect()->intended(route('admin.index'))
@@ -49,9 +57,9 @@ class AuthController extends Controller
 
     public function logout(Request $request): RedirectResponse
     {
-        Auth::logout();
+        Auth::guard('admin')->logout();
 
-        $request->session()->invalidate();
+        // Müşteri oturumunu bozmamak için session invalidate edilmez.
         $request->session()->regenerateToken();
 
         return redirect()->route('admin.loginPage')
