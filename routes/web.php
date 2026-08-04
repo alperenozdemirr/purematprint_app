@@ -114,6 +114,7 @@ Route::group(['middleware' => 'user'],function (){
 
 Route::group(['prefix' => 'admin/', 'middleware' => 'admin'], function () {
     Route::get('/', [AdminDefaultController::class, 'index'])->name('admin.index');
+    Route::post('ui/sidebar', [AdminDefaultController::class, 'toggleSidebar'])->name('admin.sidebarToggle');
 
     Route::get('products', [AdminProductController::class, 'index'])->name('admin.productList');
     Route::get('products/create', [AdminProductController::class, 'storePage'])->name('admin.productStorePage');

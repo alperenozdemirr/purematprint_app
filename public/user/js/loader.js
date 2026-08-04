@@ -3,17 +3,17 @@
  *
  * NE YAPAR:
  *   data-pmp-site olan sayfalarda kısa yükleme animasyonu gösterir.
- *   Metin döngüsü: baskı/tasarım temalı durum mesajları (Yükleniyor yerine).
+ *   Sayfa gerçekten yüklenene kadar açık kalır; yüklendiyse en az ~250ms gösterir.
  *
  * NE YAPMAZ:
- *   Gerçek asset yükleme takibi — min 400ms / max 1500ms sabit süre.
+ *   Yüklendikten sonra ekstra uzun süre tutmaz.
  *   prefers-reduced-motion açıksa hiç çalışmaz.
  */
 (function initSiteLoader() {
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
-  const MIN_VISIBLE_MS = 400;
-  const MAX_WAIT_MS = 1500;
+  const MIN_VISIBLE_MS = 250;
+  const SAFETY_MAX_MS = 12000;
   const MESSAGE_INTERVAL_MS = 450;
   const MESSAGE_FADE_MS = 160;
 
@@ -96,21 +96,29 @@
         loader.classList.add('is-done');
         loader.setAttribute('aria-busy', 'false');
         document.documentElement.classList.remove('pmp-is-loading');
-        window.setTimeout(() => loader.remove(), 500);
+        window.setTimeout(() => loader.remove(), 320);
       }, delay);
     };
 
-    window.setTimeout(dismiss, MAX_WAIT_MS);
+    // Sayfa yüklenene kadar açık kalsın; yüklendiyse min 250ms sonra kapanır.
     if (document.readyState === 'complete') {
       dismiss();
     } else {
-      document.addEventListener('DOMContentLoaded', dismiss, { once: true });
+      window.addEventListener('load', dismiss, { once: true });
     }
+
+    // Aşırı durumda (load hiç gelmezse) güvenlik kapanışı
+    window.setTimeout(dismiss, SAFETY_MAX_MS);
   }
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', mount);
-  } else {
-    mount();
+  function tryMount() {
+    if (document.body) {
+      mount();
+      return;
+    }
+
+    document.addEventListener('DOMContentLoaded', mount, { once: true });
   }
+
+  tryMount();
 })();

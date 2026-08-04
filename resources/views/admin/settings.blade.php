@@ -123,7 +123,7 @@
         @endif
         <div>
           <label for="logo" class="mb-1.5 block font-body text-[13px] font-bold text-ink">Logo Yükle</label>
-          <input type="file" id="logo" name="logo" accept="image/*"
+          <input type="file" id="logo" name="logo" accept="{{ \App\Support\ImageUploadRules::acceptAttribute() }}"
                  class="w-full rounded-lg border border-ink/10 bg-cream px-3.5 py-2.5 font-body text-[14px] text-ink outline-none focus:border-accent focus:ring-2 focus:ring-accent/15">
           @error('logo') <p class="mt-1.5 font-body text-[12px] font-medium text-danger">{{ $message }}</p> @enderror
         </div>

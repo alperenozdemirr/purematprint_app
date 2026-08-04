@@ -7,6 +7,7 @@ namespace App\Http\Requests\Admin;
 use App\Enums\DiscountScope;
 use App\Enums\DiscountType;
 use App\Enums\ShippingMode;
+use App\Support\ImageUploadRules;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -58,7 +59,7 @@ class SettingUpdateRequest extends FormRequest
             'facebook_url' => ['nullable', 'url', 'max:255'],
             'whatsapp_phone' => ['nullable', 'string', 'max:50'],
             'short_info' => ['nullable', 'string', 'max:500'],
-            'logo' => ['nullable', 'image', 'max:4096'],
+            'logo' => ImageUploadRules::adminImageRules(required: false),
         ];
     }
 
@@ -67,6 +68,8 @@ class SettingUpdateRequest extends FormRequest
         return [
             'discount_value.max' => 'Yüzdelik indirim en fazla 100 olabilir.',
             'order_notification_emails.max' => 'En fazla 4 bildirim e-posta adresi girebilirsiniz.',
+            'logo.max' => 'Logo en fazla 40MB olabilir.',
+            'logo.mimes' => 'Logo yalnızca '.ImageUploadRules::humanList().' formatlarında olabilir.',
         ];
     }
 }

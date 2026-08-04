@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Admin;
 
+use App\Support\ImageUploadRules;
 use Illuminate\Foundation\Http\FormRequest;
 
 class BlogStoreRequest extends FormRequest
@@ -19,7 +20,7 @@ class BlogStoreRequest extends FormRequest
             'subtitle' => ['required', 'string', 'max:255'],
             'title' => ['required', 'string', 'max:255'],
             'content' => ['required', 'string'],
-            'image' => ['required', 'image', 'max:2048'],
+            'image' => ImageUploadRules::adminImageRules(required: true),
         ];
     }
 }

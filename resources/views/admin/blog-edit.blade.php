@@ -63,7 +63,7 @@
               </div>
             @endif
             <label for="image" class="mb-1.5 block font-body text-[13px] font-bold text-ink">Yeni Görsel (opsiyonel)</label>
-            <input type="file" id="image" name="image" accept="image/*"
+            <input type="file" id="image" name="image" accept="{{ \App\Support\ImageUploadRules::acceptAttribute() }}"
                    class="w-full rounded-lg border border-ink/10 bg-cream px-3.5 py-2.5 font-body text-[13px] text-ink file:mr-3 file:rounded-md file:border-0 file:bg-ink file:px-3 file:py-1.5 file:font-body file:text-[12px] file:font-bold file:text-on-dark">
             <p class="mt-2 font-body text-[12px] text-muted">Maks. 2 MB, JPG/PNG/WebP</p>
             @error('image') <p class="mt-1.5 font-body text-[12px] font-medium text-danger">{{ $message }}</p> @enderror

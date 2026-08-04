@@ -84,7 +84,7 @@
           </div>
           <div class="p-5">
             <label for="image" class="mb-1.5 block font-body text-[13px] font-bold text-ink">Görsel Yükle <span class="text-danger">*</span></label>
-            <input type="file" id="image" name="image" accept="image/*" required
+            <input type="file" id="image" name="image" accept="{{ \App\Support\ImageUploadRules::acceptAttribute() }}" required
                    class="w-full rounded-lg border border-ink/10 bg-cream px-3.5 py-2.5 font-body text-[13px] text-ink file:mr-3 file:rounded-md file:border-0 file:bg-ink file:px-3 file:py-1.5 file:font-body file:text-[12px] file:font-bold file:text-on-dark">
             <p class="mt-2 font-body text-[12px] text-muted">Maks. 2 MB, JPG/PNG/WebP · 16:10 önerilir</p>
             @error('image') <p class="mt-1.5 font-body text-[12px] font-medium text-danger">{{ $message }}</p> @enderror

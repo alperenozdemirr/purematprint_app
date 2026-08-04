@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Requests\Admin;
 
 use App\Enums\Status;
+use App\Support\ImageUploadRules;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -31,7 +32,7 @@ class ProductStoreRequest extends FormRequest
             'shipping_width' => 'nullable|integer|min:1|max:300',
             'shipping_height' => 'nullable|integer|min:1|max:300',
             'images' => 'nullable|array',
-            'images.*' => 'image|max:2048',
+            'images.*' => ImageUploadRules::adminImageItemRules(),
             'existing_image_order' => 'nullable|array',
             'existing_image_order.*' => 'integer|exists:files,id',
         ];

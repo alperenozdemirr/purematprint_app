@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Requests\Admin;
 
 use App\Enums\Status;
+use App\Support\ImageUploadRules;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -24,7 +25,7 @@ class CollectionUpdateRequest extends FormRequest
             'label' => ['nullable', 'string', 'max:255'],
             'number' => ['nullable', 'integer', 'min:0'],
             'status' => ['required', Rule::in(Status::values())],
-            'image' => ['nullable', 'image', 'max:2048'],
+            'image' => ImageUploadRules::adminImageRules(required: false),
             'product_ids' => ['nullable', 'array'],
             'product_ids.*' => ['integer', 'exists:products,id'],
         ];

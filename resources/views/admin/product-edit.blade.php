@@ -137,8 +137,8 @@
                    class="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-ink/15 bg-cream px-4 py-10 text-center transition-colors hover:border-accent/40 hover:bg-hover/50">
               <svg width="34" height="34" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" class="text-muted"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
               <span class="font-body text-[14px] font-bold text-ink">Yeni görsel ekle</span>
-              <span class="font-body text-[12px] text-muted">PNG, JPG, WEBP — en fazla 2MB. Yükledikten sonra sıralayabilirsiniz.</span>
-              <input type="file" id="images" name="images[]" accept="image/*" multiple class="hidden" data-image-input>
+              <span class="font-body text-[12px] text-muted">{{ \App\Support\ImageUploadRules::humanList() }} — en fazla 40MB. Yükledikten sonra sıralayabilirsiniz.</span>
+              <input type="file" id="images" name="images[]" accept="{{ \App\Support\ImageUploadRules::acceptAttribute() }}" multiple class="hidden" data-image-input>
             </label>
             @error('images') <p class="mt-1.5 font-body text-[12px] font-medium text-danger">{{ $message }}</p> @enderror
             @error('images.*') <p class="mt-1.5 font-body text-[12px] font-medium text-danger">{{ $message }}</p> @enderror

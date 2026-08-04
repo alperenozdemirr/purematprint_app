@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\User;
 
+use App\Support\ImageUploadRules;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Validator;
 
@@ -21,7 +22,7 @@ class CommentStoreRequest extends FormRequest
             'rating' => ['required', 'numeric', 'min:0.5', 'max:5'],
             'content' => ['required', 'string', 'max:255'],
             'images' => ['nullable', 'array', 'max:4'],
-            'images.*' => ['image', 'max:2048'],
+            'images.*' => ImageUploadRules::commentImageItemRules(),
         ];
     }
 
@@ -45,8 +46,8 @@ class CommentStoreRequest extends FormRequest
             'rating.max' => 'Puan en fazla 5 olabilir.',
             'content.required' => 'Yorum metni zorunludur.',
             'images.max' => 'En fazla 4 görsel yükleyebilirsiniz.',
-            'images.*.image' => 'Yalnızca görsel dosyaları yükleyebilirsiniz.',
-            'images.*.max' => 'Her görsel en fazla 2MB olabilir.',
+            'images.*.mimes' => 'Yalnızca '.ImageUploadRules::humanList().' formatlarında görsel yükleyebilirsiniz.',
+            'images.*.max' => 'Her görsel en fazla 8MB olabilir.',
         ];
     }
 }

@@ -11,10 +11,22 @@ use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\User;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class DefaultController extends Controller
 {
+    public function toggleSidebar(Request $request): JsonResponse
+    {
+        $collapsed = $request->boolean('collapsed');
+        $request->session()->put('admin_sidebar_collapsed', $collapsed);
+
+        return response()->json([
+            'collapsed' => $collapsed,
+        ]);
+    }
+
     public function index(): View
     {
         $totalOrders = Order::query()->count();

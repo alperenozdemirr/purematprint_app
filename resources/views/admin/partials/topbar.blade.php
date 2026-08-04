@@ -5,6 +5,15 @@
     <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
   </button>
 
+  {{-- Masaüstü menü daralt / genişlet --}}
+  <button type="button" data-admin-sidebar-toggle aria-label="Menüyü daralt" title="Menüyü daralt / genişlet"
+          class="hidden h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-cream text-ink transition-colors hover:bg-hover lg:flex">
+    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+      <path d="M4 6h16M4 12h10M4 18h16"/>
+      <path d="m14 9 3 3-3 3"/>
+    </svg>
+  </button>
+
   {{-- Sayfa başlığı --}}
   <div class="min-w-0 flex-1">
     <h1 class="truncate font-heading text-[19px] font-bold leading-tight tracking-tight text-ink lg:text-[22px]">@yield('page_title', 'Dashboard')</h1>

@@ -137,9 +137,9 @@
               </div>
               <div class="mb-3">
                 <label for="comment-images-{{ $detail->id }}" class="mb-1.5 block text-[12px] font-bold uppercase tracking-[0.04em] text-muted">Görseller (opsiyonel)</label>
-                <input type="file" id="comment-images-{{ $detail->id }}" name="images[]" accept="image/*" multiple
+                <input type="file" id="comment-images-{{ $detail->id }}" name="images[]" accept="{{ \App\Support\ImageUploadRules::acceptAttribute() }}" multiple
                        class="w-full border-[3px] border-ink bg-surface px-3 py-2.5 text-sm text-ink file:mr-3 file:border-0 file:bg-accent file:px-3 file:py-1.5 file:text-[11px] file:font-bold file:uppercase file:text-on-dark">
-                <p class="mt-1.5 text-[11px] text-muted">En fazla 4 görsel, her biri max 2MB</p>
+                <p class="mt-1.5 text-[11px] text-muted">En fazla 4 görsel ({{ \App\Support\ImageUploadRules::humanList() }}), her biri max 8MB</p>
                 @error('images') <p class="mt-1.5 text-[12px] font-semibold text-announce">{{ $message }}</p> @enderror
                 @error('images.*') <p class="mt-1.5 text-[12px] font-semibold text-announce">{{ $message }}</p> @enderror
               </div>

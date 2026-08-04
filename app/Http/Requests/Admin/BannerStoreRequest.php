@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Admin;
 
+use App\Support\ImageUploadRules;
 use Illuminate\Foundation\Http\FormRequest;
 
 class BannerStoreRequest extends FormRequest
@@ -19,7 +20,7 @@ class BannerStoreRequest extends FormRequest
             'redirect_url' => ['nullable', 'string', 'max:255'],
             'btn_title' => ['nullable', 'string', 'max:255'],
             'number' => ['nullable', 'integer', 'min:0'],
-            'image' => ['required', 'image', 'max:2048'],
+            'image' => ImageUploadRules::adminImageRules(required: true),
         ];
     }
 }

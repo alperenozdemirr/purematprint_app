@@ -1,8 +1,12 @@
+@php
+  $adminSidebarCollapsed = (bool) session('admin_sidebar_collapsed', false);
+@endphp
 <!DOCTYPE html>
 <html lang="tr">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="csrf-token" content="{{ csrf_token() }}">
   <link rel="icon" href="favicon.avif" type="image/avif">
   <title>@yield('title', 'Yönetim') — PureMatPrint Admin</title>
   <script src="https://cdn.tailwindcss.com"></script>
@@ -54,12 +58,112 @@
     img { max-width: 100%; height: auto; display: block; }
     body.admin-nav-open { overflow: hidden; }
     @media (min-width: 1024px) { body.admin-nav-open { overflow: auto; } }
+
+    .admin-sidebar {
+      transition: width .28s cubic-bezier(.22, 1, .36, 1), transform .28s cubic-bezier(.22, 1, .36, 1);
+    }
+
+    .admin-shell {
+      transition: padding-left .28s cubic-bezier(.22, 1, .36, 1);
+    }
+
+    .admin-sidebar-nav {
+      scrollbar-width: thin;
+      scrollbar-color: rgba(250, 246, 238, 0.22) transparent;
+    }
+
+    .admin-sidebar-nav::-webkit-scrollbar {
+      width: 3px;
+    }
+
+    .admin-sidebar-nav::-webkit-scrollbar-track {
+      background: transparent;
+      margin: 8px 0;
+    }
+
+    .admin-sidebar-nav::-webkit-scrollbar-thumb {
+      background: rgba(250, 246, 238, 0.22);
+      border-radius: 999px;
+    }
+
+    .admin-sidebar-nav::-webkit-scrollbar-thumb:hover {
+      background: rgba(250, 246, 238, 0.4);
+    }
+
+    .admin-sidebar-nav::-webkit-scrollbar-button {
+      display: none;
+      width: 0;
+      height: 0;
+    }
+
+    @media (min-width: 1024px) {
+      body.admin-sidebar-collapsed .admin-sidebar {
+        width: 76px;
+      }
+
+      body.admin-sidebar-collapsed .admin-shell {
+        padding-left: 76px;
+      }
+
+      body.admin-sidebar-collapsed .admin-nav-text {
+        display: none !important;
+      }
+
+      body.admin-sidebar-collapsed .admin-sidebar-header {
+        position: relative;
+        justify-content: center;
+        gap: 0;
+        padding-left: .5rem;
+        padding-right: .5rem;
+      }
+
+      body.admin-sidebar-collapsed .admin-sidebar-header [data-admin-sidebar-toggle] {
+        position: static;
+      }
+
+      body.admin-sidebar-collapsed .admin-sidebar-brand {
+        display: none;
+      }
+
+      body.admin-sidebar-collapsed .admin-nav-link {
+        justify-content: center;
+        gap: 0;
+        padding-left: .55rem;
+        padding-right: .55rem;
+      }
+
+      body.admin-sidebar-collapsed .admin-nav-label {
+        height: 1px;
+        margin: .7rem .85rem;
+        padding: 0 !important;
+        overflow: hidden;
+        color: transparent;
+        font-size: 0;
+        line-height: 0;
+        background: rgba(250, 246, 238, 0.12);
+        border: 0;
+      }
+
+      body.admin-sidebar-collapsed .admin-sidebar-footer {
+        padding: .5rem;
+      }
+
+      body.admin-sidebar-collapsed .admin-footer-btn {
+        padding-left: .55rem;
+        padding-right: .55rem;
+      }
+
+      body.admin-sidebar-collapsed [data-admin-sidebar-toggle-icon] {
+        transform: rotate(180deg);
+      }
+    }
   </style>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=Petrona:wght@500;600;700&display=swap">
 </head>
-<body class="font-body text-base leading-[1.55] text-ink bg-bg antialiased min-h-dvh">
+<body class="font-body text-base leading-[1.55] text-ink bg-bg antialiased min-h-dvh {{ $adminSidebarCollapsed ? 'admin-sidebar-collapsed' : '' }}"
+      data-admin-sidebar-collapsed="{{ $adminSidebarCollapsed ? '1' : '0' }}">
 
   {{-- Sol menü --}}
   @include('admin.partials.sidebar')
@@ -68,7 +172,7 @@
   <div class="fixed inset-0 z-[40] bg-ink/60 opacity-0 invisible transition-[opacity,visibility] duration-300 lg:hidden [&.open]:opacity-100 [&.open]:visible" data-admin-overlay></div>
 
   {{-- İçerik alanı --}}
-  <div class="lg:pl-[264px] min-h-dvh flex flex-col">
+  <div class="admin-shell lg:pl-[264px] min-h-dvh flex flex-col">
     @include('admin.partials.topbar')
 
     <main class="flex-1 w-full max-w-admin mx-auto px-5 py-6 lg:px-8 lg:py-8">
@@ -104,14 +208,64 @@
       const sidebar = document.querySelector('[data-admin-sidebar]');
       const openBtns = document.querySelectorAll('[data-admin-nav-open]');
       const closeEls = document.querySelectorAll('[data-admin-nav-close]');
+      const toggleBtns = document.querySelectorAll('[data-admin-sidebar-toggle]');
+      const csrf = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+      const persistUrl = @json(route('admin.sidebarToggle'));
 
-      const open = () => { sidebar.classList.add('open'); overlay.classList.add('open'); body.classList.add('admin-nav-open'); };
-      const close = () => { sidebar.classList.remove('open'); overlay.classList.remove('open'); body.classList.remove('admin-nav-open'); };
+      const openMobile = () => {
+        sidebar?.classList.add('open');
+        overlay?.classList.add('open');
+        body.classList.add('admin-nav-open');
+      };
 
-      openBtns.forEach((b) => b.addEventListener('click', open));
-      closeEls.forEach((b) => b.addEventListener('click', close));
-      if (overlay) overlay.addEventListener('click', close);
-      document.addEventListener('keydown', (e) => { if (e.key === 'Escape') close(); });
+      const closeMobile = () => {
+        sidebar?.classList.remove('open');
+        overlay?.classList.remove('open');
+        body.classList.remove('admin-nav-open');
+      };
+
+      const setCollapsed = (collapsed, persist = true) => {
+        body.classList.toggle('admin-sidebar-collapsed', collapsed);
+        body.dataset.adminSidebarCollapsed = collapsed ? '1' : '0';
+
+        toggleBtns.forEach((btn) => {
+          btn.setAttribute('aria-label', collapsed ? 'Menüyü genişlet' : 'Menüyü daralt');
+          btn.setAttribute('title', collapsed ? 'Menüyü genişlet' : 'Menüyü daralt');
+        });
+
+        if (!persist) {
+          return;
+        }
+
+        fetch(persistUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'X-CSRF-TOKEN': csrf,
+            'X-Requested-With': 'XMLHttpRequest',
+          },
+          body: JSON.stringify({ collapsed }),
+          credentials: 'same-origin',
+        }).catch(() => {});
+      };
+
+      openBtns.forEach((b) => b.addEventListener('click', openMobile));
+      closeEls.forEach((b) => b.addEventListener('click', closeMobile));
+      if (overlay) overlay.addEventListener('click', closeMobile);
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') closeMobile();
+      });
+
+      toggleBtns.forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const next = !body.classList.contains('admin-sidebar-collapsed');
+          setCollapsed(next, true);
+        });
+      });
+
+      // Session'dan gelen durum zaten body class'ında; ikon etiketlerini senkronize et
+      setCollapsed(body.classList.contains('admin-sidebar-collapsed'), false);
     })();
   </script>
   @yield('scripts')
