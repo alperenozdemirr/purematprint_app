@@ -50,6 +50,10 @@
       <svg width="19" height="19" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4zM3 6h18M16 10a4 4 0 0 1-8 0"/></svg>
       <span>Siparişler</span>
     </a>
+    <a href="{{ route('admin.analytics') }}" class="{{ $navLink }} {{ request()->routeIs('admin.analytics*') ? $navLinkActive : '' }}">
+      <svg width="19" height="19" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 19V5M8 19v-7M12 19V9M16 19v-4M20 19V7"/></svg>
+      <span>Günlük Analiz</span>
+    </a>
     <a href="{{ route('admin.shipinkSettings') }}" class="{{ $navLink }} {{ request()->routeIs('admin.shipinkSettings*') ? $navLinkActive : '' }}">
       <svg width="19" height="19" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
       <span>Shipink Ayarları</span>

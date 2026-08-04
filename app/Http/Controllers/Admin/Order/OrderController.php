@@ -112,6 +112,7 @@ class OrderController extends Controller
                     $this->shipinkService->cancelShipmentForCancelledOrder($order);
                     $order->refresh();
                 }
+                $payload['cancelled_at'] = $order->cancelled_at ?? now();
             }
 
             if ($validated['status'] === OrderStatus::SHIPPED->value && $order->shipped_at === null) {
@@ -221,7 +222,10 @@ class OrderController extends Controller
             $order->refresh();
         }
 
-        $order->update(['status' => OrderStatus::CANCELLED]);
+        $order->update([
+            'status' => OrderStatus::CANCELLED,
+            'cancelled_at' => $order->cancelled_at ?? now(),
+        ]);
 
         return redirect()
             ->route('admin.orderDetailPage', $order->code)

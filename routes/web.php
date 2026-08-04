@@ -17,6 +17,7 @@ use App\Http\Controllers\Admin\Banner\BannerController as AdminBannerController;
 use App\Http\Controllers\Admin\Order\OrderController as AdminOrderController;
 use App\Http\Controllers\Admin\User\UserController as AdminUserController;
 use App\Http\Controllers\Admin\Auth\AuthController as AdminAuthController;
+use App\Http\Controllers\Admin\Analytics\AnalyticsController as AdminAnalyticsController;
 use App\Http\Controllers\User\ShoppingCart\ShoppingCartController;
 use App\Http\Controllers\User\Account\AccountController;
 use App\Http\Controllers\User\Order\OrderController as UserOrderController;
@@ -155,6 +156,9 @@ Route::group(['prefix' => 'admin/', 'middleware' => 'admin'], function () {
     Route::post('orders/{code}/shipink/sync', [AdminOrderController::class, 'syncShipinkShipment'])->name('admin.orderShipinkSync');
     Route::post('orders/{code}/shipink/cancel', [AdminOrderController::class, 'cancelShipinkShipment'])->name('admin.orderShipinkCancel');
     Route::post('orders/{code}/cancel', [AdminOrderController::class, 'cancelOrder'])->name('admin.orderCancel');
+
+    Route::get('analytics', [AdminAnalyticsController::class, 'index'])->name('admin.analytics');
+    Route::post('analytics/recompute', [AdminAnalyticsController::class, 'recompute'])->name('admin.analyticsRecompute');
 
     Route::get('shipink-settings', [AdminShipinkSettingController::class, 'edit'])->name('admin.shipinkSettings');
     Route::post('shipink-settings', [AdminShipinkSettingController::class, 'update'])->name('admin.shipinkSettingsUpdate');

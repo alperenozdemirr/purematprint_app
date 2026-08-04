@@ -13,6 +13,7 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule): void
     {
         $schedule->command('orders:process-notifications')->everyFifteenMinutes();
+        $schedule->command('analytics:compute-daily')->dailyAt('00:05')->timezone(config('app.timezone'));
 
         if (config('queue.default') === 'database') {
             $schedule->command('queue:work --stop-when-empty --max-time=55 --max-jobs=100')
