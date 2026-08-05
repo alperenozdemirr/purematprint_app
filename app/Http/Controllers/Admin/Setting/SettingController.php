@@ -53,6 +53,7 @@ class SettingController extends Controller
 
         $attributes = [
             'site_open' => (bool) ($validated['site_open'] ?? false),
+            'show_real_homepage_reviews' => (bool) ($validated['show_real_homepage_reviews'] ?? false),
             'discount_enabled' => $discountEnabled,
             'discount_type' => $discountEnabled ? $validated['discount_type'] : null,
             'discount_value' => $discountEnabled ? $validated['discount_value'] : null,

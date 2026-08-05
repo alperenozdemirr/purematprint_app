@@ -57,6 +57,7 @@ class OrderController extends Controller
                 'details.comment.images',
                 'payment',
                 'orderFiles',
+                'invoiceFile',
             ])
             ->where('user_id', auth()->id())
             ->where('code', $code)

@@ -21,10 +21,14 @@ class OrderFileDownloadService
         $file = File::query()
             ->where('id', $fileId)
             ->where('key_id', $order->id)
-            ->where('content_type', ContentType::ORDER_FILE->value)
+            ->whereIn('content_type', [
+                ContentType::ORDER_FILE->value,
+                ContentType::ORDER_INVOICE->value,
+            ])
             ->firstOrFail();
 
-        $path = MediaPath::relativePath(ContentType::ORDER_FILE, $file->file_name);
+        $contentType = ContentType::from((string) $file->content_type);
+        $path = MediaPath::relativePath($contentType, $file->file_name);
         $disk = $this->mediaStream->disk();
 
         if (! $disk->exists($path)) {

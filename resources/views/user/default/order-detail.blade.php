@@ -176,7 +176,24 @@
               @else
                 <p><span class="font-semibold text-ink">T.C. Kimlik No:</span> {{ $order->tc_no }}</p>
               @endif
+              <p>
+                <span class="font-semibold text-ink">Durum:</span>
+                {{ $order->invoice_status ? 'Fatura kesildi' : 'Henüz kesilmedi' }}
+              </p>
             </div>
+
+            @if ($order->invoiceFile)
+              <div class="mt-5 border-[2px] border-ink bg-bg px-4 py-3">
+                <p class="mb-2 text-[12px] font-bold uppercase tracking-[0.04em] text-muted">Fatura PDF</p>
+                <p class="mb-3 text-sm font-semibold text-ink break-all">{{ $order->invoiceFile->displayName() }}</p>
+                <div class="flex flex-wrap gap-2">
+                  <a href="{{ $order->invoiceFile->url }}" target="_blank" rel="noopener noreferrer"
+                     class="inline-flex items-center px-3 py-1.5 font-body text-[11px] font-bold uppercase tracking-[0.06em] border-[2px] border-ink bg-surface hover:bg-hover">Görüntüle</a>
+                  <a href="{{ route('orderFileDownload', ['code' => $order->code, 'fileId' => $order->invoiceFile->id]) }}"
+                     class="inline-flex items-center px-3 py-1.5 font-body text-[11px] font-bold uppercase tracking-[0.06em] border-[2px] border-ink bg-action text-on-dark hover:bg-action-hover">İndir</a>
+                </div>
+              </div>
+            @endif
           </section>
 
           @if ($order->note)

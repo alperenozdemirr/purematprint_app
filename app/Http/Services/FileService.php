@@ -8,6 +8,7 @@ use App\Enums\ContentType;
 use App\Enums\FileType;
 use App\Models\File;
 use App\Support\MediaPath;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -113,6 +114,50 @@ class FileService
         );
     }
 
+    /**
+     * Sipariş fatura PDF'ini R2'ye yükler. Varsa eski faturayı siler (tek fatura).
+     */
+    public function uploadOrderInvoice(UploadedFile $file, int $orderId, ?int $userId = null): File
+    {
+        $existing = File::query()
+            ->where('key_id', $orderId)
+            ->where('content_type', ContentType::ORDER_INVOICE->value)
+            ->get();
+
+        foreach ($existing as $old) {
+            $this->imageDelete($old->id, ContentType::ORDER_INVOICE);
+        }
+
+        $originalName = (string) $file->getClientOriginalName();
+        $extension = strtolower((string) $file->getClientOriginalExtension()) ?: 'pdf';
+        $fileName = Str::uuid()->toString().'.'.$extension;
+        $relativePath = MediaPath::ORDER_INVOICE.'/'.$fileName;
+
+        $stream = fopen($file->getRealPath(), 'rb');
+
+        if ($stream === false) {
+            throw new \RuntimeException('Fatura dosyası okunamadı.');
+        }
+
+        try {
+            Storage::disk('r2')->put($relativePath, $stream);
+        } finally {
+            if (is_resource($stream)) {
+                fclose($stream);
+            }
+        }
+
+        return $this->storeFile(
+            $fileName,
+            FileType::FILE,
+            ContentType::ORDER_INVOICE,
+            $userId,
+            $orderId,
+            1,
+            $originalName !== '' ? $originalName : $fileName,
+        );
+    }
+
     public function putBinary(string $baseDirectory, string $fileName, string $content): string
     {
         $relativePath = $baseDirectory.'/'.$fileName;
@@ -152,6 +197,7 @@ class FileService
             $contentType == ContentType::BLOG => MediaPath::BLOG,
             $contentType == ContentType::COMMENT => MediaPath::COMMENT,
             $contentType == ContentType::ORDER_FILE => MediaPath::ORDER_FILE,
+            $contentType == ContentType::ORDER_INVOICE => MediaPath::ORDER_INVOICE,
             default => null,
         };
 

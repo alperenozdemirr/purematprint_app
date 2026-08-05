@@ -81,6 +81,7 @@ Route::get('bloglar/{slug}', [UserBlogController::class, 'show'])->name('blogSho
 Route::get('hakkimizda', [PageController::class, 'about'])->name('about');
 Route::get('iletisim', [PageController::class, 'contact'])->name('contact');
 Route::get('kargo-teslimat', [PageController::class, 'shipping'])->name('shippingInfo');
+Route::get('sozlesmeler', [PageController::class, 'agreements'])->name('agreements');
 Route::get('kvkk', [PageController::class, 'privacy'])->name('privacy');
 Route::get('cerez-politikasi', [PageController::class, 'cookies'])->name('cookies');
 Route::get('mesafeli-satis', [PageController::class, 'distanceSales'])->name('distanceSales');
@@ -152,6 +153,7 @@ Route::group(['prefix' => 'admin/', 'middleware' => 'admin'], function () {
     Route::get('orders', [AdminOrderController::class, 'index'])->name('admin.orderList');
     Route::post('orders/update', [AdminOrderController::class, 'update'])->name('admin.orderUpdate');
     Route::get('orders/{code}/dosya/{fileId}', [AdminOrderController::class, 'downloadFile'])->name('admin.orderFileDownload');
+    Route::post('orders/{code}/fatura/sil', [AdminOrderController::class, 'deleteInvoice'])->name('admin.orderInvoiceDelete');
     Route::get('orders/{code}', [AdminOrderController::class, 'show'])->name('admin.orderDetailPage');
     Route::post('orders/{code}/shipink/create', [AdminOrderController::class, 'createShipinkShipment'])->name('admin.orderShipinkCreate');
     Route::post('orders/{code}/shipink/sync', [AdminOrderController::class, 'syncShipinkShipment'])->name('admin.orderShipinkSync');

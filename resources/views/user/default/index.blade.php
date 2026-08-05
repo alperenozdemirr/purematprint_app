@@ -197,6 +197,30 @@
       </div>
       <div data-i5="reveal" data-i5-tags="testimonials__slider reveal" class="relative opacity-0 translate-y-6 transition-all duration-700 [&.is-revealed]:opacity-100 [&.is-revealed]:translate-y-0" data-i5-testimonials>
         <div class="grid relative" data-i5="testimonials__slides">
+          @php
+            $useRealReviews = $showRealReviews && $homepageReviews->isNotEmpty();
+            $reviewPlaceholder = asset('user/assets/foto5.jpeg');
+          @endphp
+          @if ($useRealReviews)
+            @foreach ($homepageReviews as $index => $review)
+              @php
+                $cover = $review->product?->images->first();
+                $stars = (int) max(1, min(5, (int) round((float) $review->rating)));
+              @endphp
+              <article class="col-start-1 row-start-1 grid gap-8 items-center opacity-0 invisible transition-[opacity,visibility] duration-[450ms] ease-out pointer-events-none min-[900px]:grid-cols-[1fr_minmax(280px,0.85fr)] min-[900px]:gap-x-16 min-[900px]:gap-y-12 {{ $index === 0 ? 'is-active' : '' }} [&.is-active]:opacity-100 [&.is-active]:visible [&.is-active]:pointer-events-auto [&.is-active]:z-[1]" data-i5="testimonials__slide">
+                <div>
+                  <div class="text-[#c9a227] text-lg tracking-[0.12em] mb-5" aria-hidden="true" data-i5="testimonials__stars">{{ str_repeat('★', $stars) }}{{ str_repeat('☆', 5 - $stars) }}</div>
+                  <blockquote class="font-heading mb-6 text-[clamp(1.35rem,3.2vw,2.25rem)] font-bold leading-[1.15] tracking-[-0.02em] text-balance" data-i5="testimonials__quote">{{ $review->content }}</blockquote>
+                  <p class="m-0 text-sm text-muted tracking-[0.02em]" data-i5="testimonials__author">
+                    — {{ $review->user?->name ?? 'Müşteri' }}@if ($review->product), {{ $review->product->title }}@endif
+                  </p>
+                </div>
+                <div class="aspect-[4/3] overflow-hidden bg-surface border-[3px] border-ink" data-i5="testimonials__media">
+                  <img src="{{ $cover?->url ?? $reviewPlaceholder }}" alt="{{ $review->product?->title ?? 'Ürün görseli' }}" class="w-full h-full object-cover" loading="lazy">
+                </div>
+              </article>
+            @endforeach
+          @else
           <article class="col-start-1 row-start-1 grid gap-8 items-center opacity-0 invisible transition-[opacity,visibility] duration-[450ms] ease-out pointer-events-none min-[900px]:grid-cols-[1fr_minmax(280px,0.85fr)] min-[900px]:gap-x-16 min-[900px]:gap-y-12 is-active [&.is-active]:opacity-100 [&.is-active]:visible [&.is-active]:pointer-events-auto [&.is-active]:z-[1]" data-i5="testimonials__slide">
             <div >
               <div class="text-[#c9a227] text-lg tracking-[0.12em] mb-5" aria-hidden="true" data-i5="testimonials__stars">★★★★★</div>
@@ -237,6 +261,7 @@
               <img src="{{asset('user')}}/assets/foto3.jpeg" alt="Kafe tezgâhı display uygulaması" loading="lazy">
             </div>
           </article>
+          @endif
         </div>
       </div>
     </div>

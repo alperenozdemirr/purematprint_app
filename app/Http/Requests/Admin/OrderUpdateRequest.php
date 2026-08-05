@@ -21,9 +21,18 @@ class OrderUpdateRequest extends FormRequest
             'id' => 'required|integer|exists:orders,id',
             'status' => ['required', Rule::in(OrderStatus::values())],
             'invoice_status' => 'nullable|boolean',
+            'invoice_pdf' => ['nullable', 'file', 'mimes:pdf', 'max:20480'],
             'note' => 'nullable|string|max:1000',
             'tracking_number' => 'nullable|string|max:100',
             'tracking_url' => 'nullable|url|max:500',
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'invoice_pdf.mimes' => 'Fatura yalnızca PDF formatında yüklenebilir.',
+            'invoice_pdf.max' => 'Fatura PDF en fazla 20MB olabilir.',
         ];
     }
 }

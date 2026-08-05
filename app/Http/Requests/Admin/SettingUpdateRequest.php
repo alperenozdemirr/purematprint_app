@@ -24,6 +24,7 @@ class SettingUpdateRequest extends FormRequest
             'site_open' => $this->boolean('site_open'),
             'discount_enabled' => $this->boolean('discount_enabled'),
             'shipping_free_limit_enabled' => $this->boolean('shipping_free_limit_enabled'),
+            'show_real_homepage_reviews' => $this->boolean('show_real_homepage_reviews'),
         ]);
     }
 
@@ -32,6 +33,7 @@ class SettingUpdateRequest extends FormRequest
         return [
             'site_open' => ['boolean'],
             'discount_enabled' => ['boolean'],
+            'show_real_homepage_reviews' => ['boolean'],
             'discount_type' => ['nullable', Rule::enum(DiscountType::class), 'required_if:discount_enabled,1'],
             'discount_value' => [
                 'nullable',

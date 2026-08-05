@@ -370,7 +370,7 @@
       </section>
 
       {{-- Durum güncelleme --}}
-      <form action="{{ route('admin.orderUpdate') }}" method="POST" class="overflow-hidden rounded-xl bg-surface shadow-card">
+      <form action="{{ route('admin.orderUpdate') }}" method="POST" enctype="multipart/form-data" class="overflow-hidden rounded-xl bg-surface shadow-card">
         @csrf
         <input type="hidden" name="id" value="{{ $order->id }}">
         <div class="border-b border-ink/10 px-5 py-4">
@@ -413,6 +413,30 @@
               <input type="checkbox" name="invoice_status" value="1" @checked(old('invoice_status', $order->invoice_status)) class="h-4 w-4 rounded border-ink/20 text-accent focus:ring-accent/20">
               <span class="font-body text-[13px] font-semibold text-ink">Fatura kesildi</span>
             </label>
+            <p class="font-body text-[11px] text-muted">PDF yüklemeden de işaretleyebilirsiniz. İsterseniz daha sonra fatura ekleyebilirsiniz.</p>
+          </div>
+
+          <div>
+            <label for="invoice_pdf" class="mb-1.5 block font-body text-[13px] font-bold text-ink">Fatura PDF <span class="font-medium text-muted">(opsiyonel)</span></label>
+            <input type="file" id="invoice_pdf" name="invoice_pdf" accept=".pdf,application/pdf"
+                   class="w-full rounded-lg border border-ink/10 bg-cream px-3 py-2.5 font-body text-[13px] text-ink file:mr-3 file:rounded-md file:border-0 file:bg-accent file:px-3 file:py-1.5 file:text-[11px] file:font-bold file:uppercase file:text-on-dark">
+            <p class="mt-1.5 font-body text-[11px] text-muted">Yalnızca PDF, en fazla 20MB. Yüklenirse müşteri sipariş detayında görür.</p>
+            @error('invoice_pdf') <p class="mt-1.5 font-body text-[12px] font-medium text-danger">{{ $message }}</p> @enderror
+
+            @if ($order->invoiceFile)
+              <div class="mt-3 rounded-lg border border-ink/10 bg-cream/50 px-3 py-3">
+                <p class="font-body text-[12px] font-semibold text-ink break-all">{{ $order->invoiceFile->displayName() }}</p>
+                <div class="mt-2 flex flex-wrap gap-2">
+                  <a href="{{ $order->invoiceFile->url }}" target="_blank" rel="noopener noreferrer"
+                     class="inline-flex items-center rounded-lg border border-ink/15 bg-surface px-3 py-1.5 font-body text-[11px] font-bold text-ink hover:bg-hover">Görüntüle</a>
+                  <a href="{{ route('admin.orderFileDownload', ['code' => $order->code, 'fileId' => $order->invoiceFile->id]) }}"
+                     class="inline-flex items-center rounded-lg bg-accent px-3 py-1.5 font-body text-[11px] font-bold text-on-dark hover:bg-accent-dark">İndir</a>
+                  <button type="submit" form="order-invoice-delete-form"
+                          class="inline-flex items-center rounded-lg border border-danger/30 bg-danger/5 px-3 py-1.5 font-body text-[11px] font-bold text-danger hover:bg-danger/10"
+                          onclick="return confirm('Yüklü fatura PDF silinsin mi?');">Sil</button>
+                </div>
+              </div>
+            @endif
           </div>
 
           <div>
@@ -426,6 +450,12 @@
           </button>
         </div>
       </form>
+
+      @if ($order->invoiceFile)
+        <form id="order-invoice-delete-form" action="{{ route('admin.orderInvoiceDelete', $order->code) }}" method="POST" class="hidden">
+          @csrf
+        </form>
+      @endif
 
       {{-- Özet --}}
       <section class="overflow-hidden rounded-xl bg-surface shadow-card">

@@ -169,6 +169,39 @@
       </div>
     </div>
 
+    @if ($productReviews->isNotEmpty())
+      <section class="pt-16 border-t-[3px] border-ink mt-16" aria-labelledby="urun-yorumlari-baslik" data-i5="pdp-reviews">
+        <div class="flex flex-col gap-2 mb-8 min-[768px]:flex-row min-[768px]:items-end min-[768px]:justify-between">
+          <h2 id="urun-yorumlari-baslik" class="font-heading text-section-title font-semibold leading-[1.15] tracking-[-0.02em] normal-case m-0">Müşteri Yorumları</h2>
+          <p class="m-0 text-sm text-muted">{{ $productReviews->count() }} onaylı değerlendirme</p>
+        </div>
+        <div class="grid gap-5">
+          @foreach ($productReviews as $review)
+            @php
+              $stars = (int) max(1, min(5, (int) round((float) $review->rating)));
+            @endphp
+            <article class="border-[3px] border-ink bg-surface p-5 md:p-6 shadow-brutal-sm">
+              <div class="flex flex-wrap items-center gap-x-3 gap-y-1 mb-3">
+                <span class="text-[#c9a227] tracking-[0.08em]" aria-label="{{ $stars }} yıldız">{{ str_repeat('★', $stars) }}{{ str_repeat('☆', 5 - $stars) }}</span>
+                <span class="font-body text-[13px] font-bold text-ink">{{ $review->user?->name ?? 'Müşteri' }}</span>
+                <span class="font-body text-[12px] text-muted">{{ $review->created_at?->format('d.m.Y') }}</span>
+              </div>
+              <p class="m-0 text-sm leading-relaxed text-muted">{{ $review->content }}</p>
+              @if ($review->images->isNotEmpty())
+                <div class="mt-4 flex flex-wrap gap-2">
+                  @foreach ($review->images as $reviewImage)
+                    <a href="{{ $reviewImage->url }}" target="_blank" rel="noopener noreferrer" class="block h-20 w-20 overflow-hidden border-[3px] border-ink bg-bg">
+                      <img src="{{ $reviewImage->url }}" alt="Yorum görseli" class="h-full w-full object-cover" loading="lazy">
+                    </a>
+                  @endforeach
+                </div>
+              @endif
+            </article>
+          @endforeach
+        </div>
+      </section>
+    @endif
+
     @if ($relatedProducts->isNotEmpty())
       <section class="pt-16 border-t-[3px] border-ink mt-16 overflow-hidden [&_article.reveal]:opacity-100 [&_article.reveal]:translate-y-0" data-i5="pdp-related">
         <div class="flex flex-col gap-5 mb-7 min-[768px]:flex-row min-[768px]:items-end min-[768px]:justify-between">

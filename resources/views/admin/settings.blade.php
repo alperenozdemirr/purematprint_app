@@ -22,6 +22,11 @@
           <input type="checkbox" name="site_open" value="1" class="h-4 w-4 accent-accent" @checked(old('site_open', $setting->site_open))>
           <span class="font-body text-[14px] text-ink">Site açık (kapalıysa ziyaretçiler bakım sayfasını görür)</span>
         </label>
+        <label class="flex items-center gap-3 cursor-pointer">
+          <input type="hidden" name="show_real_homepage_reviews" value="0">
+          <input type="checkbox" name="show_real_homepage_reviews" value="1" class="h-4 w-4 accent-accent" @checked(old('show_real_homepage_reviews', $setting->show_real_homepage_reviews))>
+          <span class="font-body text-[14px] text-ink">Anasayfada gerçek müşteri yorumlarını göster (kapalıysa demo yorumlar görünür)</span>
+        </label>
       </div>
     </section>
 

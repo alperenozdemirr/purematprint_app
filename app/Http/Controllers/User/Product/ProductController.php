@@ -67,7 +67,14 @@ class ProductController extends Controller
     public function show(string $slug): View
     {
         $product = Product::query()
-            ->with(['category.parent', 'images'])
+            ->with([
+                'category.parent',
+                'images',
+                'comments' => fn ($query) => $query
+                    ->where('is_visible', true)
+                    ->with(['user', 'images'])
+                    ->latest(),
+            ])
             ->where('slug', $slug)
             ->where('status', Status::ACTIVE)
             ->firstOrFail();
@@ -84,7 +91,9 @@ class ProductController extends Controller
             ->limit(8)
             ->get();
 
-        return view('user.shop-detail', compact('product', 'categoryFilter', 'relatedProducts'));
+        $productReviews = $product->comments;
+
+        return view('user.shop-detail', compact('product', 'categoryFilter', 'relatedProducts', 'productReviews'));
     }
 
     public function collectionList(): View

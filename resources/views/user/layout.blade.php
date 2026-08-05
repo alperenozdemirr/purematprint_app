@@ -341,11 +341,8 @@
         </nav>
       </div>
       <div class="flex flex-col gap-6 pt-7 min-[768px]:flex-row min-[768px]:items-center min-[768px]:justify-between min-[768px]:gap-8" data-i5="footer__lower">
-        <div class="flex flex-wrap gap-2 [&_span]:inline-flex [&_span]:items-center [&_span]:justify-center [&_span]:min-w-[38px] [&_span]:h-6 [&_span]:px-2 [&_span]:bg-on-dark [&_span]:text-ink [&_span]:font-body [&_span]:text-[9px] [&_span]:font-bold [&_span]:tracking-[0.05em] [&_span]:uppercase" aria-label="Ödeme yöntemleri" data-i5="footer__payments">
-          <span>Visa</span>
-          <span>Mastercard</span>
-          <span>Troy</span>
-          <span>Amex</span>
+        <div class="flex items-center" aria-label="Ödeme yöntemleri" data-i5="footer__payments">
+          <img src="{{ asset('shared_directory/iyzico-band.png') }}" alt="iyzico ile güvenli ödeme" class="h-6 w-auto max-w-[235px] object-contain opacity-90" loading="lazy" width="235" height="auto">
         </div>
         <div class="flex flex-col gap-2.5 min-[768px]:flex-row min-[768px]:flex-wrap min-[768px]:items-center min-[768px]:justify-end min-[768px]:gap-x-5 min-[768px]:gap-y-2.5" data-i5="footer__meta">
           @if ($siteSetting->short_info)
@@ -366,9 +363,12 @@
             </nav>
           @endif
           <nav class="flex flex-wrap items-center gap-x-4 gap-y-2 [&_a]:text-[11px] [&_a]:text-on-dark/50 [&_a]:transition-colors hover:[&_a]:text-on-dark" aria-label="Yasal" data-i5="footer__legal">
-            <a href="{{ route('privacy') }}">KVKK / Gizlilik</a>
+            <a href="{{ route('agreements') }}">Sözleşmeler</a>
+            <a href="{{ route('agreements') }}#kvkk-aydinlatma">KVKK</a>
+            <a href="{{ route('agreements') }}#gizlilik-politikasi">Gizlilik</a>
             <a href="{{ route('cookies') }}">Çerez Politikası</a>
-            <a href="{{ route('distanceSales') }}">Mesafeli Satış Sözleşmesi</a>
+            <a href="{{ route('agreements') }}#mesafeli-satis-sozlesmesi">Mesafeli Satış</a>
+            <a href="https://softxplorers.com/" target="_blank" rel="noopener noreferrer">SoftXplorers</a>
           </nav>
         </div>
       </div>

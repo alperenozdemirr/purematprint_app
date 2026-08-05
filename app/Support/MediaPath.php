@@ -22,6 +22,8 @@ class MediaPath
 
     public const ORDER_FILE = 'shared_directory/files/order_files';
 
+    public const ORDER_INVOICE = 'shared_directory/files/order_invoices';
+
     public const OTHER = 'shared_directory/images/other';
 
     public const ALLOWED_PREFIX = 'shared_directory/';
@@ -37,6 +39,7 @@ class MediaPath
             ContentType::BLOG->value => self::BLOG,
             ContentType::COMMENT->value => self::COMMENT,
             ContentType::ORDER_FILE->value => self::ORDER_FILE,
+            ContentType::ORDER_INVOICE->value => self::ORDER_INVOICE,
             ContentType::USER->value => self::USER,
             default => self::OTHER,
         };

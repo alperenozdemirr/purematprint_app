@@ -112,6 +112,13 @@ class Order extends Model
             ->orderBy('number');
     }
 
+    public function invoiceFile(): HasOne
+    {
+        return $this->hasOne(File::class, 'key_id')
+            ->where('content_type', ContentType::ORDER_INVOICE->value)
+            ->latestOfMany();
+    }
+
     public static function generateCode(): string
     {
         $code = 'ORD-' . now()->format('Ymd');

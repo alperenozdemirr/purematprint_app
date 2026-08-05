@@ -8,6 +8,7 @@ use App\Enums\OrderStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\OrderIndexRequest;
 use App\Http\Requests\Admin\OrderUpdateRequest;
+use App\Http\Services\FileService;
 use App\Http\Services\OrderFileDownloadService;
 use App\Http\Services\OrderPackageCalculator;
 use App\Http\Services\ShipinkShipmentService;
@@ -23,6 +24,7 @@ class OrderController extends Controller
         protected ShipinkShipmentService $shipinkService,
         protected OrderPackageCalculator $packageCalculator,
         protected OrderFileDownloadService $orderFileDownloadService,
+        protected FileService $fileService,
     ) {
     }
 
@@ -67,6 +69,7 @@ class OrderController extends Controller
                 'invoiceAddress.county',
                 'details.product.images',
                 'orderFiles',
+                'invoiceFile',
             ])
             ->where('code', $code)
             ->firstOrFail();
@@ -125,10 +128,36 @@ class OrderController extends Controller
             }
         }
 
+        if ($request->hasFile('invoice_pdf')) {
+            $this->fileService->uploadOrderInvoice(
+                $request->file('invoice_pdf'),
+                $order->id,
+                auth('admin')->id(),
+            );
+            // PDF yüklendiyse fatura kesildi olarak işaretle
+            $payload['invoice_status'] = true;
+        }
+
         $order->update($payload);
 
         return redirect()->route('admin.orderDetailPage', $order->code)
             ->with('success', 'Sipariş başarıyla güncellendi.');
+    }
+
+    public function deleteInvoice(string $code): RedirectResponse
+    {
+        $order = Order::query()
+            ->with('invoiceFile')
+            ->where('code', $code)
+            ->firstOrFail();
+
+        if ($order->invoiceFile) {
+            $this->fileService->imageDelete($order->invoiceFile->id, \App\Enums\ContentType::ORDER_INVOICE);
+        }
+
+        return redirect()
+            ->route('admin.orderDetailPage', $order->code)
+            ->with('success', 'Fatura PDF silindi.');
     }
 
     public function createShipinkShipment(Request $request, string $code): RedirectResponse

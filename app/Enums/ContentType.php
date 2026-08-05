@@ -11,6 +11,7 @@ enum ContentType: string
     case BLOG = 'blog';
     case COMMENT = 'comment';
     case ORDER_FILE = 'order_file';
+    case ORDER_INVOICE = 'order_invoice';
 
     public static function values(): array
     {

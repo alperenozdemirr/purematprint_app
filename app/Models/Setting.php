@@ -36,6 +36,7 @@ class Setting extends Model
         'facebook_url',
         'whatsapp_phone',
         'short_info',
+        'show_real_homepage_reviews',
         'logo_id',
         'shipink_warehouse_id',
         'shipink_warehouse_name',
@@ -61,6 +62,7 @@ class Setting extends Model
         'shipping_fee' => 'decimal:2',
         'shipping_free_limit_enabled' => 'boolean',
         'shipping_free_limit' => 'decimal:2',
+        'show_real_homepage_reviews' => 'boolean',
         'logo_id' => 'integer',
         'shipink_default_weight' => 'integer',
         'shipink_default_length' => 'integer',
@@ -89,6 +91,7 @@ class Setting extends Model
                 'shipping_free_limit_enabled' => true,
                 'shipping_free_limit' => 500,
                 'whatsapp_phone' => '905321234567',
+                'show_real_homepage_reviews' => false,
             ]
         );
     }

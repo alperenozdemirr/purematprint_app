@@ -2,53 +2,39 @@
 @section('title', 'İletişim')
 
 @section('content')
-  <x-static-page title="İletişim" lead="Sorularınız, teklif talepleriniz ve sipariş desteği için bize ulaşın.">
-    <div class="grid gap-6 md:grid-cols-2 not-prose">
-      @if ($setting->email)
-        <div>
-          <p class="font-body text-[11px] font-bold uppercase tracking-[0.08em] text-ink mb-1">E-posta</p>
-          <a href="mailto:{{ $setting->email }}">{{ $setting->email }}</a>
-        </div>
-      @endif
-      @if ($setting->mobile_phone)
-        <div>
-          <p class="font-body text-[11px] font-bold uppercase tracking-[0.08em] text-ink mb-1">Cep Telefonu</p>
-          <a href="tel:{{ preg_replace('/\s+/', '', $setting->mobile_phone) }}">{{ $setting->mobile_phone }}</a>
-        </div>
-      @endif
-      @if ($setting->business_phone)
-        <div>
-          <p class="font-body text-[11px] font-bold uppercase tracking-[0.08em] text-ink mb-1">İş Telefonu</p>
-          <a href="tel:{{ preg_replace('/\s+/', '', $setting->business_phone) }}">{{ $setting->business_phone }}</a>
-        </div>
-      @endif
-      @if ($setting->whatsappLink())
-        <div>
-          <p class="font-body text-[11px] font-bold uppercase tracking-[0.08em] text-ink mb-1">WhatsApp</p>
-          <a href="{{ $setting->whatsappLink('Merhaba, bilgi almak istiyorum.') }}" target="_blank" rel="noopener noreferrer">WhatsApp ile yazın</a>
-        </div>
-      @endif
-      @if ($setting->address)
-        <div class="md:col-span-2">
-          <p class="font-body text-[11px] font-bold uppercase tracking-[0.08em] text-ink mb-1">Adres</p>
-          <p class="whitespace-pre-line">{{ $setting->address }}</p>
-        </div>
-      @endif
-    </div>
+  <x-static-page title="İletişim ve Şirket Bilgileri" lead="Tabela, pleksi ürün, yönlendirme, menü, etiket, sticker, kartvizit ve özel üretim ihtiyaçlarınız için bize ulaşın.">
+    <h2>Site ve marka</h2>
+    <p>Puremat Print – <a href="https://purematprint.com" target="_blank" rel="noopener noreferrer">purematprint.com</a></p>
 
-    @if ($setting->instagram_url || $setting->twitter_url || $setting->facebook_url)
-      <h2>Sosyal Medya</h2>
-      <ul>
-        @if ($setting->instagram_url)
-          <li><a href="{{ $setting->instagram_url }}" target="_blank" rel="noopener noreferrer">Instagram</a></li>
-        @endif
-        @if ($setting->twitter_url)
-          <li><a href="{{ $setting->twitter_url }}" target="_blank" rel="noopener noreferrer">Twitter / X</a></li>
-        @endif
-        @if ($setting->facebook_url)
-          <li><a href="{{ $setting->facebook_url }}" target="_blank" rel="noopener noreferrer">Facebook</a></li>
-        @endif
-      </ul>
-    @endif
+    <h2>Site sahibi ve satıcı</h2>
+    <p>GENÇ PRINT REKLAM ANONİM ŞİRKETİ</p>
+
+    <h2>Kayıtlı merkez, üretim ve iade adresi</h2>
+    <p>Maltepe Mah. Litros Yolu Sk. D Blok No: 2-4D/Z16, Zeytinburnu/İstanbul, Türkiye</p>
+
+    <h2>Ticari kayıt bilgileri</h2>
+    <ul>
+      <li><strong>Ticaret Sicili Müdürlüğü:</strong> İstanbul Ticaret Sicili Müdürlüğü</li>
+      <li><strong>Ticaret Sicil No:</strong> 341553-5</li>
+      <li><strong>Kayıtlı oda:</strong> İstanbul Ticaret Odası</li>
+      <li><strong>MERSİS No:</strong> 0393115305900001</li>
+      <li><strong>Vergi dairesi / VKN:</strong> Davutpaşa Vergi Dairesi Müdürlüğü / 3931153059</li>
+      <li><strong>KEP:</strong> <a href="mailto:gencprintreklam@hs01.kep.tr">gencprintreklam@hs01.kep.tr</a></li>
+    </ul>
+
+    <h2>Müşteri iletişimi</h2>
+    <ul>
+      <li><strong>Müşteri hizmetleri e-postası:</strong> <a href="mailto:hello@purematprint.com">hello@purematprint.com</a></li>
+      <li><strong>İade işlemleri e-postası:</strong> <a href="mailto:gencprintmuhasebe@hotmail.com">gencprintmuhasebe@hotmail.com</a></li>
+      <li><strong>Telefon / WhatsApp:</strong> <a href="tel:+905364624480">+90 536 462 44 80</a></li>
+      <li><strong>Instagram:</strong> <a href="https://www.instagram.com/puremat.print" target="_blank" rel="noopener noreferrer">@puremat.print</a></li>
+    </ul>
+
+    <h2>Bize yazın</h2>
+    <p>Tabela, pleksi ürün, yönlendirme, menü, etiket, sticker, kartvizit ve özel üretim ihtiyaçlarınız için <a href="mailto:hello@purematprint.com">hello@purematprint.com</a> adresine yazabilir veya <a href="tel:+905364624480">+90 536 462 44 80</a> numarası üzerinden iletişime geçebilirsiniz.</p>
+
+    <p>Hızlı teklif için ürün türünü, ölçüyü, adedi, teslimat yerini ve varsa baskıya uygun dosyanızı belirtmeniz yeterlidir.</p>
+
+    <p>Şirket, faaliyet alanına uygulanan mevzuata ve İstanbul Ticaret Odasının ilgili mesleki düzenlemelerine tabidir.</p>
   </x-static-page>
 @endsection

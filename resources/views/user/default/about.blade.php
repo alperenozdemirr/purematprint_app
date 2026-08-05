@@ -2,15 +2,17 @@
 @section('title', 'Hakkımızda')
 
 @section('content')
-  <x-static-page title="Hakkımızda" lead="PureMatPrint — baskı, tabela ve kurumsal kimlik alanında cesur tasarım ve kusursuz üretim.">
-    <p>PureMatPrint, markaların görünürlüğünü güçlendiren baskı ve tabela çözümleri sunan bir stüdyodur. Tasarımdan üretime kadar tüm süreci tek çatı altında yönetiyoruz.</p>
-    <p>Müşterilerimize hızlı teslimat, kaliteli malzeme ve şeffaf fiyatlandırma ile güvenilir bir alışveriş deneyimi sunmayı hedefliyoruz.</p>
-    <h2>Neler yapıyoruz?</h2>
-    <ul>
-      <li>Tabela ve yönlendirme sistemleri</li>
-      <li>Kurumsal baskı ve promosyon ürünleri</li>
-      <li>Özel tasarım ve marka kimliği uygulamaları</li>
-    </ul>
-    <p>Sorularınız için <a href="{{ route('contact') }}">iletişim</a> sayfamızdan bize ulaşabilirsiniz.</p>
+  <x-static-page title="Hakkımızda" lead="Puremat Print — Fikrinizi görünür, kullanılabilir ve üretilebilir bir çözüme dönüştürür.">
+    <p>Puremat Print, GENÇ PRINT REKLAM ANONİM ŞİRKETİ’nin baskı, reklam ve özel üretim markasıdır.</p>
+
+    <p>İstanbul’daki üretim altyapımızla tabela, pleksi uygulamalar, yönlendirme ürünleri, menü, etiket, sticker, kartvizit ve iç/dış mekân reklam çözümleri hazırlıyoruz.</p>
+
+    <p>Baskıya hazır dosyalarla çalışabildiğimiz gibi ihtiyaca göre tasarım desteği de sunuyoruz. Ürün ölçüsünü, kullanım alanını, adedi ve teslimat beklentisini değerlendiriyor; kişiye özel üretimlerde müşterinin yazılı veya sonradan doğrulanabilir dijital onayı üzerinden ilerliyoruz.</p>
+
+    <p>Standart ürünlerden kurumsal ve kişiye özel uygulamalara kadar her siparişte açık iletişime, kontrollü üretime ve özenli teslimata önem veriyoruz.</p>
+
+    <p><strong>Puremat Print — Fikrinizi görünür, kullanılabilir ve üretilebilir bir çözüme dönüştürür.</strong></p>
+
+    <p>İletişim ve şirket bilgileri için <a href="{{ route('contact') }}">iletişim</a> sayfamızı ziyaret edebilir; yasal metinler için <a href="{{ route('agreements') }}">sözleşmeler</a> sayfamıza bakabilirsiniz.</p>
   </x-static-page>
 @endsection

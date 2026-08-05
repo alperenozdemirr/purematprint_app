@@ -15,7 +15,7 @@
       @endif
     </div>
 
-    <div class="border-[3px] border-ink bg-surface shadow-brutal-sm p-6 md:p-8 text-[15px] leading-[1.75] text-muted [&_h2]:font-heading [&_h2]:text-xl [&_h2]:font-semibold [&_h2]:text-ink [&_h2]:mt-8 [&_h2]:mb-3 [&_h2:first-child]:mt-0 [&_p+p]:mt-4 [&_ul]:mt-4 [&_ul]:space-y-2 [&_ul]:list-disc [&_ul]:pl-5 [&_a]:text-accent [&_a]:font-semibold [&_a]:underline [&_a]:underline-offset-[3px] hover:[&_a]:text-accent-dark">
+    <div class="border-[3px] border-ink bg-surface shadow-brutal-sm p-6 md:p-8 text-[15px] leading-[1.75] text-muted [&_h2]:font-heading [&_h2]:text-xl [&_h2]:font-semibold [&_h2]:text-ink [&_h2]:mt-8 [&_h2]:mb-3 [&_h2:first-child]:mt-0 [&_h3]:font-heading [&_h3]:text-lg [&_h3]:font-semibold [&_h3]:text-ink [&_h3]:mt-6 [&_h3]:mb-2 [&_p+p]:mt-4 [&_ul]:mt-4 [&_ul]:space-y-2 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:mt-4 [&_ol]:space-y-2 [&_ol]:list-decimal [&_ol]:pl-5 [&_li]:leading-[1.7] [&_a]:text-accent [&_a]:font-semibold [&_a]:underline [&_a]:underline-offset-[3px] hover:[&_a]:text-accent-dark [&_strong]:text-ink [&_table]:mt-4 [&_table]:w-full [&_table]:text-left [&_table]:text-[13px] [&_th]:border-b [&_th]:border-ink/15 [&_th]:py-2 [&_th]:pr-3 [&_th]:font-bold [&_th]:text-ink [&_td]:border-b [&_td]:border-ink/10 [&_td]:py-2 [&_td]:pr-3 [&_td]:align-top">
       {{ $slot }}
     </div>
   </div>
