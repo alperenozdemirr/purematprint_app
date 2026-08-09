@@ -20,6 +20,7 @@ class OrderIndexRequest extends FormRequest
         $this->merge([
             'q' => $this->q ?: null,
             'status' => $this->status ?: null,
+            'filter' => $this->filter ?: null,
         ]);
     }
 
@@ -28,6 +29,11 @@ class OrderIndexRequest extends FormRequest
         return [
             'q' => 'nullable|string|max:255',
             'status' => ['nullable', Rule::in(OrderStatus::values())],
+            'filter' => ['nullable', Rule::in([
+                'awaiting_files',
+                'awaiting_approval',
+                'pending_payment',
+            ])],
         ];
     }
 }

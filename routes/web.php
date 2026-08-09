@@ -130,6 +130,7 @@ Route::group(['prefix' => 'admin/', 'middleware' => 'admin'], function () {
     Route::get('notifications/{id}/open', [AdminNotificationController::class, 'open'])->name('admin.notificationOpen');
     Route::post('notifications/{id}/read', [AdminNotificationController::class, 'markRead'])->name('admin.notificationMarkRead');
     Route::post('notifications/read-all', [AdminNotificationController::class, 'markAllRead'])->name('admin.notificationMarkAllRead');
+    Route::post('notifications/mark-viewed', [AdminNotificationController::class, 'markViewed'])->name('admin.notificationMarkViewed');
     Route::post('notifications/bulk-delete', [AdminNotificationController::class, 'bulkDestroy'])->name('admin.notificationBulkDestroy');
     Route::post('notifications/delete-all', [AdminNotificationController::class, 'destroyAll'])->name('admin.notificationDestroyAll');
     Route::post('notifications/{id}/delete', [AdminNotificationController::class, 'destroy'])->name('admin.notificationDestroy');

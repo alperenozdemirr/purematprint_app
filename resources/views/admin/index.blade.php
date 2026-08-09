@@ -98,21 +98,29 @@
           <h2 class="font-heading text-[17px] font-bold text-ink">Hızlı İşlemler</h2>
         </div>
         <div class="grid grid-cols-2 gap-3 p-5">
-          <a href="{{ route('admin.productStorePage') }}" class="flex flex-col items-center gap-2 rounded-xl bg-accent px-3 py-4 text-center text-on-dark transition-colors hover:bg-accent-dark">
+          <a href="{{ route('admin.orderList') }}" class="flex flex-col items-center gap-2 rounded-xl bg-accent px-3 py-4 text-center text-on-dark transition-colors hover:bg-accent-dark">
+            <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4zM3 6h18M12 11v6M9 14h6"/></svg>
+            <span class="font-body text-[11px] font-bold uppercase tracking-[0.04em]">Yeni Sipariş Oluştur</span>
+          </a>
+          <a href="{{ route('admin.orderList', ['filter' => 'awaiting_files']) }}" class="flex flex-col items-center gap-2 rounded-xl bg-cream px-3 py-4 text-center text-ink transition-colors hover:bg-hover">
+            <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M12 18v-6M9 15h6"/></svg>
+            <span class="font-body text-[11px] font-bold uppercase tracking-[0.04em]">Dosya Bekleyenler</span>
+          </a>
+          <a href="{{ route('admin.orderList', ['filter' => 'awaiting_approval']) }}" class="flex flex-col items-center gap-2 rounded-xl bg-cream px-3 py-4 text-center text-ink transition-colors hover:bg-hover">
+            <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 11 12 14l8-8"/><path d="M20 12v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h9"/></svg>
+            <span class="font-body text-[11px] font-bold uppercase tracking-[0.04em]">Onay Bekleyenler</span>
+          </a>
+          <a href="{{ route('admin.orderList', ['filter' => 'pending_payment']) }}" class="flex flex-col items-center gap-2 rounded-xl bg-cream px-3 py-4 text-center text-ink transition-colors hover:bg-hover">
+            <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+            <span class="font-body text-[11px] font-bold uppercase tracking-[0.04em]">Ödeme Bekleyenler</span>
+          </a>
+          <a href="{{ route('admin.productStorePage') }}" class="flex flex-col items-center gap-2 rounded-xl bg-cream px-3 py-4 text-center text-ink transition-colors hover:bg-hover">
             <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
-            <span class="font-body text-[12px] font-bold uppercase tracking-[0.04em]">Ürün Ekle</span>
-          </a>
-          <a href="{{ route('admin.productList') }}" class="flex flex-col items-center gap-2 rounded-xl bg-cream px-3 py-4 text-center text-ink transition-colors hover:bg-hover">
-            <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
-            <span class="font-body text-[12px] font-bold uppercase tracking-[0.04em]">Ürünler</span>
-          </a>
-          <a href="{{ route('admin.orderList') }}" class="flex flex-col items-center gap-2 rounded-xl bg-cream px-3 py-4 text-center text-ink transition-colors hover:bg-hover">
-            <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4zM3 6h18"/></svg>
-            <span class="font-body text-[12px] font-bold uppercase tracking-[0.04em]">Siparişler</span>
+            <span class="font-body text-[11px] font-bold uppercase tracking-[0.04em]">Ürün Ekle</span>
           </a>
           <a href="{{ route('admin.userList') }}" class="flex flex-col items-center gap-2 rounded-xl bg-cream px-3 py-4 text-center text-ink transition-colors hover:bg-hover">
             <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z"/></svg>
-            <span class="font-body text-[12px] font-bold uppercase tracking-[0.04em]">Kullanıcılar</span>
+            <span class="font-body text-[11px] font-bold uppercase tracking-[0.04em]">Kullanıcılar</span>
           </a>
         </div>
       </section>

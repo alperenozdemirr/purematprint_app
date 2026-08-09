@@ -61,13 +61,6 @@
                      class="inline-flex items-center rounded-lg bg-accent px-3 py-2 font-body text-[11px] font-bold uppercase tracking-[0.04em] text-on-dark hover:bg-accent-dark">
                     {{ $notification->order ? 'Siparişi Aç' : 'Görüntüle' }}
                   </a>
-                  @if (! $notification->isRead())
-                    <a href="{{ route('admin.notificationMarkRead', $notification->id) }}"
-                       onclick="event.preventDefault(); document.getElementById('mark-read-{{ $notification->id }}').submit();"
-                       class="inline-flex items-center rounded-lg border border-ink/15 bg-surface px-3 py-2 font-body text-[11px] font-bold uppercase tracking-[0.04em] text-ink hover:bg-hover">
-                      Okundu
-                    </a>
-                  @endif
                 </div>
               </div>
               <form action="{{ route('admin.notificationDestroy', $notification->id) }}" method="POST" onsubmit="return confirm('Bu bildirim silinsin mi?')">
@@ -80,12 +73,6 @@
       @endif
     </section>
   </form>
-
-  @foreach ($notifications as $notification)
-    @if (! $notification->isRead())
-      <form id="mark-read-{{ $notification->id }}" action="{{ route('admin.notificationMarkRead', $notification->id) }}" method="POST" class="hidden">@csrf</form>
-    @endif
-  @endforeach
 
   <div class="mt-5">
     {{ $notifications->links() }}

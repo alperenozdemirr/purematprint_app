@@ -55,9 +55,10 @@
       </div>
       <ul class="max-h-[360px] overflow-y-auto divide-y divide-ink/8" data-admin-notifications-list>
         @forelse (($adminRecentNotifications ?? collect()) as $notification)
-          <li>
+          <li data-notification-id="{{ $notification->id }}" data-notification-unread="{{ $notification->isRead() ? '0' : '1' }}">
             <a href="{{ route('admin.notificationOpen', $notification->id) }}"
-               class="block px-4 py-3 transition-colors hover:bg-cream {{ $notification->isRead() ? 'opacity-70' : 'bg-accent/5' }}">
+               class="block px-4 py-3 transition-colors hover:bg-cream {{ $notification->isRead() ? 'opacity-70' : 'bg-accent/5' }}"
+               data-notification-link>
               <p class="font-body text-[11px] font-bold uppercase tracking-[0.06em] text-accent m-0">{{ $notification->type?->label() }}</p>
               <p class="mt-1 font-body text-[13px] font-semibold text-ink m-0">{{ $notification->title }}</p>
               @if (filled($notification->body))
@@ -67,7 +68,7 @@
             </a>
           </li>
         @empty
-          <li class="px-4 py-8 text-center font-body text-[13px] text-muted">Henüz bildirim yok.</li>
+          <li class="px-4 py-8 text-center font-body text-[13px] text-muted" data-notifications-empty>Henüz bildirim yok.</li>
         @endforelse
       </ul>
       <div class="border-t border-ink/10 px-4 py-3">

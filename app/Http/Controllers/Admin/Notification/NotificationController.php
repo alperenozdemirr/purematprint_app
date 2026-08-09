@@ -20,7 +20,23 @@ class NotificationController extends Controller
             ->latest()
             ->paginate(30);
 
-        return view('admin.notification-list', compact('notifications'));
+        $visibleIds = $notifications->getCollection()->pluck('id')->all();
+        $this->markIdsAsRead($visibleIds);
+
+        $notifications->setCollection(
+            $notifications->getCollection()->map(function (AdminNotification $notification) {
+                if ($notification->read_at === null) {
+                    $notification->read_at = now();
+                }
+
+                return $notification;
+            })
+        );
+
+        return view('admin.notification-list', [
+            'notifications' => $notifications,
+            'adminUnreadNotificationCount' => AdminNotification::query()->unread()->count(),
+        ]);
     }
 
     public function recent(): JsonResponse
@@ -29,15 +45,53 @@ class NotificationController extends Controller
             ->with('order:id,code')
             ->latest()
             ->limit(10)
-            ->get()
-            ->map(fn (AdminNotification $n) => $this->serialize($n));
+            ->get();
 
-        $unreadCount = AdminNotification::query()->unread()->count();
+        $this->markIdsAsRead($items->pluck('id')->all());
+
+        $payload = $items->map(function (AdminNotification $notification) {
+            if ($notification->read_at === null) {
+                $notification->read_at = now();
+            }
+
+            return $this->serialize($notification);
+        });
 
         return response()->json([
-            'unread_count' => $unreadCount,
-            'items' => $items,
+            'unread_count' => AdminNotification::query()->unread()->count(),
+            'items' => $payload,
         ]);
+    }
+
+    public function markViewed(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'ids' => ['nullable', 'array'],
+            'ids.*' => ['integer'],
+        ]);
+
+        $ids = array_values(array_unique(array_map('intval', $validated['ids'] ?? [])));
+        $this->markIdsAsRead($ids);
+
+        return response()->json([
+            'ok' => true,
+            'unread_count' => AdminNotification::query()->unread()->count(),
+        ]);
+    }
+
+    /**
+     * @param  list<int>  $ids
+     */
+    private function markIdsAsRead(array $ids): void
+    {
+        if ($ids === []) {
+            return;
+        }
+
+        AdminNotification::query()
+            ->whereIn('id', $ids)
+            ->whereNull('read_at')
+            ->update(['read_at' => now()]);
     }
 
     public function open(int $id): RedirectResponse

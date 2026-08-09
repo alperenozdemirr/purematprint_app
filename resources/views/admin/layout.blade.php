@@ -343,6 +343,56 @@
       const notifRoot = document.querySelector('[data-admin-notifications]');
       const notifToggle = notifRoot?.querySelector('[data-admin-notifications-toggle]');
       const notifPanel = notifRoot?.querySelector('[data-admin-notifications-panel]');
+      const notifCount = notifRoot?.querySelector('[data-admin-notifications-count]');
+      const markViewedUrl = @json(route('admin.notificationMarkViewed'));
+
+      const setUnreadBadge = (count) => {
+        if (!notifCount) return;
+        const n = Number(count) || 0;
+        if (n > 0) {
+          notifCount.textContent = n > 99 ? '99+' : String(n);
+          notifCount.classList.remove('hidden');
+          notifCount.classList.add('flex');
+        } else {
+          notifCount.textContent = '0';
+          notifCount.classList.add('hidden');
+          notifCount.classList.remove('flex');
+        }
+      };
+
+      const markDropdownViewed = async () => {
+        const items = [...(notifRoot?.querySelectorAll('[data-notification-id]') || [])];
+        const ids = items.map((el) => Number(el.getAttribute('data-notification-id'))).filter(Boolean);
+        if (!ids.length) {
+          setUnreadBadge(0);
+          return;
+        }
+
+        try {
+          const res = await fetch(markViewedUrl, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Accept': 'application/json',
+              'X-CSRF-TOKEN': csrf,
+              'X-Requested-With': 'XMLHttpRequest',
+            },
+            credentials: 'same-origin',
+            body: JSON.stringify({ ids }),
+          });
+          if (!res.ok) return;
+          const data = await res.json();
+          setUnreadBadge(data.unread_count ?? 0);
+          items.forEach((el) => {
+            el.setAttribute('data-notification-unread', '0');
+            const link = el.querySelector('[data-notification-link]');
+            if (link) {
+              link.classList.remove('bg-accent/5');
+              link.classList.add('opacity-70');
+            }
+          });
+        } catch (e) {}
+      };
 
       const closeSearch = () => searchResults?.classList.add('hidden');
       const closeNotif = () => {
@@ -357,6 +407,7 @@
         if (willOpen) {
           notifPanel?.classList.remove('hidden');
           notifToggle?.setAttribute('aria-expanded', 'true');
+          markDropdownViewed();
         } else {
           closeNotif();
         }

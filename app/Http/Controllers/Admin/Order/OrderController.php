@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Admin\Order;
 
+use App\Enums\OrderDesignStatus;
 use App\Enums\OrderStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\OrderDesignUploadRequest;
@@ -56,10 +57,22 @@ class OrderController extends Controller
             $query->where('status', $validated['status']);
         }
 
+        $filter = $validated['filter'] ?? null;
+
+        if ($filter === 'awaiting_files') {
+            $query->where('status', OrderStatus::PREPARING->value)
+                ->whereDoesntHave('orderFiles');
+        } elseif ($filter === 'awaiting_approval') {
+            $query->where('design_status', OrderDesignStatus::AWAITING_APPROVAL->value);
+        } elseif ($filter === 'pending_payment') {
+            $query->where('status', OrderStatus::PENDING_PAYMENT->value);
+        }
+
         $orders = $query->paginate(15)->withQueryString();
         $orderStatuses = OrderStatus::cases();
+        $activeFilter = $filter;
 
-        return view('admin.order-list', compact('orders', 'orderStatuses'));
+        return view('admin.order-list', compact('orders', 'orderStatuses', 'activeFilter'));
     }
 
     public function show(string $code): View

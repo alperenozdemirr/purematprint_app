@@ -4,12 +4,37 @@
 @section('breadcrumb', 'Satış / Siparişler')
 
 @section('content')
+  @php
+    $activeFilter = $activeFilter ?? request('filter');
+    $filterLabel = match ($activeFilter) {
+      'awaiting_files' => 'Dosya bekleyen siparişler',
+      'awaiting_approval' => 'Müşteri onayı bekleyenler',
+      'pending_payment' => 'Ödeme bekleyenler',
+      default => null,
+    };
+  @endphp
+
   <div class="mb-6">
     <h2 class="font-heading text-[22px] font-bold leading-tight text-ink">Sipariş Listesi</h2>
-    <p class="font-body text-[13px] text-muted">Toplam <span class="font-bold text-ink">{{ $orders->total() }}</span> sipariş</p>
+    <p class="font-body text-[13px] text-muted">
+      Toplam <span class="font-bold text-ink">{{ $orders->total() }}</span> sipariş
+      @if ($filterLabel)
+        · <span class="font-semibold text-accent">{{ $filterLabel }}</span>
+      @endif
+    </p>
+  </div>
+
+  <div class="mb-4 flex flex-wrap gap-2">
+    <a href="{{ route('admin.orderList') }}" class="inline-flex rounded-lg px-3 py-2 font-body text-[11px] font-bold uppercase tracking-[0.04em] {{ empty($activeFilter) ? 'bg-ink text-on-dark' : 'bg-cream text-ink hover:bg-hover' }}">Tümü</a>
+    <a href="{{ route('admin.orderList', ['filter' => 'awaiting_files']) }}" class="inline-flex rounded-lg px-3 py-2 font-body text-[11px] font-bold uppercase tracking-[0.04em] {{ $activeFilter === 'awaiting_files' ? 'bg-ink text-on-dark' : 'bg-cream text-ink hover:bg-hover' }}">Dosya Bekleyenler</a>
+    <a href="{{ route('admin.orderList', ['filter' => 'awaiting_approval']) }}" class="inline-flex rounded-lg px-3 py-2 font-body text-[11px] font-bold uppercase tracking-[0.04em] {{ $activeFilter === 'awaiting_approval' ? 'bg-ink text-on-dark' : 'bg-cream text-ink hover:bg-hover' }}">Onay Bekleyenler</a>
+    <a href="{{ route('admin.orderList', ['filter' => 'pending_payment']) }}" class="inline-flex rounded-lg px-3 py-2 font-body text-[11px] font-bold uppercase tracking-[0.04em] {{ $activeFilter === 'pending_payment' ? 'bg-ink text-on-dark' : 'bg-cream text-ink hover:bg-hover' }}">Ödeme Bekleyenler</a>
   </div>
 
   <form action="{{ route('admin.orderList') }}" method="get" class="mb-6 rounded-xl bg-surface p-4 shadow-card">
+    @if ($activeFilter)
+      <input type="hidden" name="filter" value="{{ $activeFilter }}">
+    @endif
     <div class="grid grid-cols-1 gap-3 md:grid-cols-[1fr_auto_auto]">
       <div class="flex items-center overflow-hidden rounded-lg border border-ink/10 bg-cream">
         <span class="flex w-11 shrink-0 items-center justify-center text-muted">
