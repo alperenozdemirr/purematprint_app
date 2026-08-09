@@ -86,12 +86,12 @@
           @if ($product->stock_count === 0)
             <span class="text-muted text-xl">Stokta yok</span>
           @else
-            {{ number_format((float) $product->price, 0, ',', '.') }}₺
+            <span data-pdp-base-price="{{ (float) $product->price }}" data-pdp-total-price>{{ number_format((float) $product->price, 0, ',', '.') }}₺</span>
           @endif
         </p>
 
         @if ($product->description)
-          <p class="text-muted leading-[1.7] mb-8 max-w-[520px]" data-i5="pdp-info__desc">{{ $product->description }}</p>
+          <div class="text-muted leading-[1.7] mb-8 max-w-[520px] [&_p]:mb-2 [&_ul]:my-2 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:my-2 [&_ol]:list-decimal [&_ol]:pl-5 [&_a]:underline" data-i5="pdp-info__desc">{!! $product->description !!}</div>
         @endif
 
         <div class="grid grid-cols-3 gap-3 mb-7 max-[599px]:grid-cols-1" data-i5="pdp-trust">
@@ -115,17 +115,111 @@
               $canAddToCart = auth()->check()
                   && auth()->user()->type === \App\Enums\UserType::USER
                   && auth()->user()->status === \App\Enums\Status::ACTIVE;
+              $propertyGroups = $product->propertyGroups->filter(fn ($g) => $g->items->isNotEmpty());
+              $loginRedirect = parse_url(route('shopDetail', $product->slug), PHP_URL_PATH) ?: '/';
             @endphp
-            @if ($canAddToCart)
-              <form method="post" action="{{ route('cartStore') }}">
-                @csrf
-                <input type="hidden" name="product_id" value="{{ $product->id }}">
-                <input type="hidden" name="quantity" value="1">
+            <form method="post" action="{{ route('cartStore') }}" data-pdp-cart-form data-product-id="{{ $product->id }}" class="grid gap-5">
+              @csrf
+              <input type="hidden" name="product_id" value="{{ $product->id }}">
+              <input type="hidden" name="quantity" value="1">
+
+              @if ($propertyGroups->isNotEmpty())
+                <div class="grid gap-4" data-pdp-properties>
+                  @foreach ($propertyGroups as $group)
+                    @php
+                      $selected = old('properties.'.$group->id, $defaultPropertySelections[$group->id] ?? []);
+                      if (! is_array($selected)) {
+                          $selected = $selected !== null && $selected !== '' ? [(int) $selected] : [];
+                      }
+                      $selected = array_map('intval', $selected);
+                    @endphp
+                    <fieldset class="border-[3px] border-ink bg-bg p-4" data-property-group data-group-type="{{ $group->type->value }}" data-group-title="{{ $group->title }}" @if($group->is_required && $group->type === \App\Enums\ProductPropertyGroupType::MULTIPLE) data-required-multiple="1" @endif>
+                      <legend class="px-2 font-body text-[12px] font-bold uppercase tracking-[0.04em] text-ink">
+                        {{ $group->title }}
+                        @if ($group->is_required)
+                          <span class="text-announce">*</span>
+                        @endif
+                      </legend>
+                      <div class="grid gap-2 mt-2">
+                        @foreach ($group->items as $item)
+                          @php
+                            $inputId = 'prop-'.$group->id.'-'.$item->id;
+                            $isChecked = in_array((int) $item->id, $selected, true);
+                          @endphp
+                          <label for="{{ $inputId }}" class="flex items-center justify-between gap-3 border-2 border-ink/15 bg-surface px-3 py-2.5 cursor-pointer hover:border-ink has-[:checked]:border-ink has-[:checked]:bg-hover">
+                            <span class="inline-flex items-center gap-2.5 min-w-0">
+                              @if ($group->type === \App\Enums\ProductPropertyGroupType::SINGLE)
+                                <input
+                                  type="radio"
+                                  id="{{ $inputId }}"
+                                  name="properties[{{ $group->id }}]"
+                                  value="{{ $item->id }}"
+                                  data-property-price="{{ (float) $item->price }}"
+                                  data-property-title="{{ $item->title }}"
+                                  @checked($isChecked)
+                                  @required($group->is_required)
+                                  class="accent-accent shrink-0"
+                                >
+                              @else
+                                <input
+                                  type="checkbox"
+                                  id="{{ $inputId }}"
+                                  name="properties[{{ $group->id }}][]"
+                                  value="{{ $item->id }}"
+                                  data-property-price="{{ (float) $item->price }}"
+                                  data-property-title="{{ $item->title }}"
+                                  @checked($isChecked)
+                                  class="accent-accent shrink-0"
+                                >
+                              @endif
+                              <span class="font-body text-[13px] font-semibold text-ink truncate">{{ $item->title }}</span>
+                            </span>
+                            <span class="font-body text-[12px] font-bold text-muted whitespace-nowrap">
+                              @if ((float) $item->price > 0)
+                                +{{ number_format((float) $item->price, 0, ',', '.') }}₺
+                              @else
+                                +0₺
+                              @endif
+                            </span>
+                          </label>
+                        @endforeach
+                      </div>
+                      @error('properties.'.$group->id)
+                        <p class="mt-2 text-[12px] font-semibold text-announce">{{ $message }}</p>
+                      @enderror
+                    </fieldset>
+                  @endforeach
+                  @error('properties')
+                    <p class="text-[12px] font-semibold text-announce">{{ $message }}</p>
+                  @enderror
+                </div>
+
+                <div class="border-[3px] border-ink bg-bg p-4" data-pdp-price-summary>
+                  <p class="mb-3 font-body text-[11px] font-bold uppercase tracking-[0.06em] text-muted">Fiyat özeti</p>
+                  <div class="grid gap-2 text-sm">
+                    <div class="flex justify-between gap-3">
+                      <span class="text-muted">Baz fiyat</span>
+                      <span class="font-semibold text-ink" data-pdp-summary-base>{{ number_format((float) $product->price, 0, ',', '.') }}₺</span>
+                    </div>
+                    <div class="grid gap-1.5" data-pdp-summary-lines></div>
+                    <div class="flex justify-between gap-3 border-t-[3px] border-ink pt-3 mt-1">
+                      <span class="font-body text-[13px] font-bold uppercase tracking-[0.04em] text-ink">Toplam</span>
+                      <span class="font-body text-[18px] font-bold text-ink" data-pdp-summary-total>{{ number_format((float) $product->price, 0, ',', '.') }}₺</span>
+                    </div>
+                  </div>
+                </div>
+              @endif
+
+              @if ($canAddToCart)
                 <button type="submit" class="inline-flex items-center justify-center gap-2 w-full px-6 py-3.5 font-body text-[13px] font-bold uppercase tracking-[0.06em] text-center border-[3px] border-ink bg-action text-on-dark shadow-brutal hover:bg-action-hover hover:-translate-x-0.5 hover:-translate-y-0.5" data-i5="btn--fill">Sepete Ekle</button>
-              </form>
-            @else
-              <a href="{{ route('loginPage') }}" class="inline-flex items-center justify-center gap-2 w-full px-6 py-3.5 font-body text-[13px] font-bold uppercase tracking-[0.06em] text-center border-[3px] border-ink bg-action text-on-dark shadow-brutal hover:bg-action-hover hover:-translate-x-0.5 hover:-translate-y-0.5" data-i5="btn--fill">Sepete Ekle</a>
-            @endif
+              @else
+                <a href="{{ route('loginPage', ['redirect' => $loginRedirect]) }}"
+                   data-pdp-login-cta
+                   class="inline-flex items-center justify-center gap-2 w-full px-6 py-3.5 font-body text-[13px] font-bold uppercase tracking-[0.06em] text-center border-[3px] border-ink bg-action text-on-dark shadow-brutal hover:bg-action-hover hover:-translate-x-0.5 hover:-translate-y-0.5" data-i5="btn--fill">
+                  Giriş Yapıp Sepete Ekle
+                </a>
+              @endif
+            </form>
           @else
             <span class="inline-flex items-center justify-center w-full px-6 py-3.5 font-body text-[13px] font-bold uppercase tracking-[0.06em] text-center border-[3px] border-ink bg-cream text-muted cursor-not-allowed">Stokta Yok</span>
           @endif
@@ -142,9 +236,9 @@
               Ürün Detayları
               <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
             </summary>
-            <div class="pb-5 text-muted text-sm leading-[1.7]" data-i5="pdp-accordion__body">
+            <div class="pb-5 text-muted text-sm leading-[1.7] [&_p]:mb-2 [&_ul]:my-2 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:my-2 [&_ol]:list-decimal [&_ol]:pl-5 [&_a]:underline [&_h2]:mb-2 [&_h2]:mt-3 [&_h2]:text-ink [&_h2]:text-base [&_h2]:font-bold [&_h3]:mb-2 [&_h3]:mt-3 [&_h3]:text-ink [&_h3]:text-sm [&_h3]:font-bold" data-i5="pdp-accordion__body">
               @if ($product->description)
-                <p>{{ $product->description }}</p>
+                {!! $product->description !!}
               @else
                 <p>Bu ürün için detaylı açıklama henüz eklenmemiş.</p>
               @endif
@@ -246,5 +340,135 @@
   </div>
 </main>
 
+<script>
+  (function () {
+    const form = document.querySelector('[data-pdp-cart-form]');
+    const priceEl = document.querySelector('[data-pdp-total-price]');
+    if (!form || !priceEl) return;
+
+    const base = parseFloat(priceEl.getAttribute('data-pdp-base-price') || '0') || 0;
+    const linesEl = form.querySelector('[data-pdp-summary-lines]');
+    const summaryTotalEl = form.querySelector('[data-pdp-summary-total]');
+    const storageKey = 'pdp_props_' + (form.getAttribute('data-product-id') || '');
+
+    const formatTry = (value) => {
+      return new Intl.NumberFormat('tr-TR', { maximumFractionDigits: 0 }).format(value) + '₺';
+    };
+
+    const collectSelections = () => {
+      const selected = [];
+      form.querySelectorAll('[data-property-group]').forEach((group) => {
+        const groupTitle = group.getAttribute('data-group-title') || 'Özellik';
+        group.querySelectorAll('[data-property-price]:checked').forEach((input) => {
+          selected.push({
+            group: groupTitle,
+            title: input.getAttribute('data-property-title') || '',
+            price: parseFloat(input.getAttribute('data-property-price') || '0') || 0,
+            name: input.name,
+            value: input.value,
+          });
+        });
+      });
+      return selected;
+    };
+
+    const refresh = () => {
+      const selected = collectSelections();
+      const addon = selected.reduce((sum, row) => sum + row.price, 0);
+      const total = base + addon;
+
+      priceEl.textContent = formatTry(total);
+
+      if (summaryTotalEl) {
+        summaryTotalEl.textContent = formatTry(total);
+      }
+
+      if (linesEl) {
+        if (!selected.length) {
+          linesEl.innerHTML = '<p class="text-[12px] text-muted m-0">Henüz ek özellik seçilmedi.</p>';
+        } else {
+          const escapeHtml = (value) => String(value)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;');
+
+          linesEl.innerHTML = selected.map((row) => {
+            const priceText = row.price > 0
+              ? '+' + formatTry(row.price)
+              : '+0₺';
+            return '<div class="flex justify-between gap-3">' +
+              '<span class="text-muted min-w-0"><span class="font-semibold text-ink/70">' + escapeHtml(row.group) + ':</span> ' + escapeHtml(row.title) + '</span>' +
+              '<span class="font-semibold text-ink whitespace-nowrap">' + priceText + '</span>' +
+              '</div>';
+          }).join('');
+        }
+      }
+    };
+
+    const persistSelections = () => {
+      try {
+        const payload = {};
+        form.querySelectorAll('[data-property-price]:checked').forEach((input) => {
+          if (input.type === 'checkbox') {
+            if (!payload[input.name]) payload[input.name] = [];
+            payload[input.name].push(input.value);
+          } else {
+            payload[input.name] = input.value;
+          }
+        });
+        sessionStorage.setItem(storageKey, JSON.stringify(payload));
+      } catch (e) {}
+    };
+
+    const restoreSelections = () => {
+      try {
+        const raw = sessionStorage.getItem(storageKey);
+        if (!raw) return;
+        const payload = JSON.parse(raw);
+        Object.keys(payload || {}).forEach((name) => {
+          const value = payload[name];
+          if (Array.isArray(value)) {
+            value.forEach((v) => {
+              const input = form.querySelector('input[name="' + name + '"][value="' + v + '"]');
+              if (input) input.checked = true;
+            });
+          } else {
+            const input = form.querySelector('input[name="' + name + '"][value="' + value + '"]');
+            if (input) input.checked = true;
+          }
+        });
+      } catch (e) {}
+    };
+
+    form.addEventListener('change', () => {
+      persistSelections();
+      refresh();
+    });
+
+    form.addEventListener('submit', (event) => {
+      const groups = form.querySelectorAll('[data-required-multiple="1"]');
+      for (const group of groups) {
+        if (!group.querySelector('input[type="checkbox"]:checked')) {
+          event.preventDefault();
+          const title = (group.getAttribute('data-group-title') || 'Özellik').trim();
+          alert(title + ' için en az bir seçenek seçmelisiniz.');
+          return;
+        }
+      }
+      try { sessionStorage.removeItem(storageKey); } catch (e) {}
+    });
+
+    const loginCta = form.querySelector('[data-pdp-login-cta]');
+    if (loginCta) {
+      loginCta.addEventListener('click', () => {
+        persistSelections();
+      });
+    }
+
+    restoreSelections();
+    refresh();
+  })();
+</script>
 <script src="{{ asset('user/js/product.js') }}"></script>
 @endsection

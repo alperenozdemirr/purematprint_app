@@ -7,6 +7,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class OrderDetail extends Model
@@ -38,5 +39,10 @@ class OrderDetail extends Model
     public function comment(): HasOne
     {
         return $this->hasOne(Comment::class);
+    }
+
+    public function properties(): HasMany
+    {
+        return $this->hasMany(OrderDetailProperty::class);
     }
 }

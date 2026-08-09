@@ -9,10 +9,16 @@ use App\Enums\DiscountType;
 use App\Enums\ShippingMode;
 use App\Models\Order;
 use App\Models\Setting;
+use App\Models\ShoppingCart;
 use App\Models\User;
+use Illuminate\Validation\ValidationException;
 
 class OrderPricingService
 {
+    public function __construct(protected ProductPropertySelectionService $propertySelection)
+    {
+    }
+
     public function calculate(iterable $cartItems, ?User $user = null): array
     {
         $settings = Setting::current();
@@ -21,7 +27,9 @@ class OrderPricingService
         $totalQty = 0;
 
         foreach ($cartItems as $item) {
-            $subtotal += (float) $item->product->price * (int) $item->quantity;
+            /** @var ShoppingCart $item */
+            $unitPrice = $this->unitPriceForCartItem($item);
+            $subtotal += $unitPrice * (int) $item->quantity;
             $totalQty += (int) $item->quantity;
         }
 
@@ -62,6 +70,15 @@ class OrderPricingService
             'totalQty' => $totalQty,
             'total' => $total,
         ];
+    }
+
+    public function unitPriceForCartItem(ShoppingCart $item): float
+    {
+        try {
+            return $this->propertySelection->unitPriceForCartItem($item);
+        } catch (ValidationException) {
+            return round((float) ($item->product?->price ?? 0), 2);
+        }
     }
 
     private function isDiscountEligible(Setting $settings, ?User $user): bool

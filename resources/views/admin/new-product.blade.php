@@ -105,7 +105,7 @@
           <div class="p-5">
             <div>
               <label for="description" class="mb-1.5 block font-body text-[13px] font-bold text-ink">Ürün Açıklaması</label>
-              <textarea id="description" name="description" rows="5"
+              <textarea id="description" name="description" rows="8"
                         class="w-full rounded-lg border border-ink/10 bg-cream px-3.5 py-2.5 font-body text-[14px] leading-relaxed text-ink outline-none transition-colors focus:border-accent focus:ring-2 focus:ring-accent/15"
                         placeholder="Ürünün detaylı açıklaması...">{{ old('description') }}</textarea>
               @error('description') <p class="mt-1.5 font-body text-[12px] font-medium text-danger">{{ $message }}</p> @enderror
@@ -256,3 +256,5 @@
     })();
   </script>
 @endsection
+
+@include('admin.partials.ckeditor', ['ckeditorElementId' => 'description', 'ckeditorHeight' => 280])

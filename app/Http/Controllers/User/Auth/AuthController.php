@@ -22,10 +22,15 @@ use Throwable;
 
 class AuthController extends Controller
 {
-    public function loginPage(): View|RedirectResponse
+    public function loginPage(Request $request): View|RedirectResponse
     {
         if ($this->isActiveUser()) {
             return redirect()->route('index');
+        }
+
+        $redirect = $request->query('redirect');
+        if (is_string($redirect) && $redirect !== '' && str_starts_with($redirect, '/')) {
+            $request->session()->put('url.intended', url($redirect));
         }
 
         return view('user.default.login');

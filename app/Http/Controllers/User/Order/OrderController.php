@@ -13,11 +13,13 @@ use App\Http\Services\CheckoutOrderFileService;
 use App\Http\Services\IyzicoPaymentService;
 use App\Http\Services\OrderFileDownloadService;
 use App\Http\Services\OrderPricingService;
+use App\Http\Services\ProductPropertySelectionService;
 use App\Http\Services\StripePaymentService;
 use App\Models\Address;
 use App\Models\Order;
 use App\Models\ShoppingCart;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -30,6 +32,7 @@ class OrderController extends Controller
         protected CheckoutDraftService $draftService,
         protected CheckoutOrderFileService $orderFileService,
         protected OrderFileDownloadService $orderFileDownloadService,
+        protected ProductPropertySelectionService $propertySelection,
     ) {
     }
 
@@ -55,6 +58,7 @@ class OrderController extends Controller
                 'address.county',
                 'details.product.images',
                 'details.comment.images',
+                'details.properties',
                 'payment',
                 'orderFiles',
                 'invoiceFile',
@@ -82,7 +86,7 @@ class OrderController extends Controller
     public function checkoutPage(): View|RedirectResponse
     {
         $cartItems = ShoppingCart::query()
-            ->with(['product.images'])
+            ->with(['product.images', 'product.propertyGroups.items'])
             ->where('user_id', auth()->id())
             ->latest()
             ->get();
@@ -91,6 +95,14 @@ class OrderController extends Controller
             return redirect()
                 ->route('cart')
                 ->with('error', 'Sepetiniz boş. Ödeme yapabilmek için sepete ürün ekleyin.');
+        }
+
+        try {
+            $this->propertySelection->assertCartStillValid($cartItems);
+        } catch (ValidationException $e) {
+            return redirect()
+                ->route('cart')
+                ->with('error', collect($e->errors())->flatten()->first() ?? 'Sepetinizdeki ürün özelliklerini kontrol edin.');
         }
 
         $user = auth()->user();
@@ -115,10 +127,16 @@ class OrderController extends Controller
 
         $summary = $this->pricingService->calculate($cartItems, $user);
 
+        $resolvedByCartId = [];
+        foreach ($cartItems as $item) {
+            $resolvedByCartId[$item->id] = $this->propertySelection->resolveFromCartItem($item);
+        }
+
         return view('user.default.checkout', [
             'cartItems' => $cartItems,
             'addresses' => $addresses,
             'user' => $user,
+            'resolvedByCartId' => $resolvedByCartId,
             ...$summary,
         ]);
     }
@@ -134,7 +152,7 @@ class OrderController extends Controller
         }
 
         $cartItems = ShoppingCart::query()
-            ->with('product')
+            ->with(['product.propertyGroups.items'])
             ->where('user_id', $user->id)
             ->get();
 
@@ -142,6 +160,14 @@ class OrderController extends Controller
             return redirect()
                 ->route('cart')
                 ->with('error', 'Sepetiniz boş.');
+        }
+
+        try {
+            $this->propertySelection->assertCartStillValid($cartItems);
+        } catch (ValidationException $e) {
+            return redirect()
+                ->route('cart')
+                ->with('error', collect($e->errors())->flatten()->first() ?? 'Sepetinizdeki ürün özelliklerini kontrol edin.');
         }
 
         $addressId = (int) $request->validated('address_id');

@@ -92,6 +92,16 @@
               </a>
               <div>
                 <a href="{{ $product ? route('shopDetail', $product->slug) : '#' }}" class="font-heading text-card-title font-semibold leading-snug normal-case inline-block mb-1 text-ink transition-colors hover:text-accent" data-i5="order-detail-item__name">{{ $product?->title }}</a>
+                @if ($detail->properties->isNotEmpty())
+                  <ul class="mb-1.5 space-y-0.5 text-[12px] text-muted">
+                    @foreach ($detail->properties as $property)
+                      <li>
+                        <span class="font-semibold text-ink/70">{{ $property->group_title }}:</span>
+                        {{ $property->property_title }}
+                      </li>
+                    @endforeach
+                  </ul>
+                @endif
                 <p class="text-[13px] text-muted" data-i5="order-detail-item__qty">{{ $detail->quantity }} adet × {{ number_format((float) $detail->price, 0, ',', '.') }} ₺</p>
               </div>
               <span class="font-body font-bold text-sm" data-i5="order-detail-item__price">{{ number_format($lineTotal, 0, ',', '.') }} ₺</span>

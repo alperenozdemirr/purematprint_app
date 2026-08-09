@@ -12,6 +12,7 @@ use App\Http\Controllers\User\Default\PageController;
 use App\Http\Controllers\User\Product\ProductController;
 use App\Http\Controllers\Admin\Default\DefaultController as AdminDefaultController;
 use App\Http\Controllers\Admin\Product\ProductController as AdminProductController;
+use App\Http\Controllers\Admin\Product\ProductPropertyController as AdminProductPropertyController;
 use App\Http\Controllers\Admin\Category\CategoryController as AdminCategoryController;
 use App\Http\Controllers\Admin\Banner\BannerController as AdminBannerController;
 use App\Http\Controllers\Admin\Order\OrderController as AdminOrderController;
@@ -93,6 +94,7 @@ Route::group(['middleware' => 'user'],function (){
     Route::get('sepet', [ShoppingCartController::class, 'index'])->name('cart');
     Route::post('sepet/store', [ShoppingCartController::class, 'store'])->name('cartStore');
     Route::post('sepet/update', [ShoppingCartController::class, 'update'])->name('cartUpdate');
+    Route::post('sepet/{id}/ozellikler', [ShoppingCartController::class, 'updateProperties'])->name('cartUpdateProperties');
     Route::get('sepet/{id}/delete', [ShoppingCartController::class, 'destroy'])->name('cartDelete');
 
     Route::get('hesabim', [AccountController::class, 'index'])->name('account');
@@ -123,6 +125,15 @@ Route::group(['prefix' => 'admin/', 'middleware' => 'admin'], function () {
     Route::post('products/update', [AdminProductController::class, 'update'])->name('admin.productUpdate');
     Route::get('products/image/{imageId}/delete', [AdminProductController::class, 'imageDelete'])->name('admin.productImageDelete');
     Route::get('products/{id}/delete', [AdminProductController::class, 'destroy'])->name('admin.productDelete');
+    Route::post('products/{productId}/property-groups', [AdminProductPropertyController::class, 'storeGroup'])->name('admin.productPropertyGroupStore');
+    Route::post('products/{productId}/property-groups/with-items', [AdminProductPropertyController::class, 'storeGroupWithItems'])->name('admin.productPropertyGroupWithItemsStore');
+    Route::post('property-groups/{groupId}/update', [AdminProductPropertyController::class, 'updateGroup'])->name('admin.productPropertyGroupUpdate');
+    Route::post('property-groups/{groupId}/delete', [AdminProductPropertyController::class, 'destroyGroup'])->name('admin.productPropertyGroupDelete');
+    Route::post('property-groups/{groupId}/items', [AdminProductPropertyController::class, 'storeItem'])->name('admin.productPropertyItemStore');
+    Route::post('property-groups/{groupId}/items/bulk', [AdminProductPropertyController::class, 'storeItemsBulk'])->name('admin.productPropertyItemBulkStore');
+    Route::post('property-groups/{groupId}/items/bulk-update', [AdminProductPropertyController::class, 'updateItemsBulk'])->name('admin.productPropertyItemBulkUpdate');
+    Route::post('property-items/{itemId}/update', [AdminProductPropertyController::class, 'updateItem'])->name('admin.productPropertyItemUpdate');
+    Route::post('property-items/{itemId}/delete', [AdminProductPropertyController::class, 'destroyItem'])->name('admin.productPropertyItemDelete');
     Route::get('products/{slug}', [AdminProductController::class, 'show'])->name('admin.productEditPage');
 
     Route::get('categories', [AdminCategoryController::class, 'index'])->name('admin.categoryList');

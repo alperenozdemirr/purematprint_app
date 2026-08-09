@@ -69,12 +69,21 @@ class CheckoutCompletionService
             ], $invoice));
 
             foreach ($draft['items'] as $item) {
-                OrderDetail::create([
+                $detail = OrderDetail::create([
                     'order_id' => $order->id,
                     'product_id' => $item['product_id'],
                     'price' => $item['price'],
                     'quantity' => $item['quantity'],
                 ]);
+
+                foreach ($item['properties'] ?? [] as $property) {
+                    $detail->properties()->create([
+                        'group_title' => $property['group_title'],
+                        'property_title' => $property['property_title'],
+                        'price' => $property['price'],
+                        'property_item_id' => $property['property_item_id'] ?? null,
+                    ]);
+                }
 
                 Product::query()
                     ->where('id', $item['product_id'])

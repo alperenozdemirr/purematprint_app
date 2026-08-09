@@ -11,6 +11,10 @@ use Illuminate\Support\Str;
 
 class CheckoutDraftService
 {
+    public function __construct(protected ProductPropertySelectionService $propertySelection)
+    {
+    }
+
     public function createDraft(
         User $user,
         int $addressId,
@@ -23,11 +27,14 @@ class CheckoutDraftService
         $items = [];
 
         foreach ($cartItems as $item) {
+            $resolved = $this->propertySelection->resolveFromCartItem($item);
+
             $items[] = [
                 'product_id' => (int) $item->product_id,
-                'price' => (float) $item->product->price,
+                'price' => (float) $resolved['unit_price'],
                 'quantity' => (int) $item->quantity,
                 'title' => (string) $item->product->title,
+                'properties' => $resolved['lines'],
             ];
         }
 

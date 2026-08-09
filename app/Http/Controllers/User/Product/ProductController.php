@@ -70,6 +70,7 @@ class ProductController extends Controller
             ->with([
                 'category.parent',
                 'images',
+                'propertyGroups.items',
                 'comments' => fn ($query) => $query
                     ->where('is_visible', true)
                     ->with(['user', 'images'])
@@ -92,8 +93,16 @@ class ProductController extends Controller
             ->get();
 
         $productReviews = $product->comments;
+        $defaultPropertySelections = app(\App\Http\Services\ProductPropertySelectionService::class)
+            ->defaultSelections($product);
 
-        return view('user.shop-detail', compact('product', 'categoryFilter', 'relatedProducts', 'productReviews'));
+        return view('user.shop-detail', compact(
+            'product',
+            'categoryFilter',
+            'relatedProducts',
+            'productReviews',
+            'defaultPropertySelections',
+        ));
     }
 
     public function collectionList(): View

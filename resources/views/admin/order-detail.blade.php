@@ -153,6 +153,19 @@
                         @else
                           <p class="font-body text-[14px] font-bold text-ink">Ürün silinmiş</p>
                         @endif
+                        @if ($detail->properties->isNotEmpty())
+                          <ul class="mt-2 space-y-1">
+                            @foreach ($detail->properties as $property)
+                              <li class="font-body text-[12px] text-muted">
+                                <span class="font-semibold text-ink/70">{{ $property->group_title }}:</span>
+                                {{ $property->property_title }}
+                                @if ((float) $property->price > 0)
+                                  (+{{ number_format((float) $property->price, 2, ',', '.') }}₺)
+                                @endif
+                              </li>
+                            @endforeach
+                          </ul>
+                        @endif
                       </div>
                     </div>
                   </td>

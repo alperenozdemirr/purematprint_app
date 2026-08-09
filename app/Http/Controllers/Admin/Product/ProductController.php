@@ -13,6 +13,7 @@ use App\Http\Services\FileService;
 use App\Models\Category;
 use App\Models\File;
 use App\Models\Product;
+use App\Models\ProductPropertyGroup;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
@@ -94,13 +95,36 @@ class ProductController extends Controller
     public function show(string $slug): View
     {
         $product = Product::query()
-            ->with(['category', 'images'])
+            ->with(['category', 'images', 'propertyGroups.items'])
             ->where('slug', $slug)
             ->firstOrFail();
 
         $categoryOptions = Category::buildSelectOptions();
 
-        return view('admin.product-edit', compact('product', 'categoryOptions'));
+        $propertyGroupTemplates = ProductPropertyGroup::query()
+            ->with(['items', 'product:id,title,code'])
+            ->withCount('items')
+            ->orderByDesc('id')
+            ->limit(200)
+            ->get()
+            ->map(fn (ProductPropertyGroup $group) => [
+                'id' => $group->id,
+                'title' => $group->title,
+                'type' => $group->type->value,
+                'is_required' => (bool) $group->is_required,
+                'product_title' => $group->product?->title,
+                'product_code' => $group->product?->code,
+                'items_count' => (int) $group->items_count,
+                'items' => $group->items->map(fn ($item) => [
+                    'title' => $item->title,
+                    'price' => (float) $item->price,
+                    'is_default' => (bool) $item->is_default,
+                    'sort_order' => (int) $item->sort_order,
+                ])->values()->all(),
+            ])
+            ->values();
+
+        return view('admin.product-edit', compact('product', 'categoryOptions', 'propertyGroupTemplates'));
     }
 
     public function update(ProductUpdateRequest $request): RedirectResponse

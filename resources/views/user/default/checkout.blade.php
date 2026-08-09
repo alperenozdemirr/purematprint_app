@@ -177,7 +177,9 @@
             @foreach ($cartItems as $item)
             @php
               $product = $item->product;
-              $lineTotal = (float) $product->price * $item->quantity;
+              $resolved = $resolvedByCartId[$item->id] ?? ['unit_price' => (float) $product->price, 'lines' => []];
+              $unitPrice = (float) ($resolved['unit_price'] ?? $product->price);
+              $lineTotal = $unitPrice * $item->quantity;
             @endphp
             <div class="grid grid-cols-[56px_1fr_auto] gap-3 items-center text-sm">
               <div class="border-[3px] border-ink aspect-square overflow-hidden bg-bg [&_img]:w-full [&_img]:h-full [&_img]:object-cover">
@@ -185,7 +187,14 @@
               </div>
               <div>
                 <p class="font-semibold leading-snug">{{ $product->title }}</p>
-                <p class="text-muted text-xs">{{ $item->quantity }} adet</p>
+                <p class="text-muted text-xs">{{ $item->quantity }} adet × {{ number_format($unitPrice, 0, ',', '.') }} ₺</p>
+                @if (! empty($resolved['lines']))
+                  <ul class="mt-1 space-y-0.5 text-[11px] text-muted">
+                    @foreach ($resolved['lines'] as $line)
+                      <li>{{ $line['group_title'] }}: {{ $line['property_title'] }}</li>
+                    @endforeach
+                  </ul>
+                @endif
               </div>
               <span class="font-bold whitespace-nowrap">{{ number_format($lineTotal, 0, ',', '.') }} ₺</span>
             </div>

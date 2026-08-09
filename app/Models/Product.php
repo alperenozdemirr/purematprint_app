@@ -65,4 +65,9 @@ class Product extends Model
     {
         return $this->hasMany(Comment::class);
     }
+
+    public function propertyGroups(): HasMany
+    {
+        return $this->hasMany(ProductPropertyGroup::class)->orderBy('sort_order')->orderBy('id');
+    }
 }

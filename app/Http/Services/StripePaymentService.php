@@ -11,6 +11,10 @@ use Stripe\Stripe;
 
 class StripePaymentService
 {
+    public function __construct(protected OrderPricingService $pricingService)
+    {
+    }
+
     public function isConfigured(): bool
     {
         return filled(config('stripe.secret'))
@@ -110,7 +114,9 @@ class StripePaymentService
         $lineItems = [];
 
         foreach ($cartItems as $item) {
-            $unitAmount = (int) round((float) $item->product->price * $discountFactor * 100);
+            $unitAmount = (int) round(
+                $this->pricingService->unitPriceForCartItem($item) * $discountFactor * 100
+            );
 
             $lineItems[] = [
                 'price_data' => [

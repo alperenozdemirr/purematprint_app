@@ -20,6 +20,10 @@ use Iyzipay\Request\RetrieveCheckoutFormRequest;
 
 class IyzicoPaymentService
 {
+    public function __construct(protected OrderPricingService $pricingService)
+    {
+    }
+
     public function isConfigured(): bool
     {
         return filled(config('iyzico.api_key'))
@@ -144,12 +148,13 @@ class IyzicoPaymentService
         $items = [];
 
         foreach ($cartItems as $item) {
+            $linePrice = $this->pricingService->unitPriceForCartItem($item) * (int) $item->quantity;
             $basketItem = new BasketItem();
-            $basketItem->setId((string) $item->product_id);
+            $basketItem->setId((string) $item->id);
             $basketItem->setName(Str::limit($item->product->title, 100, ''));
             $basketItem->setCategory1('Ürün');
             $basketItem->setItemType(BasketItemType::PHYSICAL);
-            $basketItem->setPrice($this->formatAmount((float) $item->product->price * (int) $item->quantity));
+            $basketItem->setPrice($this->formatAmount($linePrice));
             $items[] = $basketItem;
         }
 
@@ -171,7 +176,7 @@ class IyzicoPaymentService
         $total = 0.0;
 
         foreach ($cartItems as $item) {
-            $total += (float) $item->product->price * (int) $item->quantity;
+            $total += $this->pricingService->unitPriceForCartItem($item) * (int) $item->quantity;
         }
 
         if (! $summary['shippingFree']) {

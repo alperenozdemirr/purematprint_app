@@ -6,7 +6,7 @@ namespace App\Http\Requests\User;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class CartStoreRequest extends FormRequest
+class CartPropertiesUpdateRequest extends FormRequest
 {
     public function authorize(): bool
     {
@@ -16,17 +16,8 @@ class CartStoreRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'product_id' => ['required', 'integer', 'exists:products,id'],
-            'quantity' => ['nullable', 'integer', 'min:1', 'max:999'],
             'properties' => ['nullable', 'array'],
             'properties.*' => ['nullable'],
         ];
-    }
-
-    protected function prepareForValidation(): void
-    {
-        $this->merge([
-            'quantity' => $this->quantity ?: 1,
-        ]);
     }
 }

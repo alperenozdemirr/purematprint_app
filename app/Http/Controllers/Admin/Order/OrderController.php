@@ -68,6 +68,7 @@ class OrderController extends Controller
                 'invoiceAddress.city',
                 'invoiceAddress.county',
                 'details.product.images',
+                'details.properties',
                 'orderFiles',
                 'invoiceFile',
             ])
