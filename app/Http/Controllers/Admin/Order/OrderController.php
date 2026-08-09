@@ -6,15 +6,18 @@ namespace App\Http\Controllers\Admin\Order;
 
 use App\Enums\OrderStatus;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\OrderDesignUploadRequest;
 use App\Http\Requests\Admin\OrderIndexRequest;
 use App\Http\Requests\Admin\OrderUpdateRequest;
 use App\Http\Services\FileService;
 use App\Http\Services\OrderFileDownloadService;
 use App\Http\Services\OrderPackageCalculator;
+use App\Http\Services\OrderPreparingFileService;
 use App\Http\Services\ShipinkShipmentService;
 use App\Models\Order;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -25,6 +28,7 @@ class OrderController extends Controller
         protected OrderPackageCalculator $packageCalculator,
         protected OrderFileDownloadService $orderFileDownloadService,
         protected FileService $fileService,
+        protected OrderPreparingFileService $preparingFileService,
     ) {
     }
 
@@ -71,6 +75,8 @@ class OrderController extends Controller
                 'details.properties',
                 'orderFiles',
                 'invoiceFile',
+                'designFile',
+                'designRequests.file',
             ])
             ->where('code', $code)
             ->firstOrFail();
@@ -80,8 +86,35 @@ class OrderController extends Controller
         $packageEstimate = $order->canCreateShipinkShipment()
             ? $this->packageCalculator->calculate($order)
             : null;
+        $canManagePreparing = $order->canManageOrderFilesAndDesign();
 
-        return view('admin.order-detail', compact('order', 'orderStatuses', 'shipinkConfigured', 'packageEstimate'));
+        return view('admin.order-detail', compact(
+            'order',
+            'orderStatuses',
+            'shipinkConfigured',
+            'packageEstimate',
+            'canManagePreparing',
+        ));
+    }
+
+    public function uploadDesign(OrderDesignUploadRequest $request, string $code): RedirectResponse
+    {
+        $order = Order::query()->where('code', $code)->firstOrFail();
+        $note = trim((string) ($request->validated('note') ?? ''));
+        $note = $note !== '' ? $note : null;
+
+        try {
+            $this->preparingFileService->queueDesignUpload(
+                $order,
+                $request->file('design_file'),
+                $note,
+                (int) auth('admin')->id(),
+            );
+        } catch (ValidationException $e) {
+            return back()->withErrors($e->errors())->withInput();
+        }
+
+        return back()->with('success', 'Tasarım yükleme kuyruğa alındı. İşlem bitince müşteriye e-posta gönderilecek.');
     }
 
     public function downloadFile(string $code, int $fileId): StreamedResponse

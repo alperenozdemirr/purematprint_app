@@ -158,6 +158,59 @@ class FileService
         );
     }
 
+    /**
+     * Sipariş tasarım dosyasını R2'ye yükler. Varsa önceki tasarımı siler (tek aktif tasarım).
+     */
+    public function uploadOrderDesignFromLocalPath(
+        string $localRelativePath,
+        int $orderId,
+        string $originalName,
+        ?int $userId = null,
+    ): File {
+        $existing = File::query()
+            ->where('key_id', $orderId)
+            ->where('content_type', ContentType::ORDER_DESIGN->value)
+            ->get();
+
+        foreach ($existing as $old) {
+            $this->imageDelete($old->id, ContentType::ORDER_DESIGN);
+        }
+
+        $extension = strtolower(pathinfo($originalName, PATHINFO_EXTENSION) ?: pathinfo($localRelativePath, PATHINFO_EXTENSION));
+        $fileName = Str::uuid()->toString().($extension !== '' ? '.'.$extension : '');
+        $relativePath = MediaPath::ORDER_DESIGN.'/'.$fileName;
+
+        $absolutePath = Storage::disk('local')->path($localRelativePath);
+
+        if (! is_file($absolutePath)) {
+            throw new \RuntimeException('Geçici tasarım dosyası bulunamadı: '.$localRelativePath);
+        }
+
+        $stream = fopen($absolutePath, 'rb');
+
+        if ($stream === false) {
+            throw new \RuntimeException('Tasarım dosyası okunamadı.');
+        }
+
+        try {
+            Storage::disk('r2')->put($relativePath, $stream);
+        } finally {
+            if (is_resource($stream)) {
+                fclose($stream);
+            }
+        }
+
+        return $this->storeFile(
+            $fileName,
+            FileType::FILE,
+            ContentType::ORDER_DESIGN,
+            $userId,
+            $orderId,
+            1,
+            $originalName,
+        );
+    }
+
     public function putBinary(string $baseDirectory, string $fileName, string $content): string
     {
         $relativePath = $baseDirectory.'/'.$fileName;
@@ -198,6 +251,7 @@ class FileService
             $contentType == ContentType::COMMENT => MediaPath::COMMENT,
             $contentType == ContentType::ORDER_FILE => MediaPath::ORDER_FILE,
             $contentType == ContentType::ORDER_INVOICE => MediaPath::ORDER_INVOICE,
+            $contentType == ContentType::ORDER_DESIGN => MediaPath::ORDER_DESIGN,
             default => null,
         };
 

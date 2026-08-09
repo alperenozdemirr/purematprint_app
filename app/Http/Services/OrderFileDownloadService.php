@@ -24,6 +24,7 @@ class OrderFileDownloadService
             ->whereIn('content_type', [
                 ContentType::ORDER_FILE->value,
                 ContentType::ORDER_INVOICE->value,
+                ContentType::ORDER_DESIGN->value,
             ])
             ->firstOrFail();
 

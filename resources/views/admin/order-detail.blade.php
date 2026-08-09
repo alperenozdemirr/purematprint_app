@@ -192,7 +192,7 @@
               @foreach ($order->orderFiles as $orderFile)
                 @php
                   $ext = strtolower(pathinfo($orderFile->displayName(), PATHINFO_EXTENSION));
-                  $canPreview = in_array($ext, ['png', 'pdf'], true);
+                  $canPreview = in_array($ext, ['png', 'pdf', 'jpg', 'jpeg'], true);
                 @endphp
                 <li class="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-ink/10 bg-cream/40 px-4 py-3">
                   <div class="min-w-0">
@@ -208,6 +208,81 @@
                 </li>
               @endforeach
             </ul>
+          @endif
+        </div>
+      </section>
+
+      {{-- Tasarım yönetimi --}}
+      <section class="overflow-hidden rounded-xl bg-surface shadow-card">
+        <div class="border-b border-ink/10 px-5 py-4 flex flex-wrap items-center justify-between gap-2">
+          <h3 class="font-heading text-[16px] font-bold text-ink">Tasarım / Revize</h3>
+          <span class="inline-flex rounded-md bg-cream px-2.5 py-1 font-body text-[11px] font-bold text-ink">
+            {{ $order->design_status?->label() ?? 'Tasarım Yok' }}
+          </span>
+        </div>
+        <div class="p-5 grid gap-5">
+          @if ($order->designFile)
+            @php
+              $designExt = strtolower(pathinfo($order->designFile->displayName(), PATHINFO_EXTENSION));
+              $designPreview = in_array($designExt, ['png', 'pdf', 'jpg', 'jpeg'], true);
+            @endphp
+            <div class="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-ink/10 bg-cream/40 px-4 py-3">
+              <div class="min-w-0">
+                <p class="font-body text-[14px] font-semibold text-ink break-all">{{ $order->designFile->displayName() }}</p>
+                <p class="mt-0.5 font-body text-[11px] text-muted">Güncel tasarım</p>
+              </div>
+              <div class="flex flex-wrap gap-2">
+                @if ($designPreview)
+                  <a href="{{ $order->designFile->url }}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center rounded-lg border border-ink/15 bg-surface px-3 py-2 font-body text-[12px] font-bold text-ink hover:bg-hover">Görüntüle</a>
+                @endif
+                <a href="{{ route('admin.orderFileDownload', ['code' => $order->code, 'fileId' => $order->designFile->id]) }}" class="inline-flex items-center rounded-lg bg-accent px-3 py-2 font-body text-[12px] font-bold text-on-dark hover:bg-accent-dark">İndir</a>
+              </div>
+            </div>
+          @else
+            <p class="font-body text-[13px] text-muted">Henüz tasarım yüklenmedi.</p>
+          @endif
+
+          @if ($canManagePreparing ?? false)
+            <form action="{{ route('admin.orderDesignUpload', $order->code) }}" method="POST" enctype="multipart/form-data" class="grid gap-3 rounded-lg border border-dashed border-ink/20 bg-cream/30 p-4">
+              @csrf
+              <p class="font-body text-[12px] text-muted m-0">Yalnızca “Hazırlanıyor” durumunda tasarım yükleyebilirsiniz. Müşteri onaylayabilir veya revize isteyebilir.</p>
+              <div>
+                <label for="design_file" class="mb-1.5 block font-body text-[12px] font-bold text-muted">Tasarım dosyası</label>
+                <input id="design_file" type="file" name="design_file" required accept=".png,.pdf,.psd,.jpg,.jpeg"
+                       class="w-full rounded-lg border border-ink/10 bg-surface px-3 py-2 font-body text-[13px] text-ink">
+                @error('design_file') <p class="mt-1.5 font-body text-[12px] text-danger">{{ $message }}</p> @enderror
+              </div>
+              <div>
+                <label for="design_note" class="mb-1.5 block font-body text-[12px] font-bold text-muted">Not (opsiyonel)</label>
+                <textarea id="design_note" name="note" rows="3" maxlength="2000" placeholder="Müşteriye iletilecek not..."
+                          class="w-full rounded-lg border border-ink/10 bg-surface px-3 py-2 font-body text-[13px] text-ink">{{ old('note') }}</textarea>
+                @error('note') <p class="mt-1.5 font-body text-[12px] text-danger">{{ $message }}</p> @enderror
+              </div>
+              <div class="flex justify-end">
+                <button type="submit" class="inline-flex items-center rounded-lg bg-accent px-4 py-2.5 font-body text-[12px] font-bold uppercase tracking-[0.04em] text-on-dark hover:bg-accent-dark">Tasarımı Yükle</button>
+              </div>
+            </form>
+          @else
+            <p class="font-body text-[12px] text-muted">Tasarım yükleme yalnızca hazırlanıyor aşamasında açıktır.</p>
+          @endif
+
+          @if ($order->designRequests->isNotEmpty())
+            <div>
+              <h4 class="mb-3 font-heading text-[14px] font-bold text-ink">Revize / Onay Geçmişi</h4>
+              <ul class="space-y-3">
+                @foreach ($order->designRequests as $requestItem)
+                  <li class="rounded-lg border border-ink/10 bg-cream/40 px-4 py-3">
+                    <div class="flex flex-wrap items-center justify-between gap-2">
+                      <p class="font-body text-[13px] font-semibold text-ink m-0">{{ $requestItem->type->label() }}</p>
+                      <p class="font-body text-[11px] text-muted m-0">{{ $requestItem->created_at?->format('d.m.Y H:i') }} · {{ $requestItem->actor_type->label() }}</p>
+                    </div>
+                    @if (filled($requestItem->note))
+                      <p class="mt-2 font-body text-[13px] text-muted m-0">{{ $requestItem->note }}</p>
+                    @endif
+                  </li>
+                @endforeach
+              </ul>
+            </div>
           @endif
         </div>
       </section>

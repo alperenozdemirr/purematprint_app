@@ -12,6 +12,7 @@ enum ContentType: string
     case COMMENT = 'comment';
     case ORDER_FILE = 'order_file';
     case ORDER_INVOICE = 'order_invoice';
+    case ORDER_DESIGN = 'order_design';
 
     public static function values(): array
     {

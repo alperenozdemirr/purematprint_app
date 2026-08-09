@@ -56,6 +56,13 @@
       <svg width="19" height="19" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4zM3 6h18M16 10a4 4 0 0 1-8 0"/></svg>
       <span class="admin-nav-text">Siparişler</span>
     </a>
+    <a href="{{ route('admin.notificationList') }}" title="Bildirimler" class="{{ $navLink }} {{ request()->routeIs('admin.notification*') ? $navLinkActive : '' }}">
+      <svg width="19" height="19" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 0 1-3.4 0"/></svg>
+      <span class="admin-nav-text">Bildirimler</span>
+      @if (($adminUnreadNotificationCount ?? 0) > 0)
+        <span class="admin-nav-text ml-auto inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-badge-sale px-1.5 font-body text-[10px] font-bold text-on-dark">{{ $adminUnreadNotificationCount > 99 ? '99+' : $adminUnreadNotificationCount }}</span>
+      @endif
+    </a>
     <a href="{{ route('admin.analytics') }}" title="Günlük Analiz" class="{{ $navLink }} {{ request()->routeIs('admin.analytics*') ? $navLinkActive : '' }}">
       <svg width="19" height="19" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 19V5M8 19v-7M12 19V9M16 19v-4M20 19V7"/></svg>
       <span class="admin-nav-text">Günlük Analiz</span>

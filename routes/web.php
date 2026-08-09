@@ -33,6 +33,8 @@ use App\Http\Controllers\Admin\Blog\BlogController as AdminBlogController;
 use App\Http\Controllers\Admin\Company\CompanyController as AdminCompanyController;
 use App\Http\Controllers\Admin\Account\AccountController as AdminAccountController;
 use App\Http\Controllers\Admin\Newsletter\NewsletterController as AdminNewsletterController;
+use App\Http\Controllers\Admin\Notification\NotificationController as AdminNotificationController;
+use App\Http\Controllers\Admin\Search\SearchController as AdminSearchController;
 use App\Http\Controllers\User\Blog\BlogController as UserBlogController;
 use App\Http\Controllers\User\Newsletter\NewsletterController as UserNewsletterController;
 use App\Http\Controllers\MediaController;
@@ -110,6 +112,9 @@ Route::group(['middleware' => 'user'],function (){
     Route::get('siparislerim', [UserOrderController::class, 'index'])->name('orderList');
     Route::get('siparislerim/{code}', [UserOrderController::class, 'show'])->name('orderShow');
     Route::get('siparislerim/{code}/dosya/{fileId}', [UserOrderController::class, 'downloadFile'])->name('orderFileDownload');
+    Route::post('siparislerim/{code}/dosya', [UserOrderController::class, 'uploadCustomerFile'])->name('orderCustomerFileUpload');
+    Route::post('siparislerim/{code}/dosya/{fileId}/sil', [UserOrderController::class, 'deleteCustomerFile'])->name('orderCustomerFileDelete');
+    Route::post('siparislerim/{code}/tasarim-karar', [UserOrderController::class, 'decideDesign'])->name('orderDesignDecide');
     Route::post('siparislerim/yorum', [UserCommentController::class, 'store'])->name('commentStore');
     Route::get('odeme', [UserOrderController::class, 'checkoutPage'])->name('checkout');
     Route::post('odeme', [UserOrderController::class, 'checkoutStore'])->name('checkoutStore');
@@ -118,6 +123,16 @@ Route::group(['middleware' => 'user'],function (){
 Route::group(['prefix' => 'admin/', 'middleware' => 'admin'], function () {
     Route::get('/', [AdminDefaultController::class, 'index'])->name('admin.index');
     Route::post('ui/sidebar', [AdminDefaultController::class, 'toggleSidebar'])->name('admin.sidebarToggle');
+    Route::get('search', AdminSearchController::class)->name('admin.search');
+
+    Route::get('notifications', [AdminNotificationController::class, 'index'])->name('admin.notificationList');
+    Route::get('notifications/recent', [AdminNotificationController::class, 'recent'])->name('admin.notificationRecent');
+    Route::get('notifications/{id}/open', [AdminNotificationController::class, 'open'])->name('admin.notificationOpen');
+    Route::post('notifications/{id}/read', [AdminNotificationController::class, 'markRead'])->name('admin.notificationMarkRead');
+    Route::post('notifications/read-all', [AdminNotificationController::class, 'markAllRead'])->name('admin.notificationMarkAllRead');
+    Route::post('notifications/bulk-delete', [AdminNotificationController::class, 'bulkDestroy'])->name('admin.notificationBulkDestroy');
+    Route::post('notifications/delete-all', [AdminNotificationController::class, 'destroyAll'])->name('admin.notificationDestroyAll');
+    Route::post('notifications/{id}/delete', [AdminNotificationController::class, 'destroy'])->name('admin.notificationDestroy');
 
     Route::get('products', [AdminProductController::class, 'index'])->name('admin.productList');
     Route::get('products/create', [AdminProductController::class, 'storePage'])->name('admin.productStorePage');
@@ -165,6 +180,7 @@ Route::group(['prefix' => 'admin/', 'middleware' => 'admin'], function () {
     Route::post('orders/update', [AdminOrderController::class, 'update'])->name('admin.orderUpdate');
     Route::get('orders/{code}/dosya/{fileId}', [AdminOrderController::class, 'downloadFile'])->name('admin.orderFileDownload');
     Route::post('orders/{code}/fatura/sil', [AdminOrderController::class, 'deleteInvoice'])->name('admin.orderInvoiceDelete');
+    Route::post('orders/{code}/tasarim', [AdminOrderController::class, 'uploadDesign'])->name('admin.orderDesignUpload');
     Route::get('orders/{code}', [AdminOrderController::class, 'show'])->name('admin.orderDetailPage');
     Route::post('orders/{code}/shipink/create', [AdminOrderController::class, 'createShipinkShipment'])->name('admin.orderShipinkCreate');
     Route::post('orders/{code}/shipink/sync', [AdminOrderController::class, 'syncShipinkShipment'])->name('admin.orderShipinkSync');

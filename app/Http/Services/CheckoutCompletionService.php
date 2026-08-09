@@ -18,8 +18,10 @@ use Illuminate\Support\Facades\DB;
 
 class CheckoutCompletionService
 {
-    public function __construct(protected OrderEmailService $orderEmailService)
-    {
+    public function __construct(
+        protected OrderEmailService $orderEmailService,
+        protected AdminNotificationService $adminNotificationService,
+    ) {
     }
 
     public function validateDraftStock(array $draft): ?string
@@ -108,6 +110,11 @@ class CheckoutCompletionService
 
     public function sendConfirmationEmail(Order $order): void
     {
+        $order->loadMissing('user');
+
+        $this->adminNotificationService->notifyNewOrder($order);
+        $this->adminNotificationService->notifyPaymentCompleted($order);
+
         $this->orderEmailService->sendConfirmationIfNeeded($order);
         $this->orderEmailService->sendAdminNewOrderNotificationIfNeeded($order);
     }

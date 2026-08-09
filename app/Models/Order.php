@@ -6,6 +6,7 @@ namespace App\Models;
 
 use App\Enums\DiscountType;
 use App\Enums\InvoiceType;
+use App\Enums\OrderDesignStatus;
 use App\Enums\OrderStatus;
 use App\Enums\ContentType;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -37,6 +38,7 @@ class Order extends Model
         'tax_number',
         'note',
         'status',
+        'design_status',
         'invoice_status',
         'shipink_order_id',
         'shipink_shipment_id',
@@ -78,6 +80,7 @@ class Order extends Model
         'delivered_email_sent_at' => 'datetime',
         'carrier_picked_up_at' => 'datetime',
         'status' => OrderStatus::class,
+        'design_status' => OrderDesignStatus::class,
     ];
 
     public function user(): BelongsTo
@@ -117,6 +120,23 @@ class Order extends Model
         return $this->hasOne(File::class, 'key_id')
             ->where('content_type', ContentType::ORDER_INVOICE->value)
             ->latestOfMany();
+    }
+
+    public function designFile(): HasOne
+    {
+        return $this->hasOne(File::class, 'key_id')
+            ->where('content_type', ContentType::ORDER_DESIGN->value)
+            ->latestOfMany();
+    }
+
+    public function designRequests(): HasMany
+    {
+        return $this->hasMany(OrderDesignRequest::class)->latest();
+    }
+
+    public function canManageOrderFilesAndDesign(): bool
+    {
+        return $this->status === OrderStatus::PREPARING;
     }
 
     public static function generateCode(): string

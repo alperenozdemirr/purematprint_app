@@ -267,6 +267,113 @@
       // Session'dan gelen durum zaten body class'ında; ikon etiketlerini senkronize et
       setCollapsed(body.classList.contains('admin-sidebar-collapsed'), false);
     })();
+
+    (function () {
+      const csrf = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+      const searchRoot = document.querySelector('[data-admin-search]');
+      const searchInput = searchRoot?.querySelector('[data-admin-search-input]');
+      const searchResults = searchRoot?.querySelector('[data-admin-search-results]');
+      const searchUrl = @json(route('admin.search'));
+      let searchTimer = null;
+
+      const escapeHtml = (value) => String(value ?? '')
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;');
+
+      const renderGroup = (title, items) => {
+        if (!items.length) return '';
+        return `
+          <div class="border-b border-ink/8 last:border-b-0">
+            <p class="px-3 pt-3 pb-1 font-body text-[10px] font-bold uppercase tracking-[0.08em] text-muted">${escapeHtml(title)}</p>
+            ${items.map((item) => `
+              <a href="${escapeHtml(item.url)}" class="block px-3 py-2.5 hover:bg-cream">
+                <span class="block font-body text-[13px] font-semibold text-ink">${escapeHtml(item.label)}</span>
+                <span class="block font-body text-[11px] text-muted">${escapeHtml(item.meta || '')}</span>
+              </a>
+            `).join('')}
+          </div>
+        `;
+      };
+
+      const runSearch = async (q) => {
+        if (!searchResults) return;
+        if (q.trim().length < 2) {
+          searchResults.classList.add('hidden');
+          searchResults.innerHTML = '';
+          return;
+        }
+
+        try {
+          const res = await fetch(`${searchUrl}?q=${encodeURIComponent(q)}`, {
+            headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+            credentials: 'same-origin',
+          });
+          if (!res.ok) throw new Error('search failed');
+          const data = await res.json();
+          const html = [
+            renderGroup('Siparişler', data.orders || []),
+            renderGroup('Müşteriler', data.customers || []),
+            renderGroup('Ürünler', data.products || []),
+          ].join('');
+
+          if (!html) {
+            searchResults.innerHTML = '<p class="px-4 py-6 text-center font-body text-[13px] text-muted">Sonuç bulunamadı.</p>';
+          } else {
+            searchResults.innerHTML = html;
+          }
+          searchResults.classList.remove('hidden');
+        } catch (e) {
+          searchResults.innerHTML = '<p class="px-4 py-6 text-center font-body text-[13px] text-danger">Arama yapılamadı.</p>';
+          searchResults.classList.remove('hidden');
+        }
+      };
+
+      searchInput?.addEventListener('input', () => {
+        clearTimeout(searchTimer);
+        searchTimer = setTimeout(() => runSearch(searchInput.value || ''), 250);
+      });
+
+      searchRoot?.querySelector('[data-admin-search-form]')?.addEventListener('submit', (event) => {
+        event.preventDefault();
+        runSearch(searchInput?.value || '');
+      });
+
+      const notifRoot = document.querySelector('[data-admin-notifications]');
+      const notifToggle = notifRoot?.querySelector('[data-admin-notifications-toggle]');
+      const notifPanel = notifRoot?.querySelector('[data-admin-notifications-panel]');
+
+      const closeSearch = () => searchResults?.classList.add('hidden');
+      const closeNotif = () => {
+        notifPanel?.classList.add('hidden');
+        notifToggle?.setAttribute('aria-expanded', 'false');
+      };
+
+      notifToggle?.addEventListener('click', (event) => {
+        event.stopPropagation();
+        const willOpen = notifPanel?.classList.contains('hidden');
+        closeSearch();
+        if (willOpen) {
+          notifPanel?.classList.remove('hidden');
+          notifToggle?.setAttribute('aria-expanded', 'true');
+        } else {
+          closeNotif();
+        }
+      });
+
+      document.addEventListener('click', (event) => {
+        if (searchRoot && !searchRoot.contains(event.target)) closeSearch();
+        if (notifRoot && !notifRoot.contains(event.target)) closeNotif();
+      });
+
+      document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape') {
+          closeSearch();
+          closeNotif();
+        }
+      });
+    })();
   </script>
   @yield('scripts')
   @stack('scripts')

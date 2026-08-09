@@ -8,14 +8,18 @@ use App\Enums\PaymentProvider;
 use App\Enums\Status;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\User\CheckoutStoreRequest;
+use App\Http\Requests\User\OrderCustomerFileUploadRequest;
+use App\Http\Requests\User\OrderDesignDecisionRequest;
 use App\Http\Services\CheckoutDraftService;
 use App\Http\Services\CheckoutOrderFileService;
 use App\Http\Services\IyzicoPaymentService;
 use App\Http\Services\OrderFileDownloadService;
+use App\Http\Services\OrderPreparingFileService;
 use App\Http\Services\OrderPricingService;
 use App\Http\Services\ProductPropertySelectionService;
 use App\Http\Services\StripePaymentService;
 use App\Models\Address;
+use App\Models\File;
 use App\Models\Order;
 use App\Models\ShoppingCart;
 use Illuminate\Http\RedirectResponse;
@@ -32,6 +36,7 @@ class OrderController extends Controller
         protected CheckoutDraftService $draftService,
         protected CheckoutOrderFileService $orderFileService,
         protected OrderFileDownloadService $orderFileDownloadService,
+        protected OrderPreparingFileService $preparingFileService,
         protected ProductPropertySelectionService $propertySelection,
     ) {
     }
@@ -62,6 +67,8 @@ class OrderController extends Controller
                 'payment',
                 'orderFiles',
                 'invoiceFile',
+                'designFile',
+                'designRequests.file',
             ])
             ->where('user_id', auth()->id())
             ->where('code', $code)
@@ -70,6 +77,7 @@ class OrderController extends Controller
         return view('user.default.order-detail', [
             'order' => $order,
             'activeNav' => 'orders',
+            'canManagePreparing' => $order->canManageOrderFilesAndDesign(),
         ]);
     }
 
@@ -81,6 +89,66 @@ class OrderController extends Controller
             ->firstOrFail();
 
         return $this->orderFileDownloadService->download($order, $fileId);
+    }
+
+    public function uploadCustomerFile(OrderCustomerFileUploadRequest $request, string $code): RedirectResponse
+    {
+        $order = $this->ownedOrder($code);
+
+        try {
+            $this->preparingFileService->queueCustomerFileUpload($order, $request->file('file'));
+        } catch (ValidationException $e) {
+            return back()->withErrors($e->errors())->withInput();
+        }
+
+        return back()->with('success', 'Dosya yükleme kuyruğa alındı. Kısa süre içinde işlenecek ve e-posta ile bilgilendirileceksiniz.');
+    }
+
+    public function deleteCustomerFile(string $code, int $fileId): RedirectResponse
+    {
+        $order = $this->ownedOrder($code);
+        $file = File::query()->findOrFail($fileId);
+
+        try {
+            $this->preparingFileService->queueCustomerFileDelete($order, $file);
+        } catch (ValidationException $e) {
+            return back()->withErrors($e->errors());
+        }
+
+        return back()->with('success', 'Dosya silme işlemi kuyruğa alındı. Tamamlandığında e-posta ile bilgilendirileceksiniz.');
+    }
+
+    public function decideDesign(OrderDesignDecisionRequest $request, string $code): RedirectResponse
+    {
+        $order = $this->ownedOrder($code)->load('designFile');
+        $validated = $request->validated();
+        $note = isset($validated['note']) ? trim((string) $validated['note']) : null;
+        $note = $note !== '' ? $note : null;
+
+        try {
+            if ($validated['decision'] === 'approve') {
+                $this->preparingFileService->approveDesign($order, $note, (int) auth()->id());
+            } else {
+                $this->preparingFileService->requestDesignRevision($order, (string) $note, (int) auth()->id());
+            }
+        } catch (ValidationException $e) {
+            return back()->withErrors($e->errors())->withInput();
+        }
+
+        return back()->with(
+            'success',
+            $validated['decision'] === 'approve'
+                ? 'Tasarım onayınız kaydedildi. Bilgilendirme e-postası gönderilecek.'
+                : 'Revize talebiniz kaydedildi. Bilgilendirme e-postası gönderilecek.'
+        );
+    }
+
+    private function ownedOrder(string $code): Order
+    {
+        return Order::query()
+            ->where('user_id', auth()->id())
+            ->where('code', $code)
+            ->firstOrFail();
     }
 
     public function checkoutPage(): View|RedirectResponse
