@@ -131,6 +131,8 @@
             <div class="mt-4 hidden grid-cols-3 gap-3 sm:grid-cols-4" data-image-preview></div>
           </div>
         </section>
+
+        @include('admin.partials.product-properties-create')
       </div>
 
       <div class="flex flex-col gap-6">
@@ -253,6 +255,143 @@
       });
 
       form.addEventListener('submit', () => syncInputFiles());
+    })();
+
+    (function () {
+      const root = document.querySelector('[data-create-property-manager]');
+      if (!root) return;
+
+      const groupsWrap = root.querySelector('[data-create-groups]');
+      const groupTemplate = document.getElementById('create-property-group-template');
+      const itemTemplate = document.getElementById('create-property-item-row-template');
+      if (!groupsWrap || !groupTemplate || !itemTemplate) return;
+
+      let templates = [];
+      try {
+        templates = JSON.parse(document.getElementById('create-property-templates-json')?.textContent || '[]');
+      } catch (e) {
+        templates = [];
+      }
+
+      const reindex = () => {
+        groupsWrap.querySelectorAll('[data-create-group]').forEach((groupEl, gIndex) => {
+          groupEl.querySelectorAll('[name]').forEach((input) => {
+            input.name = input.name
+              .replace(/property_groups\[(?:\d+|__G__)\]/, 'property_groups[' + gIndex + ']');
+          });
+
+          const tbody = groupEl.querySelector('[data-create-item-rows]');
+          tbody?.querySelectorAll('[data-create-item-row]').forEach((row, iIndex) => {
+            row.querySelectorAll('[name]').forEach((input) => {
+              input.name = input.name.replace(/\[items\]\[(?:\d+|__I__)\]/, '[items][' + iIndex + ']');
+            });
+          });
+
+          const titleInput = groupEl.querySelector('[data-create-group-title]');
+          const summary = groupEl.querySelector('[data-create-group-summary-title]');
+          if (titleInput && summary) {
+            const syncTitle = () => {
+              summary.textContent = titleInput.value.trim() || 'Yeni özellik grubu';
+            };
+            titleInput.removeEventListener('input', titleInput._syncTitle || (() => {}));
+            titleInput._syncTitle = syncTitle;
+            titleInput.addEventListener('input', syncTitle);
+            syncTitle();
+          }
+        });
+      };
+
+      const addGroup = (preset = null) => {
+        const html = groupTemplate.innerHTML.replaceAll('__G__', String(groupsWrap.querySelectorAll('[data-create-group]').length));
+        groupsWrap.insertAdjacentHTML('beforeend', html);
+        const groupEl = groupsWrap.lastElementChild;
+        if (preset) {
+          const title = groupEl.querySelector('[data-create-group-title]');
+          const type = groupEl.querySelector('select[name*="[type]"]');
+          const required = groupEl.querySelector('input[type="checkbox"][name*="[is_required]"]');
+          const tbody = groupEl.querySelector('[data-create-item-rows]');
+          if (title) title.value = preset.title || '';
+          if (type) type.value = preset.type || 'single';
+          if (required) required.checked = !!preset.is_required;
+          if (tbody) {
+            tbody.innerHTML = '';
+            const items = preset.items && preset.items.length ? preset.items : [{ title: '', price: 0, is_default: false }];
+            items.forEach((item, index) => {
+              const rowHtml = itemTemplate.innerHTML
+                .replaceAll('__G__', '0')
+                .replaceAll('__I__', String(index));
+              tbody.insertAdjacentHTML('beforeend', rowHtml);
+              const row = tbody.lastElementChild;
+              const titleInput = row.querySelector('input[name*="[title]"]');
+              const priceInput = row.querySelector('input[name*="[price]"]');
+              const defaultInput = row.querySelector('input[type="checkbox"][name*="[is_default]"]');
+              if (titleInput) titleInput.value = item.title || '';
+              if (priceInput) priceInput.value = item.price ?? 0;
+              if (defaultInput) defaultInput.checked = !!item.is_default;
+            });
+          }
+        }
+        reindex();
+      };
+
+      root.querySelector('[data-create-add-group]')?.addEventListener('click', () => addGroup());
+
+      root.addEventListener('click', (event) => {
+        if (event.target.closest('[data-create-remove-group]')) {
+          const groupEl = event.target.closest('[data-create-group]');
+          if (!groupEl) return;
+          if (groupsWrap.querySelectorAll('[data-create-group]').length <= 1) {
+            groupEl.querySelectorAll('input[type="text"], input[type="number"], textarea').forEach((input) => {
+              input.value = input.type === 'number' ? '0' : '';
+            });
+            groupEl.querySelectorAll('input[type="checkbox"]').forEach((input) => { input.checked = false; });
+            reindex();
+            return;
+          }
+          groupEl.remove();
+          reindex();
+          return;
+        }
+
+        if (event.target.closest('[data-create-add-item]')) {
+          const groupEl = event.target.closest('[data-create-group]');
+          const tbody = groupEl?.querySelector('[data-create-item-rows]');
+          if (!tbody) return;
+          const html = itemTemplate.innerHTML
+            .replaceAll('__G__', '0')
+            .replaceAll('__I__', String(tbody.querySelectorAll('[data-create-item-row]').length));
+          tbody.insertAdjacentHTML('beforeend', html);
+          reindex();
+          return;
+        }
+
+        if (event.target.closest('[data-create-remove-item]')) {
+          const row = event.target.closest('[data-create-item-row]');
+          const tbody = event.target.closest('[data-create-item-rows]');
+          if (!row || !tbody) return;
+          if (tbody.querySelectorAll('[data-create-item-row]').length <= 1) {
+            row.querySelectorAll('input[type="text"], input[type="number"]').forEach((input) => {
+              input.value = input.type === 'number' ? '0' : '';
+            });
+            row.querySelectorAll('input[type="checkbox"]').forEach((input) => { input.checked = false; });
+            return;
+          }
+          row.remove();
+          reindex();
+        }
+      });
+
+      const templateSelect = root.querySelector('[data-create-template-select]');
+      templateSelect?.addEventListener('change', () => {
+        const id = parseInt(templateSelect.value || '0', 10);
+        if (!id) return;
+        const found = templates.find((row) => Number(row.id) === id);
+        if (!found) return;
+        addGroup(found);
+        templateSelect.value = '';
+      });
+
+      reindex();
     })();
   </script>
 @endsection

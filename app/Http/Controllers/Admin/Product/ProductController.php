@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Admin\Product;
 
 use App\Enums\ContentType;
+use App\Enums\ProductPropertyGroupType;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\ProductIndexRequest;
 use App\Http\Requests\Admin\ProductStoreRequest;
@@ -15,6 +16,7 @@ use App\Models\File;
 use App\Models\Product;
 use App\Models\ProductPropertyGroup;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
 
@@ -56,8 +58,9 @@ class ProductController extends Controller
     public function storePage(): View
     {
         $categoryOptions = Category::buildSelectOptions();
+        $propertyGroupTemplates = $this->propertyGroupTemplates();
 
-        return view('admin.new-product', compact('categoryOptions'));
+        return view('admin.new-product', compact('categoryOptions', 'propertyGroupTemplates'));
     }
 
     public function store(ProductStoreRequest $request): RedirectResponse
@@ -66,30 +69,38 @@ class ProductController extends Controller
 
         $code = $this->generateUniqueProductNumber();
 
-        $newProduct = Product::create([
-            'title' => $validated['title'],
-            'slug' => $this->generateProductSlug($validated['title'], $code),
-            'code' => $code,
-            'price' => $validated['price'],
-            'stock_count' => $validated['stock_count'] ?? 0,
-            'shipping_weight' => $validated['shipping_weight'] ?? null,
-            'shipping_length' => $validated['shipping_length'] ?? null,
-            'shipping_width' => $validated['shipping_width'] ?? null,
-            'shipping_height' => $validated['shipping_height'] ?? null,
-            'category_id' => $validated['category_id'],
-            'status' => $validated['status'],
-            'featured_status' => $request->boolean('featured_status'),
-            'introduction_status' => $request->boolean('introduction_status'),
-            'description' => $validated['description'] ?? null,
-        ]);
+        $newProduct = DB::transaction(function () use ($request, $validated, $code) {
+            $product = Product::create([
+                'title' => $validated['title'],
+                'slug' => $this->generateProductSlug($validated['title'], $code),
+                'code' => $code,
+                'price' => $validated['price'],
+                'stock_count' => $validated['stock_count'] ?? 0,
+                'shipping_weight' => $validated['shipping_weight'] ?? null,
+                'shipping_length' => $validated['shipping_length'] ?? null,
+                'shipping_width' => $validated['shipping_width'] ?? null,
+                'shipping_height' => $validated['shipping_height'] ?? null,
+                'category_id' => $validated['category_id'],
+                'status' => $validated['status'],
+                'featured_status' => $request->boolean('featured_status'),
+                'introduction_status' => $request->boolean('introduction_status'),
+                'description' => $validated['description'] ?? null,
+            ]);
 
-        $number = 0;
-        foreach ($request->file('images') ?? [] as $file) {
-            $number++;
-            $this->fileService->imageUpload($file, ContentType::PRODUCT, $newProduct->id, $number);
-        }
+            $this->storePropertyGroups($product, $validated['property_groups'] ?? []);
 
-        return redirect()->route('admin.productList')->with('success', 'Ürün başarıyla kaydedildi.');
+            $number = 0;
+            foreach ($request->file('images') ?? [] as $file) {
+                $number++;
+                $this->fileService->imageUpload($file, ContentType::PRODUCT, $product->id, $number);
+            }
+
+            return $product;
+        });
+
+        return redirect()
+            ->route('admin.productEditPage', $newProduct->slug)
+            ->with('success', 'Ürün başarıyla kaydedildi. Özellikleri düzenleme ekranından da yönetebilirsiniz.');
     }
 
     public function show(string $slug): View
@@ -101,28 +112,7 @@ class ProductController extends Controller
 
         $categoryOptions = Category::buildSelectOptions();
 
-        $propertyGroupTemplates = ProductPropertyGroup::query()
-            ->with(['items', 'product:id,title,code'])
-            ->withCount('items')
-            ->orderByDesc('id')
-            ->limit(200)
-            ->get()
-            ->map(fn (ProductPropertyGroup $group) => [
-                'id' => $group->id,
-                'title' => $group->title,
-                'type' => $group->type->value,
-                'is_required' => (bool) $group->is_required,
-                'product_title' => $group->product?->title,
-                'product_code' => $group->product?->code,
-                'items_count' => (int) $group->items_count,
-                'items' => $group->items->map(fn ($item) => [
-                    'title' => $item->title,
-                    'price' => (float) $item->price,
-                    'is_default' => (bool) $item->is_default,
-                    'sort_order' => (int) $item->sort_order,
-                ])->values()->all(),
-            ])
-            ->values();
+        $propertyGroupTemplates = $this->propertyGroupTemplates();
 
         return view('admin.product-edit', compact('product', 'categoryOptions', 'propertyGroupTemplates'));
     }
@@ -222,6 +212,77 @@ class ProductController extends Controller
             $number++;
             File::query()->whereKey($imageId)->update(['number' => $number]);
         }
+    }
+
+    /**
+     * @param  list<array<string, mixed>>  $groups
+     */
+    private function storePropertyGroups(Product $product, array $groups): void
+    {
+        $groupSort = 0;
+
+        foreach ($groups as $groupData) {
+            $groupSort++;
+            $type = $groupData['type'] instanceof ProductPropertyGroupType
+                ? $groupData['type']
+                : ProductPropertyGroupType::from((string) $groupData['type']);
+
+            $group = $product->propertyGroups()->create([
+                'title' => trim((string) $groupData['title']),
+                'type' => $type,
+                'is_required' => (bool) ($groupData['is_required'] ?? false),
+                'sort_order' => $groupData['sort_order'] ?? $groupSort,
+            ]);
+
+            $itemSort = 0;
+            $defaultAssigned = false;
+
+            foreach ($groupData['items'] as $item) {
+                $itemSort++;
+                $isDefault = (bool) ($item['is_default'] ?? false);
+
+                if ($type === ProductPropertyGroupType::SINGLE && $isDefault) {
+                    if ($defaultAssigned) {
+                        $isDefault = false;
+                    } else {
+                        $defaultAssigned = true;
+                    }
+                }
+
+                $group->items()->create([
+                    'title' => trim((string) $item['title']),
+                    'price' => $item['price'],
+                    'is_default' => $isDefault,
+                    'sort_order' => $item['sort_order'] ?? $itemSort,
+                ]);
+            }
+        }
+    }
+
+    private function propertyGroupTemplates()
+    {
+        return ProductPropertyGroup::query()
+            ->with(['items', 'product:id,title,code'])
+            ->withCount('items')
+            ->orderByDesc('id')
+            ->limit(200)
+            ->get()
+            ->map(fn (ProductPropertyGroup $group) => [
+                'id' => $group->id,
+                'title' => $group->title,
+                'type' => $group->type->value,
+                'is_required' => (bool) $group->is_required,
+                'product_title' => $group->product?->title,
+                'product_code' => $group->product?->code,
+                'items_count' => (int) $group->items_count,
+                'items' => $group->items->map(fn ($item) => [
+                    'title' => $item->title,
+                    'price' => (float) $item->price,
+                    'is_default' => (bool) $item->is_default,
+                    'sort_order' => (int) $item->sort_order,
+                ])->values()->all(),
+            ])
+            ->values();
     }
 
     private function generateUniqueProductNumber(): string
