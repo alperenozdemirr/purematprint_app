@@ -12,6 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initPdpGallery();
   initPdpLightbox();
   initPdpOptions();
+  initPdpPropertiesCarousel();
 });
 
 /** Yatay kaydırmalı galeri — thumb tıklama ve ok tuşları ile slide değiştirir */
@@ -259,5 +260,69 @@ function initPdpOptions() {
       btn.setAttribute('aria-pressed', btn.classList.contains('is-active') ? 'true' : 'false');
       btn.addEventListener('click', () => setActive(btn));
     });
+  });
+}
+
+/** Masaüstü ürün özellik grupları — yatay kaydırmalı carousel */
+function initPdpPropertiesCarousel() {
+  document.querySelectorAll('[data-pdp-properties-slider]').forEach((slider) => {
+    const track = slider.querySelector('[data-pdp-properties-track]');
+    const cards = track ? [...track.querySelectorAll('[data-property-group]')] : [];
+    const prev = slider.closest('[data-pdp-properties]')?.querySelector('[data-pdp-properties-prev]');
+    const next = slider.closest('[data-pdp-properties]')?.querySelector('[data-pdp-properties-next]');
+    const fadeLeft = slider.querySelector('[data-pdp-properties-fade-left]');
+    const fadeRight = slider.querySelector('[data-pdp-properties-fade-right]');
+
+    if (!track || cards.length === 0) return;
+
+    const desktopQuery = window.matchMedia('(min-width: 960px)');
+
+    const syncFades = () => {
+      if (!desktopQuery.matches || cards.length <= 1) {
+        fadeLeft?.classList.add('hidden');
+        fadeRight?.classList.add('hidden');
+        prev?.setAttribute('disabled', 'disabled');
+        next?.setAttribute('disabled', 'disabled');
+        return;
+      }
+
+      const maxScroll = track.scrollWidth - track.clientWidth;
+      const atStart = track.scrollLeft <= 4;
+      const atEnd = track.scrollLeft >= maxScroll - 4;
+
+      fadeLeft?.classList.toggle('hidden', atStart);
+      fadeRight?.classList.toggle('hidden', atEnd);
+      prev?.toggleAttribute('disabled', atStart);
+      next?.toggleAttribute('disabled', atEnd);
+    };
+
+    const scrollByCard = (direction) => {
+      const cardWidth = cards[0]?.offsetWidth || 320;
+      track.scrollBy({
+        left: direction * (cardWidth + 16),
+        behavior: 'smooth',
+      });
+    };
+
+    prev?.addEventListener('click', () => scrollByCard(-1));
+    next?.addEventListener('click', () => scrollByCard(1));
+
+    track.addEventListener('scroll', syncFades, { passive: true });
+    window.addEventListener('resize', syncFades);
+    desktopQuery.addEventListener('change', syncFades);
+
+    track.addEventListener('keydown', (event) => {
+      if (!desktopQuery.matches) return;
+      if (event.key === 'ArrowLeft') {
+        event.preventDefault();
+        scrollByCard(-1);
+      }
+      if (event.key === 'ArrowRight') {
+        event.preventDefault();
+        scrollByCard(1);
+      }
+    });
+
+    syncFades();
   });
 }

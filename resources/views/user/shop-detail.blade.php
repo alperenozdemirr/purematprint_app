@@ -5,6 +5,11 @@
 @php
   $placeholder = asset('user/assets/foto5.jpeg');
   $waLink = $siteSetting->whatsappLink('Merhaba, "' . $product->title . '" ürünü için teklif almak istiyorum.');
+  $propertyGroups = $product->propertyGroups->filter(fn ($g) => $g->items->isNotEmpty());
+  $descriptionPlain = trim(strip_tags(html_entity_decode($product->description ?? '', ENT_QUOTES | ENT_HTML5, 'UTF-8')));
+  $descriptionExcerpt = $descriptionPlain !== '' ? \Illuminate\Support\Str::limit($descriptionPlain, 180) : '';
+  $hasFullDescription = $descriptionPlain !== '';
+  $showDescriptionTeaser = $hasFullDescription && (strlen($descriptionPlain) > 180 || str_contains($product->description ?? '', '<'));
 @endphp
 
 <main class="py-8 pb-20">
@@ -90,8 +95,18 @@
           @endif
         </p>
 
-        @if ($product->description)
-          <div class="text-muted leading-[1.7] mb-8 max-w-[520px] [&_p]:mb-2 [&_ul]:my-2 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:my-2 [&_ol]:list-decimal [&_ol]:pl-5 [&_a]:underline" data-i5="pdp-info__desc">{!! $product->description !!}</div>
+        @if ($hasFullDescription)
+          <div class="mb-8 max-w-[520px]" data-i5="pdp-info__desc">
+            <p class="m-0 text-muted leading-[1.7]">{{ $descriptionExcerpt }}</p>
+            @if ($showDescriptionTeaser)
+              <a href="#pdp-full-details"
+                 data-pdp-view-all-details
+                 class="mt-3 inline-flex items-center gap-2 font-body text-[12px] font-bold uppercase tracking-[0.06em] text-accent transition-colors hover:text-accent-dark">
+                Tüm özellikleri görüntüle
+                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+              </a>
+            @endif
+          </div>
         @endif
 
         <div class="grid grid-cols-3 gap-3 mb-7 max-[599px]:grid-cols-1" data-i5="pdp-trust">
@@ -115,7 +130,6 @@
               $canAddToCart = auth()->check()
                   && auth()->user()->type === \App\Enums\UserType::USER
                   && auth()->user()->status === \App\Enums\Status::ACTIVE;
-              $propertyGroups = $product->propertyGroups->filter(fn ($g) => $g->items->isNotEmpty());
               $loginRedirect = parse_url(route('shopDetail', $product->slug), PHP_URL_PATH) ?: '/';
             @endphp
             <form method="post" action="{{ route('cartStore') }}" data-pdp-cart-form data-product-id="{{ $product->id }}" class="grid gap-5">
@@ -124,7 +138,31 @@
               <input type="hidden" name="quantity" value="1">
 
               @if ($propertyGroups->isNotEmpty())
-                <div class="grid gap-4" data-pdp-properties>
+                <div class="grid gap-3" data-pdp-properties>
+                  @if ($propertyGroups->count() > 1)
+                    <div class="hidden min-[960px]:flex items-center justify-between gap-3" data-pdp-properties-nav>
+                      <p class="m-0 font-body text-[11px] font-bold uppercase tracking-[0.08em] text-muted">Ürün seçenekleri</p>
+                      <div class="flex items-center gap-2">
+                        <button type="button"
+                                class="flex h-10 w-10 items-center justify-center border-[3px] border-ink bg-surface shadow-brutal-sm transition-[transform,box-shadow] hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-brutal disabled:cursor-not-allowed disabled:opacity-40"
+                                data-pdp-properties-prev aria-label="Önceki seçenek grubu">
+                          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg>
+                        </button>
+                        <button type="button"
+                                class="flex h-10 w-10 items-center justify-center border-[3px] border-ink bg-surface shadow-brutal-sm transition-[transform,box-shadow] hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-brutal disabled:cursor-not-allowed disabled:opacity-40"
+                                data-pdp-properties-next aria-label="Sonraki seçenek grubu">
+                          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>
+                        </button>
+                      </div>
+                    </div>
+                  @endif
+
+                  <div class="relative min-[960px]:-mx-1 min-[960px]:px-1" data-pdp-properties-slider>
+                    <div class="pointer-events-none absolute inset-y-0 left-0 z-[1] hidden w-8 bg-gradient-to-r from-bg to-transparent" data-pdp-properties-fade-left aria-hidden="true"></div>
+                    <div class="pointer-events-none absolute inset-y-0 right-0 z-[1] hidden w-8 bg-gradient-to-l from-bg to-transparent" data-pdp-properties-fade-right aria-hidden="true"></div>
+
+                    <div class="grid gap-4 max-[959px]:grid-cols-1 min-[960px]:flex min-[960px]:snap-x min-[960px]:snap-mandatory min-[960px]:gap-4 min-[960px]:overflow-x-auto min-[960px]:scroll-smooth min-[960px]:pb-1 min-[960px]:[scrollbar-width:none] min-[960px]:[-ms-overflow-style:none] min-[960px]:[&::-webkit-scrollbar]:hidden"
+                         data-pdp-properties-track tabindex="0" aria-label="Ürün seçenekleri">
                   @foreach ($propertyGroups as $group)
                     @php
                       $selected = old('properties.'.$group->id, $defaultPropertySelections[$group->id] ?? []);
@@ -133,14 +171,14 @@
                       }
                       $selected = array_map('intval', $selected);
                     @endphp
-                    <fieldset class="border-[3px] border-ink bg-bg p-4" data-property-group data-group-type="{{ $group->type->value }}" data-group-title="{{ $group->title }}" @if($group->is_required && $group->type === \App\Enums\ProductPropertyGroupType::MULTIPLE) data-required-multiple="1" @endif>
+                    <fieldset class="border-[3px] border-ink bg-bg p-4 min-[960px]:w-[min(100%,320px)] min-[960px]:shrink-0 min-[960px]:snap-start min-[960px]:shadow-brutal-sm" data-property-group data-group-type="{{ $group->type->value }}" data-group-title="{{ $group->title }}" @if($group->is_required && $group->type === \App\Enums\ProductPropertyGroupType::MULTIPLE) data-required-multiple="1" @endif>
                       <legend class="px-2 font-body text-[12px] font-bold uppercase tracking-[0.04em] text-ink">
                         {{ $group->title }}
                         @if ($group->is_required)
                           <span class="text-announce">*</span>
                         @endif
                       </legend>
-                      <div class="grid gap-2 mt-2">
+                      <div class="mt-2 grid gap-2 min-[960px]:max-h-[280px] min-[960px]:overflow-y-auto min-[960px]:pr-1 min-[960px]:[scrollbar-width:thin]">
                         @foreach ($group->items as $item)
                           @php
                             $inputId = 'prop-'.$group->id.'-'.$item->id;
@@ -189,6 +227,9 @@
                       @enderror
                     </fieldset>
                   @endforeach
+                    </div>
+                  </div>
+
                   @error('properties')
                     <p class="text-[12px] font-semibold text-announce">{{ $message }}</p>
                   @enderror
@@ -231,12 +272,12 @@
         </div>
 
         <div class="border-t-[3px] border-ink [&_details]:border-b-[3px] [&_details]:border-ink [&_summary]:flex [&_summary]:items-center [&_summary]:justify-between [&_summary]:gap-4 [&_summary]:py-[18px] [&_summary]:font-body [&_summary]:text-[13px] [&_summary]:font-bold [&_summary]:uppercase [&_summary]:tracking-[0.04em] [&_summary]:cursor-pointer [&_summary]:list-none [&_summary::-webkit-details-marker]:hidden [&_summary_svg]:shrink-0 [&_summary_svg]:transition-transform [&_details[open]_summary_svg]:rotate-180" data-i5="pdp-accordion">
-          <details open>
+          <details open id="pdp-full-details">
             <summary>
               Ürün Detayları
               <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
             </summary>
-            <div class="pb-5 text-muted text-sm leading-[1.7] [&_p]:mb-2 [&_ul]:my-2 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:my-2 [&_ol]:list-decimal [&_ol]:pl-5 [&_a]:underline [&_h2]:mb-2 [&_h2]:mt-3 [&_h2]:text-ink [&_h2]:text-base [&_h2]:font-bold [&_h3]:mb-2 [&_h3]:mt-3 [&_h3]:text-ink [&_h3]:text-sm [&_h3]:font-bold" data-i5="pdp-accordion__body">
+            <div class="pb-5 text-muted text-sm leading-[1.7] scroll-mt-28 [&_p]:mb-2 [&_ul]:my-2 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:my-2 [&_ol]:list-decimal [&_ol]:pl-5 [&_a]:underline [&_h2]:mb-2 [&_h2]:mt-3 [&_h2]:text-ink [&_h2]:text-base [&_h2]:font-bold [&_h3]:mb-2 [&_h3]:mt-3 [&_h3]:text-ink [&_h3]:text-sm [&_h3]:font-bold" data-i5="pdp-accordion__body">
               @if ($product->description)
                 {!! $product->description !!}
               @else
@@ -468,6 +509,18 @@
 
     restoreSelections();
     refresh();
+  })();
+
+  (function () {
+    const link = document.querySelector('[data-pdp-view-all-details]');
+    const target = document.getElementById('pdp-full-details');
+    if (!link || !target) return;
+
+    link.addEventListener('click', (event) => {
+      event.preventDefault();
+      target.open = true;
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
   })();
 </script>
 <script src="{{ asset('user/js/product.js') }}"></script>

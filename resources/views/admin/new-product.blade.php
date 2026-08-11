@@ -128,7 +128,7 @@
             </label>
             @error('images') <p class="mt-1.5 font-body text-[12px] font-medium text-danger">{{ $message }}</p> @enderror
             @error('images.*') <p class="mt-1.5 font-body text-[12px] font-medium text-danger">{{ $message }}</p> @enderror
-            <div class="mt-4 hidden grid-cols-3 gap-3 sm:grid-cols-4" data-image-preview></div>
+            <div class="mt-4 hidden grid grid-cols-3 gap-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6" data-image-preview></div>
           </div>
         </section>
 
@@ -218,24 +218,48 @@
         imageInput.files = dt.files;
       };
 
+      const fileKey = (file) => file.name + '|' + file.size + '|' + file.lastModified;
+
       const renderPreview = () => {
         preview.innerHTML = '';
         if (!selectedFiles.length) {
           preview.classList.add('hidden');
+          ensureSortable();
           return;
         }
         preview.classList.remove('hidden');
         selectedFiles.forEach((file, i) => {
           const cell = document.createElement('div');
-          cell.className = 'relative aspect-square cursor-grab overflow-hidden rounded-lg bg-cream active:cursor-grabbing';
-          cell.innerHTML = '<img src="' + URL.createObjectURL(file) + '" class="pointer-events-none h-full w-full object-cover" alt="">' +
-            (i === 0 ? '<span class="absolute left-1 top-1 rounded bg-accent px-1.5 py-0.5 font-body text-[10px] font-bold uppercase text-on-dark">Kapak</span>' : '');
+          cell.className = 'group relative aspect-square cursor-grab overflow-hidden rounded-lg bg-cream active:cursor-grabbing';
+          cell.dataset.fileKey = fileKey(file);
+          cell.innerHTML =
+            '<img src="' + URL.createObjectURL(file) + '" class="pointer-events-none h-full w-full object-cover" alt="">' +
+            '<span class="absolute left-1 top-1 rounded px-1.5 py-0.5 font-body text-[10px] font-bold uppercase text-on-dark ' +
+              (i === 0 ? 'bg-accent' : 'hidden bg-ink/70') + '" data-cover-badge>Kapak</span>' +
+            '<button type="button" data-remove-image aria-label="Görseli kaldır" ' +
+              'class="absolute right-1 top-1 flex h-7 w-7 items-center justify-center rounded-md bg-danger text-on-dark opacity-0 transition-opacity group-hover:opacity-100">' +
+              '<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg>' +
+            '</button>';
           preview.appendChild(cell);
+        });
+        ensureSortable();
+      };
+
+      const updateCoverBadges = () => {
+        preview.querySelectorAll('[data-cover-badge]').forEach((badge, index) => {
+          badge.classList.toggle('hidden', index !== 0);
+          badge.classList.toggle('bg-accent', index === 0);
+          badge.classList.toggle('bg-ink/70', index !== 0);
         });
       };
 
       const ensureSortable = () => {
-        if (typeof Sortable === 'undefined' || previewSortable) return;
+        if (typeof Sortable === 'undefined') return;
+        if (previewSortable) {
+          previewSortable.destroy();
+          previewSortable = null;
+        }
+        if (!selectedFiles.length) return;
         previewSortable = Sortable.create(preview, {
           animation: 150,
           onEnd: (evt) => {
@@ -243,15 +267,35 @@
             const moved = selectedFiles.splice(evt.oldIndex, 1)[0];
             selectedFiles.splice(evt.newIndex, 0, moved);
             syncInputFiles();
-            renderPreview();
+            updateCoverBadges();
           }
         });
       };
 
-      imageInput.addEventListener('change', () => {
-        selectedFiles = Array.from(imageInput.files);
+      preview.addEventListener('click', (event) => {
+        const removeBtn = event.target.closest('[data-remove-image]');
+        if (!removeBtn) return;
+        const cell = removeBtn.closest('[data-file-key]');
+        if (!cell) return;
+        const key = cell.dataset.fileKey;
+        selectedFiles = selectedFiles.filter((file) => fileKey(file) !== key);
+        syncInputFiles();
         renderPreview();
-        ensureSortable();
+      });
+
+      imageInput.addEventListener('change', () => {
+        const incoming = Array.from(imageInput.files || []);
+        const known = new Set(selectedFiles.map(fileKey));
+        incoming.forEach((file) => {
+          const key = fileKey(file);
+          if (!known.has(key)) {
+            selectedFiles.push(file);
+            known.add(key);
+          }
+        });
+        syncInputFiles();
+        renderPreview();
+        imageInput.value = '';
       });
 
       form.addEventListener('submit', () => syncInputFiles());
