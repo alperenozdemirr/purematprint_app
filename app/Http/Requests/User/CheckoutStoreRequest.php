@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Requests\User;
 
 use App\Enums\InvoiceType;
+use App\Enums\OrderDesignType;
 use App\Rules\TurkishIdentityNumber;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -48,6 +49,7 @@ class CheckoutStoreRequest extends FormRequest
                 'regex:/^[0-9]{10,11}$/',
             ],
             'note' => ['nullable', 'string', 'max:500'],
+            'design_type' => ['required', Rule::enum(OrderDesignType::class)],
             'order_files' => ['nullable', 'array', 'max:1'],
             'order_files.*' => [
                 'file',
@@ -76,6 +78,7 @@ class CheckoutStoreRequest extends FormRequest
             'company_name' => 'şirket adı',
             'tax_number' => 'vergi numarası',
             'note' => 'sipariş notu',
+            'design_type' => 'tasarım tercihi',
             'order_files' => 'sipariş dosyaları',
             'order_files.*' => 'sipariş dosyası',
         ];

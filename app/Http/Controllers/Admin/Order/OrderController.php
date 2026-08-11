@@ -150,6 +150,7 @@ class OrderController extends Controller
         $payload = [
             'invoice_status' => $request->boolean('invoice_status'),
             'note' => $validated['note'] ?? null,
+            'source_channel' => $validated['source_channel'] ?? $order->source_channel?->value ?? \App\Enums\OrderSourceChannel::default()->value,
         ];
 
         if ($order->isInternationalShipment()) {

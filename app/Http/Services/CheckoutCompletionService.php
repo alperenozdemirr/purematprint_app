@@ -4,11 +4,12 @@ declare(strict_types=1);
 
 namespace App\Http\Services;
 
+use App\Enums\OrderDesignType;
+use App\Enums\OrderSourceChannel;
 use App\Enums\OrderStatus;
 use App\Enums\PaymentProvider;
 use App\Enums\PaymentStatus;
 use App\Enums\Status;
-use App\Http\Services\OrderEmailService;
 use App\Models\Order;
 use App\Models\OrderDetail;
 use App\Models\Payment;
@@ -66,6 +67,8 @@ class CheckoutCompletionService
                 'address_id' => $draft['address_id'],
                 'invoice_address_id' => $draft['address_id'],
                 'note' => $draft['note'] ?? null,
+                'design_type' => $draft['design_type'] ?? OrderDesignType::default()->value,
+                'source_channel' => $draft['source_channel'] ?? OrderSourceChannel::default()->value,
                 'status' => OrderStatus::PREPARING,
                 'invoice_status' => false,
             ], $invoice));

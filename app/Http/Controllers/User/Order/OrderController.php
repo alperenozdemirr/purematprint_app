@@ -240,6 +240,7 @@ class OrderController extends Controller
 
         $addressId = (int) $request->validated('address_id');
         $note = $request->validated('note');
+        $designType = (string) $request->validated('design_type');
         $invoiceAttributes = $request->invoiceAttributes();
 
         foreach ($cartItems as $item) {
@@ -256,10 +257,108 @@ class OrderController extends Controller
             ->findOrFail($addressId);
 
         if ($address->isInternational()) {
-            return $this->checkoutWithStripe($request, $user, $address, $cartItems, $summary, $addressId, $note, $invoiceAttributes);
+            return $this->checkoutWithStripe($request, $user, $address, $cartItems, $summary, $addressId, $note, $invoiceAttributes, $designType);
         }
 
-        return $this->checkoutWithIyzico($request, $user, $address, $cartItems, $summary, $addressId, $note, $invoiceAttributes);
+        return $this->checkoutWithIyzico($request, $user, $address, $cartItems, $summary, $addressId, $note, $invoiceAttributes, $designType);
+    }
+
+    public function reorder(string $code): RedirectResponse
+    {
+        $order = Order::query()
+            ->with(['details.product.propertyGroups.items', 'details.properties'])
+            ->where('user_id', auth()->id())
+            ->where('code', $code)
+            ->firstOrFail();
+
+        $added = 0;
+        $skipped = [];
+
+        foreach ($order->details as $detail) {
+            $product = $detail->product;
+
+            if ($product === null || $product->status !== Status::ACTIVE) {
+                $skipped[] = ($product?->title ?? 'Ürün').' artık satışta değil.';
+                continue;
+            }
+
+            if ($product->stock_count < 1) {
+                $skipped[] = $product->title.' stokta yok.';
+                continue;
+            }
+
+            $rawProperties = [];
+            foreach ($detail->properties as $property) {
+                $itemId = (int) ($property->property_item_id ?? 0);
+                if ($itemId < 1) {
+                    continue;
+                }
+
+                $item = $product->propertyGroups
+                    ->flatMap(fn ($group) => $group->items)
+                    ->firstWhere('id', $itemId);
+
+                if ($item === null) {
+                    $skipped[] = $product->title.' için eski özellikler artık geçerli değil.';
+                    continue 2;
+                }
+
+                $groupId = (int) $item->group_id;
+                $rawProperties[$groupId] ??= [];
+                $rawProperties[$groupId][] = $itemId;
+            }
+
+            try {
+                $resolved = $this->propertySelection->resolve($product, $rawProperties);
+            } catch (ValidationException $e) {
+                $skipped[] = $product->title.': '.(collect($e->errors())->flatten()->first() ?? 'özellikler geçersiz.');
+                continue;
+            }
+
+            $quantity = min((int) $detail->quantity, (int) $product->stock_count);
+
+            $cartItem = ShoppingCart::query()
+                ->where('user_id', auth()->id())
+                ->where('product_id', $product->id)
+                ->where('property_signature', $resolved['signature'])
+                ->first();
+
+            $newQuantity = ($cartItem?->quantity ?? 0) + $quantity;
+
+            if ($newQuantity > $product->stock_count) {
+                $newQuantity = (int) $product->stock_count;
+            }
+
+            if ($newQuantity < 1) {
+                $skipped[] = $product->title.' için yeterli stok yok.';
+                continue;
+            }
+
+            if ($cartItem) {
+                $cartItem->update(['quantity' => $newQuantity]);
+            } else {
+                ShoppingCart::create([
+                    'user_id' => auth()->id(),
+                    'product_id' => $product->id,
+                    'quantity' => $newQuantity,
+                    'selected_property_item_ids' => $resolved['item_ids'],
+                    'property_signature' => $resolved['signature'],
+                ]);
+            }
+
+            $added++;
+        }
+
+        if ($added < 1) {
+            return back()->with('error', $skipped[0] ?? 'Siparişteki ürünler sepete eklenemedi.');
+        }
+
+        $message = $added.' ürün sepete eklendi.';
+        if ($skipped !== []) {
+            $message .= ' Bazı ürünler atlandı: '.implode(' ', array_slice($skipped, 0, 3));
+        }
+
+        return redirect()->route('cart')->with('success', $message);
     }
 
     private function checkoutWithIyzico(
@@ -271,6 +370,7 @@ class OrderController extends Controller
         int $addressId,
         ?string $note,
         array $invoiceAttributes,
+        string $designType,
     ): RedirectResponse {
         if (! $this->iyzicoService->isConfigured()) {
             return back()->with('error', 'Yurt içi ödeme sistemi henüz yapılandırılmamış.');
@@ -284,6 +384,7 @@ class OrderController extends Controller
             $summary,
             $cartItems,
             PaymentProvider::IYZICO,
+            $designType,
         );
 
         $draft['files'] = $this->orderFileService->storeTemporary(
@@ -319,6 +420,7 @@ class OrderController extends Controller
         int $addressId,
         ?string $note,
         array $invoiceAttributes,
+        string $designType,
     ): RedirectResponse {
         if (! $this->stripeService->isConfigured()) {
             return back()->with('error', 'Yurt dışı ödeme sistemi (Stripe) henüz yapılandırılmamış.');
@@ -332,6 +434,7 @@ class OrderController extends Controller
             $summary,
             $cartItems,
             PaymentProvider::STRIPE,
+            $designType,
         );
 
         $draft['files'] = $this->orderFileService->storeTemporary(

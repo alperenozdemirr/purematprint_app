@@ -29,8 +29,12 @@
           };
         @endphp
         <span class="inline-flex rounded-md px-2.5 py-1 font-body text-[11px] font-bold {{ $statusClass }}">{{ $order->status?->label() }}</span>
+        <span class="inline-flex rounded-md bg-cream px-2.5 py-1 font-body text-[11px] font-bold text-ink">{{ $order->source_channel?->label() ?? 'Website' }}</span>
       </div>
       <p class="font-body text-[13px] text-muted">{{ $order->created_at?->format('d.m.Y H:i') }} tarihinde oluşturuldu</p>
+      @if ($order->design_type)
+        <p class="mt-1 font-body text-[12px] text-muted">Tasarım: <span class="font-semibold text-ink">{{ $order->design_type->label() }}</span></p>
+      @endif
     </div>
   </div>
 
@@ -527,6 +531,21 @@
             @endif
           </div>
 
+          <div>
+            <label for="source_channel" class="mb-1.5 block font-body text-[13px] font-bold text-ink">Sipariş Kanalı</label>
+            <select id="source_channel" name="source_channel" class="w-full rounded-lg border border-ink/10 bg-cream px-3.5 py-2.5 font-body text-[14px] font-medium text-ink outline-none focus:border-accent">
+              @foreach (\App\Enums\OrderSourceChannel::cases() as $channel)
+                <option value="{{ $channel->value }}" @selected(old('source_channel', $order->source_channel?->value) === $channel->value)>{{ $channel->label() }}</option>
+              @endforeach
+            </select>
+            @error('source_channel') <p class="mt-1.5 font-body text-[12px] font-medium text-danger">{{ $message }}</p> @enderror
+          </div>
+          <div>
+            <label class="mb-1.5 block font-body text-[13px] font-bold text-ink">Tasarım Tercihi</label>
+            <div class="w-full rounded-lg border border-ink/10 bg-cream/60 px-3.5 py-2.5 font-body text-[14px] font-semibold text-ink">
+              {{ $order->design_type?->label() ?? '—' }}
+            </div>
+          </div>
           <div>
             <label for="note" class="mb-1.5 block font-body text-[13px] font-bold text-ink">Admin Notu</label>
             <textarea id="note" name="note" rows="3" class="w-full rounded-lg border border-ink/10 bg-cream px-3.5 py-2.5 font-body text-[14px] text-ink outline-none focus:border-accent focus:ring-2 focus:ring-accent/15" placeholder="İç not...">{{ old('note', $order->note) }}</textarea>

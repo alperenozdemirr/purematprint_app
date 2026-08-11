@@ -53,7 +53,10 @@
       </div>
 
       <div class="flex flex-wrap items-center gap-2.5 mb-7 pb-6 border-b-[3px] border-ink" data-i5="order-detail__actions">
-        <a data-i5="btn--outline" href="{{ route('shops') }}" class="inline-flex items-center gap-2 px-6 py-3.5 font-body text-[13px] font-bold uppercase tracking-[0.06em] border-[3px] border-ink transition-[transform,box-shadow,background-color] bg-surface text-ink shadow-ui hover:bg-hover">Tekrar Sipariş Ver</a>
+        <a data-i5="btn--outline" href="{{ route('orderReorder', $order->code) }}"
+           onclick="event.preventDefault(); document.getElementById('order-reorder-form').submit();"
+           class="inline-flex items-center gap-2 px-6 py-3.5 font-body text-[13px] font-bold uppercase tracking-[0.06em] border-[3px] border-ink transition-[transform,box-shadow,background-color] bg-surface text-ink shadow-ui hover:bg-hover">Siparişi Tekrarla</a>
+        <form id="order-reorder-form" action="{{ route('orderReorder', $order->code) }}" method="POST" class="hidden">@csrf</form>
         @if ($waLink)
         <a data-i5="btn--outline" href="{{ $waLink }}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 px-6 py-3.5 font-body text-[13px] font-bold uppercase tracking-[0.06em] border-[3px] border-ink transition-[transform,box-shadow,background-color] bg-surface text-ink shadow-ui hover:bg-hover">WhatsApp Destek</a>
         @endif
@@ -346,6 +349,12 @@
               <span>Sipariş Durumu</span>
               <strong>{{ $order->status->label() }}</strong>
             </div>
+            @if ($order->design_type)
+            <div class="flex justify-between gap-3 text-sm py-2 text-muted" data-i5="order-summary__row">
+              <span>Tasarım</span>
+              <strong class="text-right">{{ $order->design_type->label() }}</strong>
+            </div>
+            @endif
             @if ($order->tracking_url || $order->hasShipinkShipment())
             <div class="mt-4 p-4 border-[3px] border-ink bg-bg text-sm" data-i5="order-tracking">
               <p class="font-body text-[11px] font-bold uppercase tracking-[0.06em] mb-2">Kargo Takibi</p>

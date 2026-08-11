@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Admin;
 
+use App\Enums\OrderSourceChannel;
 use App\Enums\OrderStatus;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -20,6 +21,7 @@ class OrderUpdateRequest extends FormRequest
         return [
             'id' => 'required|integer|exists:orders,id',
             'status' => ['required', Rule::in(OrderStatus::values())],
+            'source_channel' => ['nullable', Rule::in(OrderSourceChannel::values())],
             'invoice_status' => 'nullable|boolean',
             'invoice_pdf' => ['nullable', 'file', 'mimes:pdf', 'max:20480'],
             'note' => 'nullable|string|max:1000',

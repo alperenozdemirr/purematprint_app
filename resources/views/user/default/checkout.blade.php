@@ -136,6 +136,32 @@
 
           <section class="border-[3px] border-ink shadow-brutal-sm bg-surface overflow-hidden" data-i5="checkout-section">
             <div class="px-5 py-4 border-b-[3px] border-ink bg-bg [&_h2]:font-body [&_h2]:text-[13px] [&_h2]:font-bold [&_h2]:uppercase [&_h2]:tracking-[0.06em]">
+              <h2>Tasarım Tercihi</h2>
+            </div>
+            <div class="p-5 grid gap-3">
+              <p class="text-xs text-muted leading-relaxed m-0">
+                Ödemeye geçmeden önce tasarım sürecinizi seçin. Sözleşmeler için
+                <a href="{{ route('agreements') }}" target="_blank" rel="noopener noreferrer" class="font-semibold text-accent underline underline-offset-2">Mesafeli Satış / İade</a>
+                sayfasını inceleyebilirsiniz.
+              </p>
+              @php
+                $selectedDesignType = old('design_type', \App\Enums\OrderDesignType::FROM_SCRATCH->value);
+              @endphp
+              @foreach (\App\Enums\OrderDesignType::cases() as $designType)
+                <label class="flex items-start gap-3 p-4 border-[3px] border-ink bg-bg cursor-pointer has-[:checked]:border-accent has-[:checked]:bg-accent/5">
+                  <input type="radio" name="design_type" value="{{ $designType->value }}" class="mt-1 accent-accent"
+                         @checked($selectedDesignType === $designType->value) required>
+                  <span>
+                    <span class="block font-body text-sm font-bold text-ink">{{ $designType->label() }}</span>
+                  </span>
+                </label>
+              @endforeach
+              @error('design_type')<span class="text-xs text-announce">{{ $message }}</span>@enderror
+            </div>
+          </section>
+
+          <section class="border-[3px] border-ink shadow-brutal-sm bg-surface overflow-hidden" data-i5="checkout-section">
+            <div class="px-5 py-4 border-b-[3px] border-ink bg-bg [&_h2]:font-body [&_h2]:text-[13px] [&_h2]:font-bold [&_h2]:uppercase [&_h2]:tracking-[0.06em]">
               <h2>Ödeme Yöntemi</h2>
             </div>
             <div class="p-5 grid gap-4">

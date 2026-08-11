@@ -62,6 +62,7 @@
             <th>Tarih</th>
             <th>Tutar</th>
             <th>Durum</th>
+            <th>Kanal</th>
             <th>Kargo</th>
             <th class="text-right">İşlem</th>
           </tr>
@@ -95,6 +96,7 @@
                   {{ $order->status?->label() }}
                 </span>
               </td>
+              <td class="font-body text-[12px] font-semibold text-muted">{{ $order->source_channel?->label() ?? 'Website' }}</td>
               <td>
                 @if ($order->address?->isDomestic())
                   @if ($order->needsShipinkShipment())

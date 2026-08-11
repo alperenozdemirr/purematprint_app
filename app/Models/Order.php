@@ -7,6 +7,8 @@ namespace App\Models;
 use App\Enums\DiscountType;
 use App\Enums\InvoiceType;
 use App\Enums\OrderDesignStatus;
+use App\Enums\OrderDesignType;
+use App\Enums\OrderSourceChannel;
 use App\Enums\OrderStatus;
 use App\Enums\ContentType;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -39,6 +41,8 @@ class Order extends Model
         'note',
         'status',
         'design_status',
+        'design_type',
+        'source_channel',
         'invoice_status',
         'shipink_order_id',
         'shipink_shipment_id',
@@ -81,6 +85,8 @@ class Order extends Model
         'carrier_picked_up_at' => 'datetime',
         'status' => OrderStatus::class,
         'design_status' => OrderDesignStatus::class,
+        'design_type' => OrderDesignType::class,
+        'source_channel' => OrderSourceChannel::class,
     ];
 
     public function user(): BelongsTo
@@ -141,14 +147,11 @@ class Order extends Model
 
     public static function generateCode(): string
     {
-        $code = 'ORD-' . now()->format('Ymd');
-
-        if (! static::query()->where('code', $code)->exists()) {
-            return $code;
-        }
+        $year = now()->format('Y');
 
         do {
-            $code = 'ORD-' . now()->format('Ymd') . random_int(1000, 9999);
+            $suffix = (string) random_int(100000, 999999);
+            $code = $year.'-'.$suffix;
         } while (static::query()->where('code', $code)->exists());
 
         return $code;

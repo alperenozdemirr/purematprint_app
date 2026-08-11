@@ -23,6 +23,7 @@ class CheckoutDraftService
         array $summary,
         iterable $cartItems,
         PaymentProvider $paymentProvider,
+        ?string $designType = null,
     ): array {
         $items = [];
 
@@ -43,6 +44,8 @@ class CheckoutDraftService
             'user_id' => $user->id,
             'address_id' => $addressId,
             'note' => $note,
+            'design_type' => $designType ?? \App\Enums\OrderDesignType::default()->value,
+            'source_channel' => \App\Enums\OrderSourceChannel::default()->value,
             'invoice' => $invoiceAttributes,
             'summary' => $summary,
             'items' => $items,
