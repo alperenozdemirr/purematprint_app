@@ -9,6 +9,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Banner;
 use App\Models\Comment;
 use App\Models\Company;
+use App\Models\Faq;
 use App\Models\Product;
 use App\Models\Setting;
 use Illuminate\Support\Collection;
@@ -48,12 +49,18 @@ class DefaultController extends Controller
             ? $this->visibleHomepageReviews()
             : collect();
 
+        $homepageFaqs = Faq::query()
+            ->fixed()
+            ->ordered()
+            ->get();
+
         return view('user.default.index', compact(
             'bestsellerProducts',
             'welcomeBanners',
             'tickerCompanies',
             'showRealReviews',
             'homepageReviews',
+            'homepageFaqs',
         ));
     }
 

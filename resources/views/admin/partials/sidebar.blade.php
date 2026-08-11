@@ -81,6 +81,10 @@
       <svg width="19" height="19" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 4h16v16H4zM8 8h8M8 12h8M8 16h5"/></svg>
       <span class="admin-nav-text">Blog</span>
     </a>
+    <a href="{{ route('admin.faqGroupList') }}" title="SSS" class="{{ $navLink }} {{ request()->routeIs('admin.faqGroup*', 'admin.faq*') ? $navLinkActive : '' }}">
+      <svg width="19" height="19" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 9a3 3 0 1 1 6 0c0 2-3 2-3 4M12 17h.01M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0z"/></svg>
+      <span class="admin-nav-text">SSS</span>
+    </a>
     <a href="{{ route('admin.newsletterList') }}" title="Bülten" class="{{ $navLink }} {{ request()->routeIs('admin.newsletter*') ? $navLinkActive : '' }}">
       <svg width="19" height="19" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 4h16v12H4zM4 8l8 5 8-5"/></svg>
       <span class="admin-nav-text">Bülten</span>

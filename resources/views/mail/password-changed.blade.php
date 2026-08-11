@@ -5,30 +5,32 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Şifre Değiştirildi</title>
 </head>
-<body style="margin:0;padding:0;background:#faf6ee;font-family:Arial,sans-serif;color:#1a1a1a;">
-  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#faf6ee;padding:32px 16px;">
+@include('mail.partials.theme')
+<body style="margin:0;padding:0;background:{{ $mailBg }};font-family:{{ $mailFontBody }};color:{{ $mailInk }};">
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:{{ $mailBg }};padding:32px 16px;">
     <tr>
       <td align="center">
-        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:560px;background:#fffdf8;border:3px solid #1a1a1a;">
+        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:560px;background:{{ $mailSurface }};border:3px solid {{ $mailInk }};">
+          @include('mail.partials.logo-row')
           <tr>
-            <td style="padding:28px 24px;border-bottom:3px solid #1a1a1a;background:#354e9c;color:#faf6ee;">
+            <td style="padding:28px 24px;border-bottom:3px solid {{ $mailInk }};background:{{ $mailAnnounce }};color:{{ $mailOnDark }};">
               <p style="margin:0;font-size:12px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;">PureMatPrint</p>
-              <h1 style="margin:10px 0 0;font-size:26px;line-height:1.2;">Şifreniz Değiştirildi</h1>
+              <h1 style="margin:10px 0 0;font-size:26px;line-height:1.2;font-family:{{ $mailFontHeading }}">Şifreniz Değiştirildi</h1>
             </td>
           </tr>
           <tr>
             <td style="padding:28px 24px;">
-              <p style="margin:0 0 16px;font-size:16px;line-height:1.6;color:#1a1a1a;">
+              <p style="margin:0 0 16px;font-size:16px;line-height:1.6;color:{{ $mailInk }};">
                 Merhaba <strong>{{ $user->name }}</strong>,
               </p>
-              <p style="margin:0 0 16px;font-size:15px;line-height:1.7;color:#5e5a54;">
+              <p style="margin:0 0 16px;font-size:15px;line-height:1.7;color:{{ $mailMuted }};">
                 Hesabınızın şifresi <strong>{{ $changedAt }}</strong> tarihinde değiştirildi.
               </p>
 
-              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin:0 0 20px;background:#fbf8f1;border:2px solid #b61d0f;">
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin:0 0 20px;background:{{ $mailCream }};border:2px solid #b61d0f;">
                 <tr>
                   <td style="padding:18px 16px;">
-                    <p style="margin:0;font-size:14px;line-height:1.7;color:#5e5a54;">
+                    <p style="margin:0;font-size:14px;line-height:1.7;color:{{ $mailMuted }};">
                       Bu işlemi <strong>siz yapmadıysanız</strong>, hesabınızın güvenliği için derhal bizimle iletişime geçin ve şifrenizi sıfırlayın.
                     </p>
                   </td>
@@ -39,25 +41,21 @@
                 <tr>
                   @if ($panel === 'admin')
                   <td>
-                    <a href="{{ route('admin.loginPage') }}" style="display:inline-block;padding:14px 22px;background:#5a544e;color:#faf6ee;font-size:13px;font-weight:700;text-decoration:none;text-transform:uppercase;letter-spacing:0.06em;border:2px solid #1a1a1a;">Admin Girişi</a>
+                    <a href="{{ route('admin.loginPage') }}" style="display:inline-block;padding:14px 22px;background:{{ $mailAction }};color:{{ $mailOnDark }};font-size:13px;font-weight:700;text-decoration:none;text-transform:uppercase;letter-spacing:0.06em;border:2px solid {{ $mailInk }};">Admin Girişi</a>
                   </td>
                   @else
                   <td style="padding-right:10px;">
-                    <a href="{{ route('password.request') }}" style="display:inline-block;padding:14px 22px;background:#5a544e;color:#faf6ee;font-size:13px;font-weight:700;text-decoration:none;text-transform:uppercase;letter-spacing:0.06em;border:2px solid #1a1a1a;">Şifremi Sıfırla</a>
+                    <a href="{{ route('password.request') }}" style="display:inline-block;padding:14px 22px;background:{{ $mailAction }};color:{{ $mailOnDark }};font-size:13px;font-weight:700;text-decoration:none;text-transform:uppercase;letter-spacing:0.06em;border:2px solid {{ $mailInk }};">Şifremi Sıfırla</a>
                   </td>
                   <td>
-                    <a href="{{ route('contact') }}" style="display:inline-block;padding:14px 22px;background:#fffdf8;color:#1a1a1a;font-size:13px;font-weight:700;text-decoration:none;text-transform:uppercase;letter-spacing:0.06em;border:2px solid #1a1a1a;">İletişim</a>
+                    <a href="{{ route('contact') }}" style="display:inline-block;padding:14px 22px;background:{{ $mailSurface }};color:{{ $mailInk }};font-size:13px;font-weight:700;text-decoration:none;text-transform:uppercase;letter-spacing:0.06em;border:2px solid {{ $mailInk }};">İletişim</a>
                   </td>
                   @endif
                 </tr>
               </table>
             </td>
           </tr>
-          <tr>
-            <td style="padding:18px 24px;border-top:3px solid #1a1a1a;background:#2a2826;color:#faf6ee;">
-              <p style="margin:0;font-size:12px;line-height:1.6;opacity:0.85;">© {{ date('Y') }} PureMatPrint — Baskı & Tabela Stüdyosu</p>
-            </td>
-          </tr>
+          @include('mail.partials.footer')
         </table>
       </td>
     </tr>

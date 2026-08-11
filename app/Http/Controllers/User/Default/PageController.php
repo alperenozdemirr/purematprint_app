@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\User\Default;
 
 use App\Http\Controllers\Controller;
+use App\Models\FaqGroup;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 
@@ -13,6 +14,17 @@ class PageController extends Controller
     public function about(): View
     {
         return view('user.default.about');
+    }
+
+    public function faq(): View
+    {
+        $faqGroups = FaqGroup::query()
+            ->with(['faqs' => fn ($query) => $query->ordered()])
+            ->ordered()
+            ->get()
+            ->filter(fn (FaqGroup $group) => $group->faqs->isNotEmpty());
+
+        return view('user.default.faq', compact('faqGroups'));
     }
 
     public function contact(): View

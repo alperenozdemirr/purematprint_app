@@ -332,28 +332,34 @@
     </div>
   </section>
 
-  <!-- SEO content — G&W accordion -->
-  <section class="pt-16 pb-24 border-t border-ink/12 bg-bg min-[768px]:pb-28" id="hakkimizda-ozet" data-i5="seo">
-    <div class="w-full max-w-[760px] mx-auto px-5 lg:px-8" data-i5="container">
-      <details data-i5="reveal" data-i5-tags="seo__details reveal" class="group/seo border-t border-ink/12 opacity-0 translate-y-6 transition-all duration-700 [&.is-revealed]:opacity-100 [&.is-revealed]:translate-y-0">
-        <summary class="flex items-center justify-between gap-4 py-5 list-none cursor-pointer text-ink font-heading text-[clamp(1.1rem,2.5vw,1.5rem)] font-bold leading-tight tracking-tight">Tabela, Baskı &amp; Kurumsal Kimlik<svg class="shrink-0 transition-transform group-open/seo:rotate-180" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
-        </summary>
-        <div data-i5="seo__body" class="pb-6 text-[15px] leading-relaxed text-muted">
-          <p class="mb-4">PureMatPrint'te tabelanın yalnızca bir işaret değil, mekânınızın ilk izlenimi olduğuna inanıyoruz. Köşe kafeden butik stüdyoya, yoğun perakende noktasından kurumsal ofise — ürünlerimiz günlük etkileşimleri yükseltmek için tasarlandı. Sade, işlevsel ve minimal; her parça çevresine uyum sağlarken markanızı öne çıkarır.</p>
-          <p class="mb-4">İstanbul merkezli atölyemiz, kullanımı keyifli ve uzun ömürlü nesneler üretme tutkusuyla kuruldu. Bugün tabela, menü display ve kurumsal baskı alanlarında mekânları daha davetkâr hale getiren çözümler sunuyoruz.</p>
-          <h3 class="font-heading mt-6 mb-2.5 text-base font-bold text-ink uppercase tracking-wide">Sizin İçin Konuşan Tabelalar</h3>
-          <p class="mb-4">Vitrin tabelası, kaldırım A-frame'i veya tezgâh üstü yönlendirme — doğru tabela fark yaratır. Açık hava tabelalarından LED lightbox'lara, roll-up banner'lardan magnet display'lere kadar geniş koleksiyonumuz hava koşullarına dayanıklı malzemelerle üretilir.</p>
-          <h3 class="font-heading mt-6 mb-2.5 text-base font-bold text-ink uppercase tracking-wide">Pratik Menü &amp; Display Çözümleri</h3>
-          <p class="mb-4">Menüler okunması kadar güncellenmesi de kolay olmalı. Magnetic panolar, duvar montajlı menüler ve tezgâh üstü display'ler bilgiyi taze ve erişilebilir tutar — stilinizden ödün vermeden.</p>
-          <h3 class="font-heading mt-6 mb-2.5 text-base font-bold text-ink uppercase tracking-wide">Neden PureMatPrint?</h3>
-          <ul class="pl-5 list-disc">
-            <li class="mt-2">Zamansız sadelik — her mekâna uyum sağlayan tasarım</li>
-            <li class="mt-2">Dayanıklılık — iç ve dış mekân için uzun ömürlü malzemeler</li>
-            <li class="mt-2">Proje odaklı — ajanslar ve markalar için uçtan uca destek</li>
-            <li class="mt-2">Müşteri önceliği — iletişimi kolay, etkili ve keyifli kılan ürünler</li>
-          </ul>
+  @if ($homepageFaqs->isNotEmpty())
+    <section class="py-16 border-t border-ink/12 bg-bg min-[768px]:py-20" id="sss" data-i5="faq">
+      <div class="w-full max-w-[760px] mx-auto px-5 lg:px-8" data-i5="container">
+        <div data-i5="reveal" data-i5-tags="faq__header reveal" class="mb-8 text-center opacity-0 translate-y-6 transition-all duration-700 [&.is-revealed]:opacity-100 [&.is-revealed]:translate-y-0">
+          <h2 class="font-heading text-[clamp(1.5rem,3vw,2rem)] font-bold leading-tight tracking-[-0.02em] text-ink normal-case mb-3">Sık Sorulan Sorular</h2>
+          <p class="m-0 text-[15px] leading-relaxed text-muted">Sipariş ve teslimat süreci hakkında hızlı yanıtlar.</p>
         </div>
-      </details>
-    </div>
-  </section>
+
+        <div data-i5="reveal" data-i5-tags="faq__list reveal" class="border-t border-ink/12 opacity-0 translate-y-6 transition-all duration-700 [&.is-revealed]:opacity-100 [&.is-revealed]:translate-y-0">
+          @foreach ($homepageFaqs as $faq)
+            <details class="group/faq border-b border-ink/12">
+              <summary class="flex items-center justify-between gap-4 py-5 list-none cursor-pointer text-ink font-heading text-[clamp(1rem,2.2vw,1.25rem)] font-bold leading-tight tracking-tight [&::-webkit-details-marker]:hidden">
+                <span>{{ $faq->title }}</span>
+                <svg class="shrink-0 transition-transform group-open/faq:rotate-180" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+              </summary>
+              <div class="pb-6 text-[15px] leading-relaxed text-muted whitespace-pre-line">{{ $faq->content }}</div>
+            </details>
+          @endforeach
+        </div>
+
+        <div class="mt-8 text-center">
+          <a href="{{ route('faq') }}"
+             class="inline-flex items-center gap-2 font-body text-[12px] font-bold uppercase tracking-[0.06em] text-accent transition-colors hover:text-accent-dark">
+            Tüm soruları görüntüle
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </a>
+        </div>
+      </div>
+    </section>
+  @endif
 @endsection

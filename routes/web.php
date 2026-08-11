@@ -35,6 +35,8 @@ use App\Http\Controllers\Admin\Account\AccountController as AdminAccountControll
 use App\Http\Controllers\Admin\Newsletter\NewsletterController as AdminNewsletterController;
 use App\Http\Controllers\Admin\Notification\NotificationController as AdminNotificationController;
 use App\Http\Controllers\Admin\Search\SearchController as AdminSearchController;
+use App\Http\Controllers\Admin\Faq\FaqGroupController as AdminFaqGroupController;
+use App\Http\Controllers\Admin\Faq\FaqController as AdminFaqController;
 use App\Http\Controllers\User\Blog\BlogController as UserBlogController;
 use App\Http\Controllers\User\Newsletter\NewsletterController as UserNewsletterController;
 use App\Http\Controllers\MediaController;
@@ -82,6 +84,7 @@ Route::get('arama',[ProductController::class,'searchSuggestions'])->name('search
 Route::get('bloglar', [UserBlogController::class, 'index'])->name('blogList');
 Route::get('bloglar/{slug}', [UserBlogController::class, 'show'])->name('blogShow');
 Route::get('hakkimizda', [PageController::class, 'about'])->name('about');
+Route::get('sik-sorulan-sorular', [PageController::class, 'faq'])->name('faq');
 Route::get('iletisim', [PageController::class, 'contact'])->name('contact');
 Route::get('kargo-teslimat', [PageController::class, 'shipping'])->name('shippingInfo');
 Route::get('sozlesmeler', [PageController::class, 'agreements'])->name('agreements');
@@ -215,6 +218,19 @@ Route::group(['prefix' => 'admin/', 'middleware' => 'admin'], function () {
     Route::post('companies/update', [AdminCompanyController::class, 'update'])->name('admin.companyUpdate');
     Route::get('companies/{id}/delete', [AdminCompanyController::class, 'destroy'])->name('admin.companyDelete');
     Route::get('companies/{id}', [AdminCompanyController::class, 'show'])->name('admin.companyEditPage');
+
+    Route::get('faq-groups', [AdminFaqGroupController::class, 'index'])->name('admin.faqGroupList');
+    Route::get('faq-groups/create', [AdminFaqGroupController::class, 'storePage'])->name('admin.faqGroupStorePage');
+    Route::post('faq-groups/store', [AdminFaqGroupController::class, 'store'])->name('admin.faqGroupStore');
+    Route::post('faq-groups/update', [AdminFaqGroupController::class, 'update'])->name('admin.faqGroupUpdate');
+    Route::get('faq-groups/{id}/delete', [AdminFaqGroupController::class, 'destroy'])->name('admin.faqGroupDelete');
+    Route::get('faq-groups/{id}', [AdminFaqGroupController::class, 'show'])->name('admin.faqGroupEditPage');
+
+    Route::get('faqs/create', [AdminFaqController::class, 'storePage'])->name('admin.faqStorePage');
+    Route::post('faqs/store', [AdminFaqController::class, 'store'])->name('admin.faqStore');
+    Route::post('faqs/update', [AdminFaqController::class, 'update'])->name('admin.faqUpdate');
+    Route::get('faqs/{id}/delete', [AdminFaqController::class, 'destroy'])->name('admin.faqDelete');
+    Route::get('faqs/{id}', [AdminFaqController::class, 'show'])->name('admin.faqEditPage');
 
     Route::get('newsletters', [AdminNewsletterController::class, 'index'])->name('admin.newsletterList');
     Route::post('newsletters/broadcast', [AdminNewsletterController::class, 'broadcast'])->name('admin.newsletterBroadcast');

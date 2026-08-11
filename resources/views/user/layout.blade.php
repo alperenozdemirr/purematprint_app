@@ -276,6 +276,7 @@
       </details>
       <p class="font-body text-xs font-bold tracking-[0.12em] uppercase text-accent [padding:16px_20px_8px] m-0 border-t-[3px] border-ink bg-bg">Kurumsal</p>
       <a href="{{ route('about') }}" class="block font-body text-[20px] font-bold uppercase [padding:16px_20px] border-b-2 border-ink text-ink bg-surface hover:bg-hover [&.is-current]:bg-hover [&.is-current]:text-accent" data-i5="mobile__link">Hakkımızda</a>
+      <a href="{{ route('faq') }}" class="block font-body text-[20px] font-bold uppercase [padding:16px_20px] border-b-2 border-ink text-ink bg-surface hover:bg-hover [&.is-current]:bg-hover [&.is-current]:text-accent" data-i5="mobile__link">SSS</a>
       <a href="{{ route('contact') }}" class="block font-body text-[20px] font-bold uppercase [padding:16px_20px] border-b-2 border-ink text-ink bg-surface hover:bg-hover [&.is-current]:bg-hover [&.is-current]:text-accent" data-i5="mobile__link">İletişim</a>
     </nav>
     <div class="p-5 border-t-[3px] border-ink shrink-0">
@@ -327,6 +328,7 @@
             <li><a href="{{ route('collectionList') }}">Koleksiyonlar</a></li>
             <li><a href="{{ route('shops', ['siralama' => 'featured']) }}">Çok Satanlar</a></li>
             <li><a href="{{ route('about') }}">Hakkımızda</a></li>
+            <li><a href="{{ route('faq') }}">Sık Sorulan Sorular</a></li>
             <li><a href="{{ route('contact') }}">İletişim</a></li>
             <li><a href="{{ route('shippingInfo') }}">Kargo &amp; Teslimat</a></li>
             @if ($isUserLoggedIn)
