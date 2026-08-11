@@ -85,7 +85,7 @@ return [
 
     'middleware' => [
         'web',
-        \App\Http\Middleware\HorizonAdminAccess::class,
+        'horizon.admin',
     ],
 
     /*
