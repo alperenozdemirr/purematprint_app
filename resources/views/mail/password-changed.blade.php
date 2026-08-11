@@ -26,7 +26,7 @@
                 Hesabınızın şifresi <strong>{{ $changedAt }}</strong> tarihinde değiştirildi.
               </p>
 
-              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin:0 0 20px;background:{{ $mailCream }};border:2px solid #b61d0f;">
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin:0 0 20px;background:{{ $mailCream }};border:2px solid {{ $mailAnnounce }};">
                 <tr>
                   <td style="padding:18px 16px;">
                     <p style="margin:0;font-size:14px;line-height:1.7;color:{{ $mailMuted }};">

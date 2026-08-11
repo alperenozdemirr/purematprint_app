@@ -23,6 +23,8 @@ class MailViewComposer
             'mailDark' => MailBranding::COLOR_DARK,
             'mailFontBody' => MailBranding::FONT_BODY,
             'mailFontHeading' => MailBranding::FONT_HEADING,
+            'mailLogoUrl' => MailBranding::logoUrl(),
+            'mailSiteUrl' => rtrim((string) config('app.url'), '/'),
         ]);
     }
 }
