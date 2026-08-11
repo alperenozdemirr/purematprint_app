@@ -7,9 +7,10 @@
   $waLink = $siteSetting->whatsappLink('Merhaba, "' . $product->title . '" ürünü için teklif almak istiyorum.');
   $propertyGroups = $product->propertyGroups->filter(fn ($g) => $g->items->isNotEmpty());
   $descriptionPlain = trim(strip_tags(html_entity_decode($product->description ?? '', ENT_QUOTES | ENT_HTML5, 'UTF-8')));
-  $descriptionExcerpt = $descriptionPlain !== '' ? \Illuminate\Support\Str::limit($descriptionPlain, 180) : '';
+  $descriptionExcerptLimit = 280;
+  $descriptionExcerpt = $descriptionPlain !== '' ? \Illuminate\Support\Str::limit($descriptionPlain, $descriptionExcerptLimit) : '';
   $hasFullDescription = $descriptionPlain !== '';
-  $showDescriptionTeaser = $hasFullDescription && (strlen($descriptionPlain) > 180 || str_contains($product->description ?? '', '<'));
+  $showDescriptionTeaser = $hasFullDescription && (strlen($descriptionPlain) > $descriptionExcerptLimit || str_contains($product->description ?? '', '<'));
 @endphp
 
 <main class="py-8 pb-20">
@@ -33,276 +34,307 @@
     <div class="mb-6 p-3.5 border-[3px] border-ink bg-bg text-sm font-semibold text-announce" role="alert">{{ session('error') }}</div>
     @endif
 
-    <div class="grid gap-10 min-[960px]:grid-cols-2 min-[960px]:gap-14 min-[960px]:items-start" data-i5="product-page__grid">
-      <div data-i5-pdp-gallery>
-        <div class="relative aspect-[4/5] border-[3px] border-ink shadow-brutal bg-surface overflow-hidden mb-3" data-i5="pdp-gallery__main">
-          @if ($product->introduction_status)
-            <span class="absolute top-0 left-0 z-[2] px-3 py-2 bg-badge text-badge-fg font-body text-[10px] font-bold uppercase tracking-[0.06em] border-b-2 border-r-2 border-action/25" data-i5="pdp-gallery__badge">Yeni</span>
-          @elseif ($product->featured_status)
-            <span class="absolute top-0 left-0 z-[2] px-3 py-2 bg-accent text-on-dark font-body text-[10px] font-bold uppercase tracking-[0.06em] border-b-2 border-r-2 border-ink/25" data-i5="pdp-gallery__badge">Öne Çıkan</span>
-          @endif
+    @if ($product->stock_count > 0)
+      @php
+        $canAddToCart = auth()->check()
+            && auth()->user()->type === \App\Enums\UserType::USER
+            && auth()->user()->status === \App\Enums\Status::ACTIVE;
+        $loginRedirect = parse_url(route('shopDetail', $product->slug), PHP_URL_PATH) ?: '/';
+      @endphp
+      <form method="post" action="{{ route('cartStore') }}" data-pdp-cart-form data-product-form data-product-id="{{ $product->id }}"
+            class="grid grid-cols-1 gap-10 min-[960px]:grid-cols-2 min-[960px]:gap-x-14 min-[960px]:gap-y-4 min-[960px]:items-start" data-i5="product-page__grid">
+        @csrf
+        <input type="hidden" name="product_id" value="{{ $product->id }}">
+        <input type="hidden" name="quantity" value="1">
+
+        <div class="order-1 min-w-0 max-w-full min-[960px]:col-start-1 min-[960px]:row-start-1 min-[960px]:row-span-2" data-i5-pdp-gallery>
+          <div class="relative aspect-[4/5] border-[3px] border-ink shadow-brutal bg-surface overflow-hidden mb-3" data-i5="pdp-gallery__main">
+            @if ($product->introduction_status)
+              <span class="absolute top-0 left-0 z-[2] px-3 py-2 bg-badge text-badge-fg font-body text-[10px] font-bold uppercase tracking-[0.06em] border-b-2 border-r-2 border-action/25" data-i5="pdp-gallery__badge">Yeni</span>
+            @elseif ($product->featured_status)
+              <span class="absolute top-0 left-0 z-[2] px-3 py-2 bg-accent text-on-dark font-body text-[10px] font-bold uppercase tracking-[0.06em] border-b-2 border-r-2 border-ink/25" data-i5="pdp-gallery__badge">Öne Çıkan</span>
+            @endif
+
+            @if ($product->images->count() > 1)
+              <button type="button" class="absolute top-1/2 z-[3] flex items-center justify-center w-11 h-11 border-[3px] border-ink shadow-brutal-sm bg-white/95 -translate-y-1/2 left-3 hover:bg-surface hover:-translate-x-px hover:-translate-y-[calc(50%+1px)]" data-i5-pdp-prev aria-label="Önceki görsel">
+                <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg>
+              </button>
+              <button type="button" class="absolute top-1/2 z-[3] flex items-center justify-center w-11 h-11 border-[3px] border-ink shadow-brutal-sm bg-white/95 -translate-y-1/2 right-3 hover:bg-surface hover:-translate-x-px hover:-translate-y-[calc(50%+1px)]" data-i5-pdp-next aria-label="Sonraki görsel">
+                <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>
+              </button>
+            @endif
+
+            <div class="flex h-full overflow-x-auto scroll-smooth snap-x snap-mandatory overscroll-x-contain [scrollbar-width:none] focus:outline-none" data-i5-pdp-track tabindex="0" aria-label="Ürün görselleri" data-i5="pdp-gallery__track">
+              @forelse ($product->images as $index => $image)
+                <div class="shrink-0 basis-full w-full h-full snap-start snap-always cursor-zoom-in [&_img]:block [&_img]:w-full [&_img]:h-full [&_img]:object-cover [&_img]:select-none" data-i5="pdp-gallery__slide">
+                  <img src="{{ $image->url }}" alt="{{ $product->title }} — görsel {{ $index + 1 }}">
+                </div>
+              @empty
+                <div class="shrink-0 basis-full w-full h-full snap-start [&_img]:block [&_img]:w-full [&_img]:h-full [&_img]:object-cover" data-i5="pdp-gallery__slide">
+                  <img src="{{ $placeholder }}" alt="{{ $product->title }}">
+                </div>
+              @endforelse
+            </div>
+          </div>
 
           @if ($product->images->count() > 1)
-            <button type="button" class="absolute top-1/2 z-[3] flex items-center justify-center w-11 h-11 border-[3px] border-ink shadow-brutal-sm bg-white/95 -translate-y-1/2 left-3 hover:bg-surface hover:-translate-x-px hover:-translate-y-[calc(50%+1px)]" data-i5-pdp-prev aria-label="Önceki görsel">
-              <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg>
-            </button>
-            <button type="button" class="absolute top-1/2 z-[3] flex items-center justify-center w-11 h-11 border-[3px] border-ink shadow-brutal-sm bg-white/95 -translate-y-1/2 right-3 hover:bg-surface hover:-translate-x-px hover:-translate-y-[calc(50%+1px)]" data-i5-pdp-next aria-label="Sonraki görsel">
-              <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>
-            </button>
+            <div class="grid grid-cols-3 gap-2.5 sm:grid-cols-4 md:grid-cols-5" data-i5="pdp-gallery__thumbs">
+              @foreach ($product->images as $index => $image)
+                <button type="button"
+                        class="aspect-square border-[3px] border-ink shadow-brutal-sm overflow-hidden bg-bg p-0 cursor-pointer opacity-65 transition-all hover:opacity-100 hover:-translate-x-px hover:-translate-y-px hover:shadow-brutal {{ $index === 0 ? 'is-active opacity-100 ring-2 ring-accent ring-offset-2' : '' }} [&_img]:block [&_img]:w-full [&_img]:h-full [&_img]:object-cover"
+                        aria-label="Görsel {{ $index + 1 }}" @if($index === 0) aria-current="true" @endif data-i5="pdp-gallery__thumb">
+                  <img src="{{ $image->url }}" alt="">
+                </button>
+              @endforeach
+            </div>
           @endif
-
-          <div class="flex h-full overflow-x-auto scroll-smooth snap-x snap-mandatory overscroll-x-contain [scrollbar-width:none] focus:outline-none" data-i5-pdp-track tabindex="0" aria-label="Ürün görselleri" data-i5="pdp-gallery__track">
-            @forelse ($product->images as $index => $image)
-              <div class="shrink-0 basis-full w-full h-full snap-start snap-always cursor-zoom-in [&_img]:block [&_img]:w-full [&_img]:h-full [&_img]:object-cover [&_img]:select-none" data-i5="pdp-gallery__slide">
-                <img src="{{ $image->url }}" alt="{{ $product->title }} — görsel {{ $index + 1 }}">
-              </div>
-            @empty
-              <div class="shrink-0 basis-full w-full h-full snap-start [&_img]:block [&_img]:w-full [&_img]:h-full [&_img]:object-cover" data-i5="pdp-gallery__slide">
-                <img src="{{ $placeholder }}" alt="{{ $product->title }}">
-              </div>
-            @endforelse
-          </div>
         </div>
 
-        @if ($product->images->count() > 1)
-          <div class="grid grid-cols-3 gap-2.5 sm:grid-cols-4 md:grid-cols-5" data-i5="pdp-gallery__thumbs">
-            @foreach ($product->images as $index => $image)
-              <button type="button"
-                      class="aspect-square border-[3px] border-ink shadow-brutal-sm overflow-hidden bg-bg p-0 cursor-pointer opacity-65 transition-all hover:opacity-100 hover:-translate-x-px hover:-translate-y-px hover:shadow-brutal {{ $index === 0 ? 'is-active opacity-100 ring-2 ring-accent ring-offset-2' : '' }} [&_img]:block [&_img]:w-full [&_img]:h-full [&_img]:object-cover"
-                      aria-label="Görsel {{ $index + 1 }}" @if($index === 0) aria-current="true" @endif data-i5="pdp-gallery__thumb">
-                <img src="{{ $image->url }}" alt="">
-              </button>
-            @endforeach
-          </div>
-        @endif
-      </div>
+        <div class="order-2 contents min-[960px]:grid min-[960px]:col-start-2 min-[960px]:row-start-1 min-[960px]:row-span-2 min-[960px]:gap-3 min-[960px]:content-start min-[960px]:auto-rows-min min-[960px]:pt-2">
+        <div class="order-2 min-w-0 max-w-full min-[960px]:order-none" data-i5="pdp-info">
+          @if ($product->category)
+            <a href="{{ route('shops', ['kategori' => $categoryFilter?->slug ?? $product->category->slug]) }}"
+               class="inline-block font-body text-[11px] font-bold tracking-[0.1em] uppercase text-accent mb-3 transition-colors hover:text-accent-dark" data-i5="pdp-info__category">
+              {{ $product->category->name }}
+            </a>
+          @endif
 
-      <div class="pt-2" data-i5="pdp-info">
-        @if ($product->category)
-          <a href="{{ route('shops', ['kategori' => $categoryFilter?->slug ?? $product->category->slug]) }}"
-             class="inline-block font-body text-[11px] font-bold tracking-[0.1em] uppercase text-accent mb-3 transition-colors hover:text-accent-dark" data-i5="pdp-info__category">
-            {{ $product->category->name }}
-          </a>
-        @endif
+          <h1 class="font-heading text-page-title font-semibold leading-[1.12] tracking-[-0.02em] text-ink normal-case mb-4">{{ $product->title }}</h1>
 
-        <h1 class="font-heading text-page-title font-semibold leading-[1.12] tracking-[-0.02em] text-ink normal-case mb-4">{{ $product->title }}</h1>
-
-        <p class="font-body text-2xl font-bold mb-5" data-i5="pdp-info__price">
-          @if ($product->stock_count === 0)
-            <span class="text-muted text-xl">Stokta yok</span>
-          @else
+          <p class="font-body text-2xl font-bold mb-5" data-i5="pdp-info__price">
             <span data-pdp-base-price="{{ (float) $product->price }}" data-pdp-total-price>{{ number_format((float) $product->price, 0, ',', '.') }}₺</span>
-          @endif
-        </p>
+          </p>
 
-        @if ($hasFullDescription)
-          <div class="mb-8 max-w-[520px]" data-i5="pdp-info__desc">
-            <p class="m-0 text-muted leading-[1.7]">{{ $descriptionExcerpt }}</p>
-            @if ($showDescriptionTeaser)
-              <a href="#pdp-full-details"
-                 data-pdp-view-all-details
-                 class="mt-3 inline-flex items-center gap-2 font-body text-[12px] font-bold uppercase tracking-[0.06em] text-accent transition-colors hover:text-accent-dark">
-                Tüm özellikleri görüntüle
-                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
-              </a>
-            @endif
-          </div>
-        @endif
-
-        <div class="grid grid-cols-3 gap-3 mb-7 max-[599px]:grid-cols-1" data-i5="pdp-trust">
-          <div class="p-3 border-[3px] border-ink bg-bg text-center" data-i5="pdp-trust__item">
-            <strong class="block font-body text-[11px] font-bold uppercase mb-1">3–5 Gün</strong>
-            <span class="text-[11px] text-muted">Teslimat</span>
-          </div>
-          <div class="p-3 border-[3px] border-ink bg-bg text-center" data-i5="pdp-trust__item">
-            <strong class="block font-body text-[11px] font-bold uppercase mb-1">500₺+</strong>
-            <span class="text-[11px] text-muted">Ücretsiz Kargo</span>
-          </div>
-          <div class="p-3 border-[3px] border-ink bg-bg text-center" data-i5="pdp-trust__item">
-            <strong class="block font-body text-[11px] font-bold uppercase mb-1">Prova</strong>
-            <span class="text-[11px] text-muted">Dijital Onay</span>
-          </div>
-        </div>
-
-        <div class="grid gap-3 mb-9" data-i5="pdp-actions">
-          @if ($product->stock_count > 0)
-            @php
-              $canAddToCart = auth()->check()
-                  && auth()->user()->type === \App\Enums\UserType::USER
-                  && auth()->user()->status === \App\Enums\Status::ACTIVE;
-              $loginRedirect = parse_url(route('shopDetail', $product->slug), PHP_URL_PATH) ?: '/';
-            @endphp
-            <form method="post" action="{{ route('cartStore') }}" data-pdp-cart-form data-product-id="{{ $product->id }}" class="grid gap-5">
-              @csrf
-              <input type="hidden" name="product_id" value="{{ $product->id }}">
-              <input type="hidden" name="quantity" value="1">
-
-              @if ($propertyGroups->isNotEmpty())
-                <div class="grid gap-3" data-pdp-properties>
-                  @if ($propertyGroups->count() > 1)
-                    <div class="hidden min-[960px]:flex items-center justify-between gap-3" data-pdp-properties-nav>
-                      <p class="m-0 font-body text-[11px] font-bold uppercase tracking-[0.08em] text-muted">Ürün seçenekleri</p>
-                      <div class="flex items-center gap-2">
-                        <button type="button"
-                                class="flex h-10 w-10 items-center justify-center border-[3px] border-ink bg-surface shadow-brutal-sm transition-[transform,box-shadow] hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-brutal disabled:cursor-not-allowed disabled:opacity-40"
-                                data-pdp-properties-prev aria-label="Önceki seçenek grubu">
-                          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg>
-                        </button>
-                        <button type="button"
-                                class="flex h-10 w-10 items-center justify-center border-[3px] border-ink bg-surface shadow-brutal-sm transition-[transform,box-shadow] hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-brutal disabled:cursor-not-allowed disabled:opacity-40"
-                                data-pdp-properties-next aria-label="Sonraki seçenek grubu">
-                          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>
-                        </button>
-                      </div>
-                    </div>
-                  @endif
-
-                  <div class="relative min-[960px]:-mx-1 min-[960px]:px-1" data-pdp-properties-slider>
-                    <div class="pointer-events-none absolute inset-y-0 left-0 z-[1] hidden w-8 bg-gradient-to-r from-bg to-transparent" data-pdp-properties-fade-left aria-hidden="true"></div>
-                    <div class="pointer-events-none absolute inset-y-0 right-0 z-[1] hidden w-8 bg-gradient-to-l from-bg to-transparent" data-pdp-properties-fade-right aria-hidden="true"></div>
-
-                    <div class="grid gap-4 max-[959px]:grid-cols-1 min-[960px]:flex min-[960px]:snap-x min-[960px]:snap-mandatory min-[960px]:gap-4 min-[960px]:overflow-x-auto min-[960px]:scroll-smooth min-[960px]:pb-1 min-[960px]:[scrollbar-width:none] min-[960px]:[-ms-overflow-style:none] min-[960px]:[&::-webkit-scrollbar]:hidden"
-                         data-pdp-properties-track tabindex="0" aria-label="Ürün seçenekleri">
-                  @foreach ($propertyGroups as $group)
-                    @php
-                      $selected = old('properties.'.$group->id, $defaultPropertySelections[$group->id] ?? []);
-                      if (! is_array($selected)) {
-                          $selected = $selected !== null && $selected !== '' ? [(int) $selected] : [];
-                      }
-                      $selected = array_map('intval', $selected);
-                    @endphp
-                    <fieldset class="border-[3px] border-ink bg-bg p-4 min-[960px]:w-[min(100%,320px)] min-[960px]:shrink-0 min-[960px]:snap-start min-[960px]:shadow-brutal-sm" data-property-group data-group-type="{{ $group->type->value }}" data-group-title="{{ $group->title }}" @if($group->is_required && $group->type === \App\Enums\ProductPropertyGroupType::MULTIPLE) data-required-multiple="1" @endif>
-                      <legend class="px-2 font-body text-[12px] font-bold uppercase tracking-[0.04em] text-ink">
-                        {{ $group->title }}
-                        @if ($group->is_required)
-                          <span class="text-announce">*</span>
-                        @endif
-                      </legend>
-                      <div class="mt-2 grid gap-2 min-[960px]:max-h-[280px] min-[960px]:overflow-y-auto min-[960px]:pr-1 min-[960px]:[scrollbar-width:thin]">
-                        @foreach ($group->items as $item)
-                          @php
-                            $inputId = 'prop-'.$group->id.'-'.$item->id;
-                            $isChecked = in_array((int) $item->id, $selected, true);
-                          @endphp
-                          <label for="{{ $inputId }}" class="flex items-center justify-between gap-3 border-2 border-ink/15 bg-surface px-3 py-2.5 cursor-pointer hover:border-ink has-[:checked]:border-ink has-[:checked]:bg-hover">
-                            <span class="inline-flex items-center gap-2.5 min-w-0">
-                              @if ($group->type === \App\Enums\ProductPropertyGroupType::SINGLE)
-                                <input
-                                  type="radio"
-                                  id="{{ $inputId }}"
-                                  name="properties[{{ $group->id }}]"
-                                  value="{{ $item->id }}"
-                                  data-property-price="{{ (float) $item->price }}"
-                                  data-property-title="{{ $item->title }}"
-                                  @checked($isChecked)
-                                  @required($group->is_required)
-                                  class="accent-accent shrink-0"
-                                >
-                              @else
-                                <input
-                                  type="checkbox"
-                                  id="{{ $inputId }}"
-                                  name="properties[{{ $group->id }}][]"
-                                  value="{{ $item->id }}"
-                                  data-property-price="{{ (float) $item->price }}"
-                                  data-property-title="{{ $item->title }}"
-                                  @checked($isChecked)
-                                  class="accent-accent shrink-0"
-                                >
-                              @endif
-                              <span class="font-body text-[13px] font-semibold text-ink truncate">{{ $item->title }}</span>
-                            </span>
-                            <span class="font-body text-[12px] font-bold text-muted whitespace-nowrap">
-                              @if ((float) $item->price > 0)
-                                +{{ number_format((float) $item->price, 0, ',', '.') }}₺
-                              @else
-                                +0₺
-                              @endif
-                            </span>
-                          </label>
-                        @endforeach
-                      </div>
-                      @error('properties.'.$group->id)
-                        <p class="mt-2 text-[12px] font-semibold text-announce">{{ $message }}</p>
-                      @enderror
-                    </fieldset>
-                  @endforeach
-                    </div>
-                  </div>
-
-                  @error('properties')
-                    <p class="text-[12px] font-semibold text-announce">{{ $message }}</p>
-                  @enderror
-                </div>
-
-                <div class="border-[3px] border-ink bg-bg p-4" data-pdp-price-summary>
-                  <p class="mb-3 font-body text-[11px] font-bold uppercase tracking-[0.06em] text-muted">Fiyat özeti</p>
-                  <div class="grid gap-2 text-sm">
-                    <div class="flex justify-between gap-3">
-                      <span class="text-muted">Baz fiyat</span>
-                      <span class="font-semibold text-ink" data-pdp-summary-base>{{ number_format((float) $product->price, 0, ',', '.') }}₺</span>
-                    </div>
-                    <div class="grid gap-1.5" data-pdp-summary-lines></div>
-                    <div class="flex justify-between gap-3 border-t-[3px] border-ink pt-3 mt-1">
-                      <span class="font-body text-[13px] font-bold uppercase tracking-[0.04em] text-ink">Toplam</span>
-                      <span class="font-body text-[18px] font-bold text-ink" data-pdp-summary-total>{{ number_format((float) $product->price, 0, ',', '.') }}₺</span>
-                    </div>
-                  </div>
-                </div>
-              @endif
-
-              @if ($canAddToCart)
-                <button type="submit" class="inline-flex items-center justify-center gap-2 w-full px-6 py-3.5 font-body text-[13px] font-bold uppercase tracking-[0.06em] text-center border-[3px] border-ink bg-action text-on-dark shadow-brutal hover:bg-action-hover hover:-translate-x-0.5 hover:-translate-y-0.5" data-i5="btn--fill">Sepete Ekle</button>
-              @else
-                <a href="{{ route('loginPage', ['redirect' => $loginRedirect]) }}"
-                   data-pdp-login-cta
-                   class="inline-flex items-center justify-center gap-2 w-full px-6 py-3.5 font-body text-[13px] font-bold uppercase tracking-[0.06em] text-center border-[3px] border-ink bg-action text-on-dark shadow-brutal hover:bg-action-hover hover:-translate-x-0.5 hover:-translate-y-0.5" data-i5="btn--fill">
-                  Giriş Yapıp Sepete Ekle
+          @if ($hasFullDescription)
+            <div class="mb-8 max-w-[520px]" data-i5="pdp-info__desc">
+              <p class="m-0 text-muted leading-[1.7]">{{ $descriptionExcerpt }}</p>
+              @if ($showDescriptionTeaser)
+                <a href="#pdp-full-details"
+                   data-pdp-view-all-details
+                   class="mt-3 inline-flex items-center gap-2 font-body text-[12px] font-bold uppercase tracking-[0.06em] text-accent transition-colors hover:text-accent-dark">
+                  Tüm özellikleri görüntüle
+                  <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
                 </a>
               @endif
-            </form>
-          @else
-            <span class="inline-flex items-center justify-center w-full px-6 py-3.5 font-body text-[13px] font-bold uppercase tracking-[0.06em] text-center border-[3px] border-ink bg-cream text-muted cursor-not-allowed">Stokta Yok</span>
+            </div>
           @endif
+
+          <div class="grid grid-cols-3 gap-3 max-[599px]:grid-cols-1 mb-0" data-i5="pdp-trust">
+            <div class="p-3 border-[3px] border-ink bg-bg text-center" data-i5="pdp-trust__item">
+              <strong class="block font-body text-[11px] font-bold uppercase mb-1">3–5 Gün</strong>
+              <span class="text-[11px] text-muted">Teslimat</span>
+            </div>
+            <div class="p-3 border-[3px] border-ink bg-bg text-center" data-i5="pdp-trust__item">
+              <strong class="block font-body text-[11px] font-bold uppercase mb-1">500₺+</strong>
+              <span class="text-[11px] text-muted">Ücretsiz Kargo</span>
+            </div>
+            <div class="p-3 border-[3px] border-ink bg-bg text-center" data-i5="pdp-trust__item">
+              <strong class="block font-body text-[11px] font-bold uppercase mb-1">Prova</strong>
+              <span class="text-[11px] text-muted">Dijital Onay</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="order-4 min-w-0 max-w-full grid gap-3 mb-9 min-[960px]:order-none min-[960px]:mb-0" data-i5="pdp-actions">
+          @if ($propertyGroups->isNotEmpty())
+            <div class="border-[3px] border-ink bg-bg p-4" data-pdp-price-summary>
+              <p class="mb-3 font-body text-[11px] font-bold uppercase tracking-[0.06em] text-muted">Fiyat özeti</p>
+              <div class="grid gap-2 text-sm">
+                <div class="flex justify-between gap-3">
+                  <span class="text-muted">Baz fiyat</span>
+                  <span class="font-semibold text-ink" data-pdp-summary-base>{{ number_format((float) $product->price, 0, ',', '.') }}₺</span>
+                </div>
+                <div class="grid gap-1.5" data-pdp-summary-lines></div>
+                <div class="flex justify-between gap-3 border-t-[3px] border-ink pt-3 mt-1">
+                  <span class="font-body text-[13px] font-bold uppercase tracking-[0.04em] text-ink">Toplam</span>
+                  <span class="font-body text-[18px] font-bold text-ink" data-pdp-summary-total>{{ number_format((float) $product->price, 0, ',', '.') }}₺</span>
+                </div>
+              </div>
+            </div>
+          @endif
+
+          @if ($canAddToCart)
+            <button type="submit" class="inline-flex items-center justify-center gap-2 w-full px-6 py-3.5 font-body text-[13px] font-bold uppercase tracking-[0.06em] text-center border-[3px] border-ink bg-action text-on-dark shadow-brutal hover:bg-action-hover hover:-translate-x-0.5 hover:-translate-y-0.5" data-i5="btn--fill">Sepete Ekle</button>
+          @else
+            <a href="{{ route('loginPage', ['redirect' => $loginRedirect]) }}"
+               data-pdp-login-cta
+               class="inline-flex items-center justify-center gap-2 w-full px-6 py-3.5 font-body text-[13px] font-bold uppercase tracking-[0.06em] text-center border-[3px] border-ink bg-action text-on-dark shadow-brutal hover:bg-action-hover hover:-translate-x-0.5 hover:-translate-y-0.5" data-i5="btn--fill">
+              Giriş Yapıp Sepete Ekle
+            </a>
+          @endif
+
           @if ($waLink)
-          <a href="{{ $waLink }}"
-             class="inline-flex items-center justify-center gap-2 w-full px-6 py-3.5 font-body text-[13px] font-bold uppercase tracking-[0.06em] text-center border-[3px] border-ink bg-surface text-ink shadow-ui hover:bg-hover"
-             target="_blank" rel="noopener noreferrer" data-i5="btn--outline">Teklif İste</a>
+            <a href="{{ $waLink }}"
+               class="inline-flex items-center justify-center gap-2 w-full px-6 py-3.5 font-body text-[13px] font-bold uppercase tracking-[0.06em] text-center border-[3px] border-ink bg-surface text-ink shadow-ui hover:bg-hover"
+               target="_blank" rel="noopener noreferrer" data-i5="btn--outline">Teklif İste</a>
+          @endif
+        </div>
+        </div>
+
+        @if ($propertyGroups->isNotEmpty())
+          <div class="order-3 min-w-0 max-w-full border-t-[3px] border-ink pt-8 min-[960px]:order-4 min-[960px]:col-span-2 min-[960px]:col-start-1 min-[960px]:row-start-3" data-pdp-properties-slot>
+            @include('user.partials.pdp-property-groups', [
+              'propertyGroups' => $propertyGroups,
+              'defaultPropertySelections' => $defaultPropertySelections,
+              'layout' => 'slider',
+            ])
+          </div>
+        @endif
+
+        <section class="order-5 min-w-0 max-w-full border-t-[3px] border-ink pt-8 min-[960px]:col-span-2 min-[960px]:col-start-1 min-[960px]:row-start-4" id="pdp-full-details">
+          <h2 class="mb-5 font-heading text-[18px] font-semibold text-ink normal-case scroll-mt-28">Ürün Detayları</h2>
+          <div class="text-muted text-sm leading-[1.7] [&_p]:mb-2 [&_ul]:my-2 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:my-2 [&_ol]:list-decimal [&_ol]:pl-5 [&_a]:underline [&_h2]:mb-2 [&_h2]:mt-3 [&_h2]:text-ink [&_h2]:text-base [&_h2]:font-bold [&_h3]:mb-2 [&_h3]:mt-3 [&_h3]:text-ink [&_h3]:text-sm [&_h3]:font-bold" data-i5="pdp-accordion__body">
+            @if ($product->description)
+              {!! $product->description !!}
+            @else
+              <p>Bu ürün için detaylı açıklama henüz eklenmemiş.</p>
+            @endif
+            <ul class="mt-4 space-y-2 list-disc pl-4">
+              <li>Ürün kodu: {{ $product->code }}</li>
+              <li>Stok: {{ $product->stock_count }} adet</li>
+            </ul>
+          </div>
+
+          <div class="mt-8 border-t-[3px] border-ink [&_details]:border-b-[3px] [&_details]:border-ink [&_summary]:flex [&_summary]:items-center [&_summary]:justify-between [&_summary]:gap-4 [&_summary]:py-[18px] [&_summary]:font-body [&_summary]:text-[13px] [&_summary]:font-bold [&_summary]:uppercase [&_summary]:tracking-[0.04em] [&_summary]:cursor-pointer [&_summary]:list-none [&_summary::-webkit-details-marker]:hidden [&_summary_svg]:shrink-0 [&_summary_svg]:transition-transform [&_details[open]_summary_svg]:rotate-180" data-i5="pdp-accordion">
+            <details>
+              <summary>
+                Kargo &amp; Teslimat
+                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
+              </summary>
+              <div class="pb-5 text-muted text-sm leading-[1.7]" data-i5="pdp-accordion__body">
+                <p>{{ $siteSetting->shippingDetailText() }}</p>
+              </div>
+            </details>
+          </div>
+        </section>
+      </form>
+    @else
+      <div class="grid gap-10 min-[960px]:grid-cols-2 min-[960px]:gap-14 min-[960px]:items-start" data-i5="product-page__grid">
+        <div data-i5-pdp-gallery>
+          <div class="relative aspect-[4/5] border-[3px] border-ink shadow-brutal bg-surface overflow-hidden mb-3" data-i5="pdp-gallery__main">
+            @if ($product->introduction_status)
+              <span class="absolute top-0 left-0 z-[2] px-3 py-2 bg-badge text-badge-fg font-body text-[10px] font-bold uppercase tracking-[0.06em] border-b-2 border-r-2 border-action/25" data-i5="pdp-gallery__badge">Yeni</span>
+            @elseif ($product->featured_status)
+              <span class="absolute top-0 left-0 z-[2] px-3 py-2 bg-accent text-on-dark font-body text-[10px] font-bold uppercase tracking-[0.06em] border-b-2 border-r-2 border-ink/25" data-i5="pdp-gallery__badge">Öne Çıkan</span>
+            @endif
+
+            @if ($product->images->count() > 1)
+              <button type="button" class="absolute top-1/2 z-[3] flex items-center justify-center w-11 h-11 border-[3px] border-ink shadow-brutal-sm bg-white/95 -translate-y-1/2 left-3 hover:bg-surface hover:-translate-x-px hover:-translate-y-[calc(50%+1px)]" data-i5-pdp-prev aria-label="Önceki görsel">
+                <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg>
+              </button>
+              <button type="button" class="absolute top-1/2 z-[3] flex items-center justify-center w-11 h-11 border-[3px] border-ink shadow-brutal-sm bg-white/95 -translate-y-1/2 right-3 hover:bg-surface hover:-translate-x-px hover:-translate-y-[calc(50%+1px)]" data-i5-pdp-next aria-label="Sonraki görsel">
+                <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>
+              </button>
+            @endif
+
+            <div class="flex h-full overflow-x-auto scroll-smooth snap-x snap-mandatory overscroll-x-contain [scrollbar-width:none] focus:outline-none" data-i5-pdp-track tabindex="0" aria-label="Ürün görselleri" data-i5="pdp-gallery__track">
+              @forelse ($product->images as $index => $image)
+                <div class="shrink-0 basis-full w-full h-full snap-start snap-always cursor-zoom-in [&_img]:block [&_img]:w-full [&_img]:h-full [&_img]:object-cover [&_img]:select-none" data-i5="pdp-gallery__slide">
+                  <img src="{{ $image->url }}" alt="{{ $product->title }} — görsel {{ $index + 1 }}">
+                </div>
+              @empty
+                <div class="shrink-0 basis-full w-full h-full snap-start [&_img]:block [&_img]:w-full [&_img]:h-full [&_img]:object-cover" data-i5="pdp-gallery__slide">
+                  <img src="{{ $placeholder }}" alt="{{ $product->title }}">
+                </div>
+              @endforelse
+            </div>
+          </div>
+
+          @if ($product->images->count() > 1)
+            <div class="grid grid-cols-3 gap-2.5 sm:grid-cols-4 md:grid-cols-5" data-i5="pdp-gallery__thumbs">
+              @foreach ($product->images as $index => $image)
+                <button type="button"
+                        class="aspect-square border-[3px] border-ink shadow-brutal-sm overflow-hidden bg-bg p-0 cursor-pointer opacity-65 transition-all hover:opacity-100 hover:-translate-x-px hover:-translate-y-px hover:shadow-brutal {{ $index === 0 ? 'is-active opacity-100 ring-2 ring-accent ring-offset-2' : '' }} [&_img]:block [&_img]:w-full [&_img]:h-full [&_img]:object-cover"
+                        aria-label="Görsel {{ $index + 1 }}" @if($index === 0) aria-current="true" @endif data-i5="pdp-gallery__thumb">
+                  <img src="{{ $image->url }}" alt="">
+                </button>
+              @endforeach
+            </div>
           @endif
         </div>
 
-        <div class="border-t-[3px] border-ink [&_details]:border-b-[3px] [&_details]:border-ink [&_summary]:flex [&_summary]:items-center [&_summary]:justify-between [&_summary]:gap-4 [&_summary]:py-[18px] [&_summary]:font-body [&_summary]:text-[13px] [&_summary]:font-bold [&_summary]:uppercase [&_summary]:tracking-[0.04em] [&_summary]:cursor-pointer [&_summary]:list-none [&_summary::-webkit-details-marker]:hidden [&_summary_svg]:shrink-0 [&_summary_svg]:transition-transform [&_details[open]_summary_svg]:rotate-180" data-i5="pdp-accordion">
-          <details open id="pdp-full-details">
-            <summary>
-              Ürün Detayları
-              <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
-            </summary>
-            <div class="pb-5 text-muted text-sm leading-[1.7] scroll-mt-28 [&_p]:mb-2 [&_ul]:my-2 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:my-2 [&_ol]:list-decimal [&_ol]:pl-5 [&_a]:underline [&_h2]:mb-2 [&_h2]:mt-3 [&_h2]:text-ink [&_h2]:text-base [&_h2]:font-bold [&_h3]:mb-2 [&_h3]:mt-3 [&_h3]:text-ink [&_h3]:text-sm [&_h3]:font-bold" data-i5="pdp-accordion__body">
-              @if ($product->description)
-                {!! $product->description !!}
-              @else
-                <p>Bu ürün için detaylı açıklama henüz eklenmemiş.</p>
+        <div class="pt-2" data-i5="pdp-info">
+          @if ($product->category)
+            <a href="{{ route('shops', ['kategori' => $categoryFilter?->slug ?? $product->category->slug]) }}"
+               class="inline-block font-body text-[11px] font-bold tracking-[0.1em] uppercase text-accent mb-3 transition-colors hover:text-accent-dark" data-i5="pdp-info__category">
+              {{ $product->category->name }}
+            </a>
+          @endif
+
+          <h1 class="font-heading text-page-title font-semibold leading-[1.12] tracking-[-0.02em] text-ink normal-case mb-4">{{ $product->title }}</h1>
+
+          <p class="font-body text-2xl font-bold mb-5" data-i5="pdp-info__price">
+            <span class="text-muted text-xl">Stokta yok</span>
+          </p>
+
+          @if ($hasFullDescription)
+            <div class="mb-8 max-w-[520px]" data-i5="pdp-info__desc">
+              <p class="m-0 text-muted leading-[1.7]">{{ $descriptionExcerpt }}</p>
+              @if ($showDescriptionTeaser)
+                <a href="#pdp-full-details"
+                   data-pdp-view-all-details
+                   class="mt-3 inline-flex items-center gap-2 font-body text-[12px] font-bold uppercase tracking-[0.06em] text-accent transition-colors hover:text-accent-dark">
+                  Tüm özellikleri görüntüle
+                  <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+                </a>
               @endif
-              <ul class="mt-4 space-y-2 list-disc pl-4">
-                <li>Ürün kodu: {{ $product->code }}</li>
-                @if ($product->stock_count > 0)
-                  <li>Stok: {{ $product->stock_count }} adet</li>
+            </div>
+          @endif
+
+          <div class="grid grid-cols-3 gap-3 mb-7 max-[599px]:grid-cols-1" data-i5="pdp-trust">
+            <div class="p-3 border-[3px] border-ink bg-bg text-center" data-i5="pdp-trust__item">
+              <strong class="block font-body text-[11px] font-bold uppercase mb-1">3–5 Gün</strong>
+              <span class="text-[11px] text-muted">Teslimat</span>
+            </div>
+            <div class="p-3 border-[3px] border-ink bg-bg text-center" data-i5="pdp-trust__item">
+              <strong class="block font-body text-[11px] font-bold uppercase mb-1">500₺+</strong>
+              <span class="text-[11px] text-muted">Ücretsiz Kargo</span>
+            </div>
+            <div class="p-3 border-[3px] border-ink bg-bg text-center" data-i5="pdp-trust__item">
+              <strong class="block font-body text-[11px] font-bold uppercase mb-1">Prova</strong>
+              <span class="text-[11px] text-muted">Dijital Onay</span>
+            </div>
+          </div>
+
+          <div class="grid gap-3 mb-9" data-i5="pdp-actions">
+            <span class="inline-flex items-center justify-center w-full px-6 py-3.5 font-body text-[13px] font-bold uppercase tracking-[0.06em] text-center border-[3px] border-ink bg-cream text-muted cursor-not-allowed">Stokta Yok</span>
+            @if ($waLink)
+              <a href="{{ $waLink }}"
+                 class="inline-flex items-center justify-center gap-2 w-full px-6 py-3.5 font-body text-[13px] font-bold uppercase tracking-[0.06em] text-center border-[3px] border-ink bg-surface text-ink shadow-ui hover:bg-hover"
+                 target="_blank" rel="noopener noreferrer" data-i5="btn--outline">Teklif İste</a>
+            @endif
+          </div>
+
+          <div class="border-t-[3px] border-ink [&_details]:border-b-[3px] [&_details]:border-ink [&_summary]:flex [&_summary]:items-center [&_summary]:justify-between [&_summary]:gap-4 [&_summary]:py-[18px] [&_summary]:font-body [&_summary]:text-[13px] [&_summary]:font-bold [&_summary]:uppercase [&_summary]:tracking-[0.04em] [&_summary]:cursor-pointer [&_summary]:list-none [&_summary::-webkit-details-marker]:hidden [&_summary_svg]:shrink-0 [&_summary_svg]:transition-transform [&_details[open]_summary_svg]:rotate-180" data-i5="pdp-accordion">
+            <details open id="pdp-full-details">
+              <summary>
+                Ürün Detayları
+                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
+              </summary>
+              <div class="pb-5 text-muted text-sm leading-[1.7] scroll-mt-28 [&_p]:mb-2 [&_ul]:my-2 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:my-2 [&_ol]:list-decimal [&_ol]:pl-5 [&_a]:underline [&_h2]:mb-2 [&_h2]:mt-3 [&_h2]:text-ink [&_h2]:text-base [&_h2]:font-bold [&_h3]:mb-2 [&_h3]:mt-3 [&_h3]:text-ink [&_h3]:text-sm [&_h3]:font-bold" data-i5="pdp-accordion__body">
+                @if ($product->description)
+                  {!! $product->description !!}
+                @else
+                  <p>Bu ürün için detaylı açıklama henüz eklenmemiş.</p>
                 @endif
-              </ul>
-            </div>
-          </details>
-          <details>
-            <summary>
-              Kargo &amp; Teslimat
-              <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
-            </summary>
-            <div class="pb-5 text-muted text-sm leading-[1.7]" data-i5="pdp-accordion__body">
-              <p>{{ $siteSetting->shippingDetailText() }}</p>
-            </div>
-          </details>
+                <ul class="mt-4 space-y-2 list-disc pl-4">
+                  <li>Ürün kodu: {{ $product->code }}</li>
+                </ul>
+              </div>
+            </details>
+            <details>
+              <summary>
+                Kargo &amp; Teslimat
+                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
+              </summary>
+              <div class="pb-5 text-muted text-sm leading-[1.7]" data-i5="pdp-accordion__body">
+                <p>{{ $siteSetting->shippingDetailText() }}</p>
+              </div>
+            </details>
+          </div>
         </div>
       </div>
-    </div>
+    @endif
 
     @if ($productReviews->isNotEmpty())
       <section class="pt-16 border-t-[3px] border-ink mt-16" aria-labelledby="urun-yorumlari-baslik" data-i5="pdp-reviews">
@@ -518,8 +550,10 @@
 
     link.addEventListener('click', (event) => {
       event.preventDefault();
-      target.open = true;
-      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      const section = document.getElementById('pdp-full-details');
+      if (section) {
+        section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
     });
   })();
 </script>

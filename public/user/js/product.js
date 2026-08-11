@@ -12,7 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initPdpGallery();
   initPdpLightbox();
   initPdpOptions();
-  initPdpPropertiesCarousel();
+  initPdpBandCarousels();
 });
 
 /** Yatay kaydırmalı galeri — thumb tıklama ve ok tuşları ile slide değiştirir */
@@ -263,22 +263,21 @@ function initPdpOptions() {
   });
 }
 
-/** Masaüstü ürün özellik grupları — yatay kaydırmalı carousel */
-function initPdpPropertiesCarousel() {
-  document.querySelectorAll('[data-pdp-properties-slider]').forEach((slider) => {
-    const track = slider.querySelector('[data-pdp-properties-track]');
-    const cards = track ? [...track.querySelectorAll('[data-property-group]')] : [];
-    const prev = slider.closest('[data-pdp-properties]')?.querySelector('[data-pdp-properties-prev]');
-    const next = slider.closest('[data-pdp-properties]')?.querySelector('[data-pdp-properties-next]');
-    const fadeLeft = slider.querySelector('[data-pdp-properties-fade-left]');
-    const fadeRight = slider.querySelector('[data-pdp-properties-fade-right]');
+/** Tam genişlik yatay bant carousel (özellikler + seçenekler) */
+function initPdpBandCarousels() {
+  document.querySelectorAll('[data-pdp-band-slider]').forEach((slider) => {
+    const track = slider.querySelector('[data-pdp-band-track]');
+    if (!track || getComputedStyle(track).display === 'grid') return;
 
-    if (!track || cards.length === 0) return;
-
+    const root = slider.closest('[data-pdp-properties]') || slider.parentElement;
+    const prev = root?.querySelector('[data-pdp-band-prev]');
+    const next = root?.querySelector('[data-pdp-band-next]');
+    const fadeLeft = slider.querySelector('[data-pdp-band-fade-left]');
+    const fadeRight = slider.querySelector('[data-pdp-band-fade-right]');
     const desktopQuery = window.matchMedia('(min-width: 960px)');
 
     const syncFades = () => {
-      if (!desktopQuery.matches || cards.length <= 1) {
+      if (!desktopQuery.matches) {
         fadeLeft?.classList.add('hidden');
         fadeRight?.classList.add('hidden');
         prev?.setAttribute('disabled', 'disabled');
@@ -287,26 +286,30 @@ function initPdpPropertiesCarousel() {
       }
 
       const maxScroll = track.scrollWidth - track.clientWidth;
+      if (maxScroll <= 4) {
+        fadeLeft?.classList.add('hidden');
+        fadeRight?.classList.add('hidden');
+        prev?.setAttribute('disabled', 'disabled');
+        next?.setAttribute('disabled', 'disabled');
+        return;
+      }
+
       const atStart = track.scrollLeft <= 4;
       const atEnd = track.scrollLeft >= maxScroll - 4;
-
       fadeLeft?.classList.toggle('hidden', atStart);
       fadeRight?.classList.toggle('hidden', atEnd);
       prev?.toggleAttribute('disabled', atStart);
       next?.toggleAttribute('disabled', atEnd);
     };
 
-    const scrollByCard = (direction) => {
-      const cardWidth = cards[0]?.offsetWidth || 320;
-      track.scrollBy({
-        left: direction * (cardWidth + 16),
-        behavior: 'smooth',
-      });
+    const scrollStep = (direction) => {
+      const card = track.querySelector('article, fieldset');
+      const step = (card?.offsetWidth || 280) + 16;
+      track.scrollBy({ left: direction * step, behavior: 'smooth' });
     };
 
-    prev?.addEventListener('click', () => scrollByCard(-1));
-    next?.addEventListener('click', () => scrollByCard(1));
-
+    prev?.addEventListener('click', () => scrollStep(-1));
+    next?.addEventListener('click', () => scrollStep(1));
     track.addEventListener('scroll', syncFades, { passive: true });
     window.addEventListener('resize', syncFades);
     desktopQuery.addEventListener('change', syncFades);
@@ -315,11 +318,11 @@ function initPdpPropertiesCarousel() {
       if (!desktopQuery.matches) return;
       if (event.key === 'ArrowLeft') {
         event.preventDefault();
-        scrollByCard(-1);
+        scrollStep(-1);
       }
       if (event.key === 'ArrowRight') {
         event.preventDefault();
-        scrollByCard(1);
+        scrollStep(1);
       }
     });
 
