@@ -103,6 +103,11 @@
       <svg width="19" height="19" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
       <span class="admin-nav-text">Kullanıcılar</span>
     </a>
+    <a href="{{ url('/horizon') }}" target="_blank" rel="noopener noreferrer" title="Horizon"
+       class="{{ $navLink }} {{ request()->is('horizon*') ? $navLinkActive : '' }}">
+      <svg width="19" height="19" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+      <span class="admin-nav-text">Horizon</span>
+    </a>
   </nav>
 
   {{-- Siteye dön & çıkış --}}
