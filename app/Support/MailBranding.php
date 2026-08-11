@@ -31,9 +31,9 @@ class MailBranding
 
     public const COLOR_DARK = '#2a2826';
 
-    public const FONT_BODY = "'IBM Plex Sans', Arial, sans-serif";
+    public const FONT_BODY = 'IBM Plex Sans, Arial, sans-serif';
 
-    public const FONT_HEADING = "Georgia, 'Times New Roman', serif";
+    public const FONT_HEADING = 'Georgia, Times New Roman, serif';
 
     public static function logoUrl(): string
     {
