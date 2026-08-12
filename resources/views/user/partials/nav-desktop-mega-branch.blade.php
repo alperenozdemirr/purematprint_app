@@ -1,5 +1,5 @@
 @php
-  $url = route('shops', ['kategori' => $category->slug]);
+  $url = route('categoryShow', $category->slug);
   $inFlyout = $inFlyout ?? false;
   $topLinkClass = 'block py-2 font-body text-[15px] font-medium text-muted normal-case tracking-normal transition-colors hover:text-accent';
   $flyoutLinkClass = 'block px-4 py-2.5 font-body text-[14px] font-medium text-muted normal-case transition-colors hover:text-accent hover:bg-hover';

@@ -1,5 +1,7 @@
 @extends('user.layout')
 @section('title', 'Sözleşmeler')
+@section('metaDescription', 'PureMatPrint mesafeli satış sözleşmesi, KVKK aydınlatma metni, iade koşulları ve yasal bilgilendirme metinleri.')
+@section('canonicalUrl', route('agreements'))
 
 @section('content')
   <section class="pt-10 md:pt-14 pb-16 md:pb-20">

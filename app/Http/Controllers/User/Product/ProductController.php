@@ -13,6 +13,7 @@ use App\Models\Collection;
 use App\Models\Faq;
 use App\Models\Product;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
@@ -22,47 +23,32 @@ class ProductController extends Controller
     {
     }
 
-    public function index(ProductIndexRequest $request): View
+    public function index(ProductIndexRequest $request): View|RedirectResponse
     {
-        $validated = $request->validated();
+        if ($request->filled('kategori')) {
+            $params = array_filter([
+                'page' => $request->query('page'),
+                'siralama' => $request->query('siralama'),
+                'q' => $request->query('q'),
+            ], fn ($value) => $value !== null && $value !== '');
 
-        $query = Product::query()
-            ->with(['category', 'images'])
-            ->where('status', Status::ACTIVE);
-
-        if (! empty($validated['kategori'])) {
-            $category = Category::query()
-                ->where('slug', $validated['kategori'])
-                ->first();
-
-            if ($category) {
-                $categoryIds = collect(Category::descendantIds($category->id))
-                    ->push($category->id);
-
-                $query->whereIn('category_id', $categoryIds);
-            }
+            return redirect()->route(
+                'categoryShow',
+                array_merge(['slug' => $request->query('kategori')], $params),
+                301,
+            );
         }
 
-        $searchCategories = collect();
-        $searchCollections = collect();
+        return $this->renderShops($request, null);
+    }
 
-        if (! empty($validated['q'])) {
-            $this->flexSearch->applyProductSearch($query, $validated['q']);
-            $searchCategories = $this->flexSearch->searchCategories($validated['q'], 5);
-            $searchCollections = $this->flexSearch->searchCollections($validated['q'], 5);
-        }
+    public function category(string $slug, ProductIndexRequest $request): View
+    {
+        $activeCategory = Category::query()
+            ->where('slug', $slug)
+            ->firstOrFail();
 
-        $this->applySorting($query, $validated['siralama'] ?? 'featured');
-
-        $products = $query->paginate(12)->withQueryString();
-
-        $categories = Category::query()
-            ->whereNull('parent_id')
-            ->orderBy('number')
-            ->orderBy('name')
-            ->get();
-
-        return view('user.shops', compact('products', 'categories', 'searchCategories', 'searchCollections'));
+        return $this->renderShops($request, $activeCategory);
     }
 
     public function show(string $slug): View
@@ -173,6 +159,43 @@ class ProductController extends Controller
             'results' => $this->flexSearch->buildSuggestions($term, $placeholder),
             'total_url' => route('shops', ['q' => $term]),
         ]);
+    }
+
+    private function renderShops(ProductIndexRequest $request, ?Category $activeCategory): View
+    {
+        $validated = $request->validated();
+
+        $query = Product::query()
+            ->with(['category', 'images'])
+            ->where('status', Status::ACTIVE);
+
+        $searchCategories = collect();
+        $searchCollections = collect();
+
+        if ($activeCategory !== null) {
+            $categoryIds = collect(Category::descendantIds($activeCategory->id))
+                ->push($activeCategory->id);
+
+            $query->whereIn('category_id', $categoryIds);
+        }
+
+        if (! empty($validated['q'])) {
+            $this->flexSearch->applyProductSearch($query, $validated['q']);
+            $searchCategories = $this->flexSearch->searchCategories($validated['q'], 5);
+            $searchCollections = $this->flexSearch->searchCollections($validated['q'], 5);
+        }
+
+        $this->applySorting($query, $validated['siralama'] ?? 'featured');
+
+        $products = $query->paginate(12)->withQueryString();
+
+        $categories = Category::query()
+            ->whereNull('parent_id')
+            ->orderBy('number')
+            ->orderBy('name')
+            ->get();
+
+        return view('user.shops', compact('products', 'categories', 'searchCategories', 'searchCollections', 'activeCategory'));
     }
 
     /**

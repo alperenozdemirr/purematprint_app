@@ -1,5 +1,6 @@
 @extends('user.layout')
 @section('title','Sepetim')
+@section('metaRobots', 'noindex,nofollow')
 @section('content')
 @php
   $placeholder = asset('user/assets/foto5.jpeg');

@@ -1,5 +1,6 @@
 @extends('user.layout')
 @section('title','Bakım Modu')
+@section('metaRobots', 'noindex,nofollow')
 @section('content')
 <main class="py-20">
   <div class="w-full max-w-site mx-auto px-5 lg:px-8">

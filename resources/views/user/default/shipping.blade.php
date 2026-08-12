@@ -1,5 +1,7 @@
 @extends('user.layout')
 @section('title', 'Kargo & Teslimat')
+@section('metaDescription', 'PureMatPrint kargo ve teslimat bilgileri. Siparişlerinizin hazırlanma süresi, kargo seçenekleri ve teslimat koşulları.')
+@section('canonicalUrl', route('shippingInfo'))
 
 @section('content')
   <x-static-page title="Kargo & Teslimat" lead="Türkiye içi gönderiler Aras Kargo ile yapılır.">

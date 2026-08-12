@@ -1,5 +1,6 @@
 @extends('user.layout')
 @section('title','E-posta Doğrulama')
+@section('metaRobots', 'noindex,nofollow')
 @section('content')
 <main id="register-verify-root" class="py-8 pb-20">
   <div class="w-full max-w-site mx-auto px-5 lg:px-8">

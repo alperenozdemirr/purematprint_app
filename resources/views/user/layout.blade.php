@@ -1,13 +1,7 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="icon" href="favicon.avif" type="image/avif">
-  <link rel="icon" href="favicon-32.png" type="image/png" sizes="32x32">
-  <link rel="apple-touch-icon" href="apple-touch-icon.png">
-  <title> @yield('title') PureMatPrint — Baskı & Tabela Stüdyosu</title>
-  <meta name="description" content="PureMatPrint — Tabela, baskı ve kurumsal kimlik. Cesur tasarım, kusursuz üretim.">
+  @include('user.partials.seo-head')
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {

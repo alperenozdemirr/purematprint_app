@@ -1,5 +1,6 @@
 @extends('user.layout')
 @section('title','Kayıt Ol')
+@section('metaRobots', 'noindex,nofollow')
 @section('content')
 <main id="register-root" class="py-8 pb-20">
     <div class="w-full max-w-site mx-auto px-5 lg:px-8" data-i5="container">

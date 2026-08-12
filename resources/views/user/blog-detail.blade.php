@@ -1,5 +1,40 @@
 @extends('user.layout')
+@php
+  use App\Support\Seo;
+
+  $blogDescription = Seo::plainText($blog->content ?? '', 160);
+  if ($blogDescription === '') {
+      $blogDescription = Seo::limitDescription($blog->title.' — PureMatPrint blog yazısı.');
+  }
+  $blogCanonical = route('blogShow', $blog->slug);
+  $blogImages = collect([$blog->image?->url])->filter()->values()->all();
+  if ($blogImages === []) {
+      $blogImages = [Seo::defaultOgImage($siteSetting ?? null)];
+  }
+  $blogSchema = Seo::blogPostingSchema(
+      $blog->title,
+      $blogDescription,
+      $blogCanonical,
+      $blogImages,
+      $blog->created_at,
+      $blog->updated_at ?? $blog->created_at,
+      $siteSetting ?? null,
+  );
+  $blogBreadcrumb = Seo::breadcrumbSchema([
+      ['name' => 'Anasayfa', 'url' => route('index')],
+      ['name' => 'Blog', 'url' => route('blogList')],
+      ['name' => $blog->title, 'url' => $blogCanonical],
+  ]);
+@endphp
 @section('title', $blog->title)
+@section('metaDescription', $blogDescription)
+@section('canonicalUrl', $blogCanonical)
+@section('ogType', 'article')
+@section('ogImage', $blogImages[0])
+@push('head')
+<script type="application/ld+json">@json($blogSchema, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)</script>
+<script type="application/ld+json">@json($blogBreadcrumb, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)</script>
+@endpush
 @section('content')
 <main class="pt-8 pb-20">
   <div class="w-full max-w-site mx-auto px-5 lg:px-8" data-i5="container">
@@ -14,7 +49,7 @@
     <article id="blog-article" class="border-[3px] border-ink bg-surface shadow-brutal-sm overflow-hidden" data-i5="blog-article">
       @if ($blog->image)
         <div class="border-b-[3px] border-ink aspect-[16/9] min-[768px]:aspect-[21/9]">
-          <img src="{{ $blog->image->url }}" alt="{{ $blog->title }}" class="w-full h-full object-cover">
+          <img src="{{ $blog->image->url }}" alt="{{ $blog->title }}" class="w-full h-full object-cover" loading="lazy">
         </div>
       @endif
 

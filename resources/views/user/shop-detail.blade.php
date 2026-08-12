@@ -1,5 +1,47 @@
 @extends('user.layout')
+@php
+  use App\Support\Seo;
+
+  $productDescription = Seo::plainText($product->description ?? '', 160);
+  if ($productDescription === '') {
+      $productDescription = Seo::limitDescription($product->title.' — PureMatPrint mağazasında tabela, baskı ve kurumsal kimlik ürünü.');
+  }
+  $productCanonical = route('shopDetail', $product->slug);
+  $productImages = $product->images->pluck('url')->filter()->values()->all();
+  if ($productImages === []) {
+      $productImages = [asset('user/assets/foto5.jpeg')];
+  }
+  $productOgImage = $productImages[0];
+  $productAggregateRating = Seo::aggregateRatingFromReviews($productReviews);
+  $productSchema = Seo::productSchema(
+      $product->title,
+      $productDescription,
+      $productCanonical,
+      $productImages,
+      $product->code,
+      (float) $product->price,
+      $product->stock_count > 0,
+      $productAggregateRating,
+  );
+  $productBreadcrumbItems = [
+      ['name' => 'Anasayfa', 'url' => route('index')],
+      ['name' => 'Tüm Ürünler', 'url' => route('shops')],
+  ];
+  if ($categoryFilter) {
+      $productBreadcrumbItems[] = ['name' => $categoryFilter->name, 'url' => route('categoryShow', $categoryFilter->slug)];
+  }
+  $productBreadcrumbItems[] = ['name' => $product->title, 'url' => $productCanonical];
+  $productBreadcrumb = Seo::breadcrumbSchema($productBreadcrumbItems);
+@endphp
 @section('title', $product->title)
+@section('metaDescription', $productDescription)
+@section('canonicalUrl', $productCanonical)
+@section('ogType', 'product')
+@section('ogImage', $productOgImage)
+@push('head')
+<script type="application/ld+json">@json($productSchema, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)</script>
+<script type="application/ld+json">@json($productBreadcrumb, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)</script>
+@endpush
 
 @section('content')
 @php
@@ -21,7 +63,7 @@
       <a href="{{ route('shops') }}">Tüm Ürünler</a>
       @if ($categoryFilter)
         <span class="opacity-[0.4]">/</span>
-        <a href="{{ route('shops', ['kategori' => $categoryFilter->slug]) }}">{{ $categoryFilter->name }}</a>
+        <a href="{{ route('categoryShow', $categoryFilter->slug) }}">{{ $categoryFilter->name }}</a>
       @endif
       <span class="opacity-[0.4]">/</span>
       <span>{{ $product->title }}</span>
@@ -93,7 +135,7 @@
         <div class="order-2 contents min-[960px]:grid min-[960px]:col-start-2 min-[960px]:row-start-1 min-[960px]:row-span-2 min-[960px]:gap-3 min-[960px]:content-start min-[960px]:auto-rows-min min-[960px]:pt-2">
         <div class="order-2 min-w-0 max-w-full min-[960px]:order-none" data-i5="pdp-info">
           @if ($product->category)
-            <a href="{{ route('shops', ['kategori' => $categoryFilter?->slug ?? $product->category->slug]) }}"
+            <a href="{{ route('categoryShow', $categoryFilter?->slug ?? $product->category->slug) }}"
                class="inline-block font-body text-[11px] font-bold tracking-[0.1em] uppercase text-accent mb-3 transition-colors hover:text-accent-dark" data-i5="pdp-info__category">
               {{ $product->category->name }}
             </a>
@@ -230,7 +272,7 @@
 
         <div class="pt-2" data-i5="pdp-info">
           @if ($product->category)
-            <a href="{{ route('shops', ['kategori' => $categoryFilter?->slug ?? $product->category->slug]) }}"
+            <a href="{{ route('categoryShow', $categoryFilter?->slug ?? $product->category->slug) }}"
                class="inline-block font-body text-[11px] font-bold tracking-[0.1em] uppercase text-accent mb-3 transition-colors hover:text-accent-dark" data-i5="pdp-info__category">
               {{ $product->category->name }}
             </a>

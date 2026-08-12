@@ -116,7 +116,7 @@ class FlexSearchService
                 'type' => 'category',
                 'title' => $category->name,
                 'subtitle' => 'Kategori',
-                'url' => route('shops', ['kategori' => $category->slug]),
+                'url' => route('categoryShow', $category->slug),
                 'image' => $placeholder,
             ];
         }

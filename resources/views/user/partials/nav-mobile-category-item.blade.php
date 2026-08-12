@@ -1,5 +1,5 @@
 @php
-  $url = route('shops', ['kategori' => $category->slug]);
+  $url = route('categoryShow', $category->slug);
   $depth = $depth ?? 1;
   $isDeep = $depth >= 2;
   $paddingLeft = $isDeep ? 20 : 32;

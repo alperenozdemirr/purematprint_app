@@ -5,7 +5,7 @@
   <a href="{{ route('blogShow', $blog->slug) }}" class="block">
     <div class="aspect-[16/10] overflow-hidden border-b-[3px] border-ink">
       @if ($blog->image)
-        <img src="{{ $blog->image->url }}" alt="{{ $blog->title }}" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.03]">
+        <img src="{{ $blog->image->url }}" alt="{{ $blog->title }}" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.03]" loading="lazy">
       @else
         <div class="flex h-full w-full items-center justify-center bg-hover text-muted font-body text-sm">Görsel yok</div>
       @endif

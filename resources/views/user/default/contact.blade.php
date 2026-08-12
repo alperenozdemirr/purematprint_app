@@ -1,8 +1,20 @@
 @extends('user.layout')
 @section('title', 'İletişim')
+@section('metaDescription', 'PureMatPrint ile iletişime geçin. Sipariş, teklif ve destek talepleriniz için telefon, e-posta ve iletişim formu.')
+@section('canonicalUrl', route('contact'))
+@push('head')
+@php
+  $contactLocalBusinessSchema = \App\Support\Seo::localBusinessSchema($siteSetting ?? null);
+  $contactBreadcrumbSchema = \App\Support\Seo::breadcrumbSchema([
+      ['name' => 'Anasayfa', 'url' => route('index')],
+      ['name' => 'İletişim', 'url' => route('contact')],
+  ]);
+@endphp
+<script type="application/ld+json">@json($contactLocalBusinessSchema, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)</script>
+<script type="application/ld+json">@json($contactBreadcrumbSchema, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)</script>
+@endpush
 
-@section('content')
-  <x-static-page title="İletişim ve Şirket Bilgileri" lead="Tabela, pleksi ürün, yönlendirme, menü, etiket, sticker, kartvizit ve özel üretim ihtiyaçlarınız için bize ulaşın.">
+@section('content')  <x-static-page title="İletişim ve Şirket Bilgileri" lead="Tabela, pleksi ürün, yönlendirme, menü, etiket, sticker, kartvizit ve özel üretim ihtiyaçlarınız için bize ulaşın.">
     <h2>Site ve marka</h2>
     <p>Puremat Print – <a href="https://purematprint.com" target="_blank" rel="noopener noreferrer">purematprint.com</a></p>
 

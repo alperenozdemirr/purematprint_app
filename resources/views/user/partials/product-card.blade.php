@@ -12,7 +12,7 @@
         <span class="absolute top-[10px] left-[10px] z-[2] px-2.5 py-1.5 bg-accent text-on-dark font-body text-[11px] font-semibold tracking-[0.03em] normal-case border border-ink/15 leading-none" data-i5="product__badge">Öne Çıkan</span>
       @endif
       <img data-i5="product__img--main" class="absolute inset-0 w-full h-full object-cover transition-opacity duration-300 ease-out {{ $altImage ? 'group-hover/card:opacity-0' : '' }}"
-           src="{{ $mainImage?->url ?? $placeholder }}" alt="{{ $product->title }}">
+           src="{{ $mainImage?->url ?? $placeholder }}" alt="{{ $product->title }}" loading="lazy">
       @if ($altImage)
         <img data-i5="product__img--alt" class="absolute inset-0 w-full h-full object-cover transition-opacity duration-300 ease-out opacity-0 group-hover/card:opacity-100"
              src="{{ $altImage->url }}" alt="">
@@ -37,7 +37,7 @@
     @endif
   </div>
   <a href="{{ route('shopDetail', $product->slug) }}" class="block">
-    <h3 class="font-heading text-card-title font-semibold leading-snug normal-case text-ink m-0 px-4 pt-3.5" data-i5="product__name">{{ $product->title }}</h3>
+    <h2 class="font-heading text-card-title font-semibold leading-snug normal-case text-ink m-0 px-4 pt-3.5" data-i5="product__name">{{ $product->title }}</h2>
     <p class="font-body text-sm font-medium leading-snug text-ink m-0 px-4 pb-4 pt-1" data-i5="product__price">
       @if ($product->stock_count === 0)
         <span class="text-muted">Stokta yok</span>

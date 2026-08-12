@@ -1,5 +1,6 @@
 @extends('user.layout')
 @section('title','Adreslerim')
+@section('metaRobots', 'noindex,nofollow')
 @section('content')
 @php
   $authUser = auth()->user();

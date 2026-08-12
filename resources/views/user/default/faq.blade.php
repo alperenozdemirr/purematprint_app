@@ -1,5 +1,26 @@
 @extends('user.layout')
+@php
+  use App\Support\Seo;
+
+  $faqSchemaItems = [];
+  foreach ($faqGroups as $faqGroup) {
+      foreach ($faqGroup->faqs as $faq) {
+          $faqSchemaItems[] = [
+              'question' => $faq->title,
+              'answer' => Seo::plainText($faq->content ?? '', 500),
+          ];
+      }
+  }
+  $faqSchema = Seo::faqPageSchema($faqSchemaItems);
+@endphp
 @section('title', 'Sık Sorulan Sorular')
+@section('metaDescription', 'PureMatPrint sipariş, üretim, teslimat ve ödeme süreçleri hakkında sık sorulan soruların yanıtları. Kargo, baskı ve tabela hizmetleri.')
+@section('canonicalUrl', route('faq'))
+@if ($faqSchema)
+@push('head')
+<script type="application/ld+json">@json($faqSchema, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)</script>
+@endpush
+@endif
 
 @section('content')
   <main class="py-8 pb-20">

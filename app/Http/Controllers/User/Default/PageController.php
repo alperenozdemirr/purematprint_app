@@ -44,7 +44,7 @@ class PageController extends Controller
 
     public function privacy(): RedirectResponse
     {
-        return redirect(route('agreements').'#kvkk-aydinlatma');
+        return redirect()->to(route('agreements').'#kvkk-aydinlatma', 301);
     }
 
     public function cookies(): View
@@ -54,6 +54,6 @@ class PageController extends Controller
 
     public function distanceSales(): RedirectResponse
     {
-        return redirect(route('agreements').'#mesafeli-satis-sozlesmesi');
+        return redirect()->to(route('agreements').'#mesafeli-satis-sozlesmesi', 301);
     }
 }

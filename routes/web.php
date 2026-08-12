@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\SeoController;
 use App\Http\Controllers\User\Auth\AuthController;
 use App\Http\Controllers\User\Auth\ForgotPasswordController;
 use App\Http\Controllers\User\Auth\GoogleAuthController;
@@ -56,6 +57,10 @@ Route::match(['GET', 'HEAD'], '/media/{path}', [MediaController::class, 'show'])
     ->where('path', '.*')
     ->name('media.show');
 
+Route::get('robots.txt', [SeoController::class, 'robots'])->name('seo.robots');
+Route::get('sitemap.xml', [SeoController::class, 'sitemap'])->name('seo.sitemap');
+Route::get('favicon.ico', [SeoController::class, 'favicon'])->name('seo.favicon');
+
 Route::get('/',[DefaultController::class,'index'])->name('index');
 Route::get('bakim', MaintenanceController::class)->name('maintenance');
 Route::get('giris-yap',[AuthController::class,'loginPage'])->name('loginPage');
@@ -77,6 +82,7 @@ Route::post('admin/login', [AdminAuthController::class, 'authenticate'])->name('
 Route::post('admin/logout', [AdminAuthController::class, 'logout'])->middleware('auth:admin')->name('admin.logout');
 
 Route::get('tum-urunler',[ProductController::class,'index'])->name('shops');
+Route::get('kategori/{slug}',[ProductController::class,'category'])->name('categoryShow');
 Route::get('tum-urunler/{slug}',[ProductController::class,'show'])->name('shopDetail','slug');
 Route::get('koleksiyonlar',[ProductController::class,'collectionList'])->name('collectionList');
 Route::get('koleksiyonlar/{slug}',[ProductController::class,'collectionShow'])->name('collectionShow');

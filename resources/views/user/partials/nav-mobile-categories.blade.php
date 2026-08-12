@@ -37,7 +37,7 @@
 @endonce
 
 @foreach ($menuCategories as $category)
-  @php $categoryUrl = route('shops', ['kategori' => $category->slug]); @endphp
+  @php $categoryUrl = route('categoryShow', $category->slug); @endphp
 
   @if ($category->hasNestedChildren())
   <details class="{{ $detailsClass }}">

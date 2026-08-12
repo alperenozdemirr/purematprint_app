@@ -1,5 +1,6 @@
 @extends('user.layout')
 @section('title', $address ? 'Adres Düzenle' : 'Yeni Adres Ekle')
+@section('metaRobots', 'noindex,nofollow')
 @section('content')
 @php
   use App\Enums\AddressScope;

@@ -1,6 +1,7 @@
 @extends('user.layout')
 @section('title', 'Hakkımızda')
-
+@section('metaDescription', 'PureMatPrint hakkında: baskı, tabela ve kurumsal kimlik üretiminde deneyim, kalite anlayışı ve müşteri odaklı hizmet yaklaşımımızı keşfedin.')
+@section('canonicalUrl', route('about'))
 @section('content')
   <x-static-page title="Hakkımızda" lead="Puremat Print — Fikrinizi görünür, kullanılabilir ve üretilebilir bir çözüme dönüştürür.">
     <p>Puremat Print, GENÇ PRINT REKLAM ANONİM ŞİRKETİ’nin baskı, reklam ve özel üretim markasıdır.</p>

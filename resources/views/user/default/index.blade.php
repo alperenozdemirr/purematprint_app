@@ -1,5 +1,7 @@
 @extends('user.layout')
-@section('title','Anasayfa')
+@section('title', 'Anasayfa')
+@section('metaDescription', 'PureMatPrint — tabela, dijital baskı ve kurumsal kimlik stüdyosu. Kartvizitten dev tabelaya online sipariş, hızlı üretim ve güvenilir teslimat.')
+@section('canonicalUrl', route('index'))
 @section('content')
  <!-- Hero -->
   <section data-i5="hero--cover" data-i5-tags="hero hero--cover" class="relative overflow-hidden border-b-[3px] border-ink">

@@ -1,11 +1,47 @@
 @extends('user.layout')
-@section('title', $collection->title)
-@section('content')
 @php
+  use App\Support\Seo;
+
   $label = $collection->label ?: str_pad((string) max(1, (int) $collection->number), 2, '0', STR_PAD_LEFT).' — Koleksiyon';
   $description = $collection->description ?: 'Seçilen koleksiyonun ürünleri burada listelenir.';
   $note = 'Bu koleksiyonda '.$products->total().' ürün bulunuyor.';
+  $collectionPage = max(1, (int) request('page', 1));
+  $collectionDescription = Seo::plainText($collection->description ?? '', 160);
+  if ($collectionDescription === '') {
+      $collectionDescription = Seo::limitDescription($collection->title.' koleksiyonundaki baskı, tabela ve marka materyallerini PureMatPrint mağazasında inceleyin.');
+  }
+  $collectionCanonicalParams = array_filter([
+      'page' => $collectionPage > 1 ? $collectionPage : null,
+  ]);
+  $collectionCanonical = route('collectionShow', array_merge(['slug' => $collection->slug], $collectionCanonicalParams));
+  $collectionSchemaItems = $products->getCollection()->map(fn ($product) => [
+      'name' => $product->title,
+      'url' => route('shopDetail', $product->slug),
+  ])->all();
+  $collectionSchema = Seo::collectionPageSchema(
+      $collection->title,
+      $collectionDescription,
+      $collectionCanonical,
+      (int) $products->total(),
+      ($collectionPage - 1) * $products->perPage() + 1,
+      $collectionSchemaItems,
+  );
+  $collectionBreadcrumb = Seo::breadcrumbSchema([
+      ['name' => 'Anasayfa', 'url' => route('index')],
+      ['name' => 'Koleksiyon', 'url' => route('collectionList')],
+      ['name' => $collection->title, 'url' => $collectionCanonical],
+  ]);
 @endphp
+@section('title', $collection->title)
+@section('metaDescription', $collectionDescription)
+@section('canonicalUrl', $collectionCanonical)
+@section('metaRobots', $collectionPage > 1 ? Seo::NOINDEX_FOLLOW : Seo::DEFAULT_ROBOTS)
+@section('ogImage', $collection->image?->url ?? '')
+@push('head')
+<script type="application/ld+json">@json($collectionSchema, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)</script>
+<script type="application/ld+json">@json($collectionBreadcrumb, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)</script>
+@endpush
+@section('content')
 <main>
     <section class="border-b-[3px] border-ink bg-surface py-10 min-[768px]:py-14">
       <div class="w-full max-w-site mx-auto px-5 lg:px-8">

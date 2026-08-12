@@ -1,5 +1,35 @@
 @extends('user.layout')
-@section('title','Bloglar')
+@php
+  use App\Support\Seo;
+
+  $blogPage = max(1, (int) request('page', 1));
+  $blogListDescription = 'PureMatPrint blogunda baskı ipuçları, ürün rehberleri ve proje hikayeleri. Tabela, dijital baskı ve marka materyalleri hakkında güncel içerikler.';
+  $blogCanonicalParams = $blogPage > 1 ? ['page' => $blogPage] : [];
+  $blogListSchemaItems = $blogs->getCollection()->map(fn ($blog) => [
+      'name' => $blog->title,
+      'url' => route('blogShow', $blog->slug),
+  ])->all();
+  $blogListSchema = Seo::collectionPageSchema(
+      'Blog',
+      Seo::limitDescription($blogListDescription),
+      route('blogList', $blogCanonicalParams),
+      (int) $blogs->total(),
+      ($blogPage - 1) * $blogs->perPage() + 1,
+      $blogListSchemaItems,
+  );
+  $blogBreadcrumb = Seo::breadcrumbSchema([
+      ['name' => 'Anasayfa', 'url' => route('index')],
+      ['name' => 'Blog', 'url' => route('blogList', $blogCanonicalParams)],
+  ]);
+@endphp
+@section('title', 'Blog')
+@section('metaDescription', $blogListDescription)
+@section('canonicalUrl', route('blogList', $blogCanonicalParams))
+@section('metaRobots', $blogPage > 1 ? Seo::NOINDEX_FOLLOW : Seo::DEFAULT_ROBOTS)
+@push('head')
+<script type="application/ld+json">@json($blogListSchema, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)</script>
+<script type="application/ld+json">@json($blogBreadcrumb, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)</script>
+@endpush
 @section('content')
 <main class="pt-8 pb-20">
   <div class="w-full max-w-site mx-auto px-5 lg:px-8" data-i5="container">

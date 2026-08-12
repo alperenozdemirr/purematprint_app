@@ -1,5 +1,7 @@
 @extends('user.layout')
 @section('title', 'Çerez Politikası')
+@section('metaDescription', 'PureMatPrint çerez politikası. Web sitemizde kullanılan çerez türleri, amaçları ve tercihlerinizi nasıl yönetebileceğiniz.')
+@section('canonicalUrl', route('cookies'))
 
 @section('content')
   <x-static-page title="Çerez Politikası" lead="Puremat Print; sitenin güvenli çalışması, sepet ve ödeme akışının yürütülmesi, tercihlerin saklanması ve yalnızca izin verilmesi hâlinde site kullanımı ile reklam performansının ölçülmesi amacıyla çerez ve benzeri teknolojiler kullanır.">

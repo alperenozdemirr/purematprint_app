@@ -1,5 +1,57 @@
 @extends('user.layout')
-@section('title','Tüm Ürünler')
+@php
+  use App\Support\Seo;
+
+  $listPage = max(1, (int) request('page', 1));
+  $isSearch = filled(request('q'));
+  $listTitle = $isSearch
+      ? '"'.request('q').'" için sonuçlar'
+      : ($activeCategory?->name ?? 'Tüm Ürünler');
+  $listDescription = $isSearch
+      ? 'PureMatPrint mağazasında "'.request('q').'" araması için '.$products->total().' ürün bulundu. Tabela, baskı ve kurumsal kimlik ürünlerini keşfedin.'
+      : ($activeCategory
+          ? 'PureMatPrint '.$activeCategory->name.' kategorisindeki tabela, dijital baskı ve marka materyallerini inceleyin. Online sipariş ve hızlı teslimat.'
+          : 'PureMatPrint mağazasında tabela, dijital baskı, kartvizit ve kurumsal kimlik ürünlerini keşfedin. Online sipariş, kaliteli üretim ve güvenilir teslimat.');
+  $canonicalParams = $activeCategory
+      ? array_filter(['slug' => $activeCategory->slug, 'page' => $listPage > 1 ? $listPage : null])
+      : array_filter(['page' => $listPage > 1 ? $listPage : null]);
+  $listCanonical = $activeCategory
+      ? route('categoryShow', $canonicalParams)
+      : route('shops', $canonicalParams);
+  $listFormAction = $activeCategory ? route('categoryShow', $activeCategory->slug) : route('shops');
+  $listSchemaItems = $products->getCollection()->map(fn ($product) => [
+      'name' => $product->title,
+      'url' => route('shopDetail', $product->slug),
+  ])->all();
+  $listSchema = Seo::collectionPageSchema(
+      $listTitle,
+      Seo::limitDescription($listDescription),
+      $listCanonical,
+      (int) $products->total(),
+      ($listPage - 1) * $products->perPage() + 1,
+      $listSchemaItems,
+  );
+  $breadcrumbSchema = Seo::breadcrumbSchema(
+      $activeCategory
+          ? [
+              ['name' => 'Anasayfa', 'url' => route('index')],
+              ['name' => 'Tüm Ürünler', 'url' => route('shops')],
+              ['name' => $listTitle, 'url' => $listCanonical],
+          ]
+          : [
+              ['name' => 'Anasayfa', 'url' => route('index')],
+              ['name' => $listTitle, 'url' => $listCanonical],
+          ],
+  );
+@endphp
+@section('title', $listTitle)
+@section('metaDescription', $listDescription)
+@section('canonicalUrl', $listCanonical)
+@section('metaRobots', $isSearch || $listPage > 1 ? Seo::NOINDEX_FOLLOW : Seo::DEFAULT_ROBOTS)
+@push('head')
+<script type="application/ld+json">@json($listSchema, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)</script>
+<script type="application/ld+json">@json($breadcrumbSchema, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)</script>
+@endpush
 @section('content')
   <section class="py-10 pb-20 pt-6 min-[768px]:pt-7" data-i5="shop--catalog" data-i5-tags="shop shop--catalog">
     <div class="w-full max-w-site min-[1024px]:max-w-catalog mx-auto px-5 lg:px-8" data-i5="container">
@@ -7,28 +59,28 @@
         <nav class="flex flex-wrap items-center gap-2 font-body text-xs font-semibold tracking-[0.08em] uppercase text-muted mb-5" aria-label="Konum" data-i5="breadcrumb">
           <a href="{{ route('index') }}">Anasayfa</a>
           <span class="opacity-[0.4]" data-i5="breadcrumb__sep">/</span>
-          <span>@if (request('q')) Arama @else Tüm Ürünler @endif</span>
+          @if ($activeCategory && ! $isSearch)
+            <a href="{{ route('shops') }}">Tüm Ürünler</a>
+            <span class="opacity-[0.4]" data-i5="breadcrumb__sep">/</span>
+          @endif
+          <span>{{ $listTitle }}</span>
         </nav>
         <h1 class="font-heading text-page-title font-semibold leading-[1.12] tracking-[-0.02em] text-ink normal-case" data-i5="shop__title">
-          @if (request('q'))
-            “{{ request('q') }}” için sonuçlar
-          @else
-            Tüm Ürünler
-          @endif
+          {{ $listTitle }}
         </h1>
-        @if (request('q'))
+        @if ($isSearch)
           <p class="mt-2 font-body text-[14px] text-muted">{{ $products->total() }} ürün bulundu</p>
         @endif
       </div>
 
-      @if (request('q') && ($searchCategories->isNotEmpty() || $searchCollections->isNotEmpty()))
+      @if ($isSearch && ($searchCategories->isNotEmpty() || $searchCollections->isNotEmpty()))
       <div class="mb-8 grid gap-4 min-[768px]:grid-cols-2">
         @if ($searchCategories->isNotEmpty())
         <div class="border-[3px] border-ink bg-surface p-5 shadow-brutal-sm">
           <p class="mb-3 font-body text-[11px] font-bold uppercase tracking-[0.08em] text-muted">Eşleşen Kategoriler</p>
           <div class="flex flex-wrap gap-2">
             @foreach ($searchCategories as $searchCategory)
-            <a href="{{ route('shops', ['kategori' => $searchCategory->slug]) }}" class="inline-flex items-center px-3.5 py-2 font-body text-[12px] font-bold uppercase tracking-[0.04em] border-2 border-ink bg-bg text-ink transition-colors hover:bg-hover">{{ $searchCategory->name }}</a>
+            <a href="{{ route('categoryShow', $searchCategory->slug) }}" class="inline-flex items-center px-3.5 py-2 font-body text-[12px] font-bold uppercase tracking-[0.04em] border-2 border-ink bg-bg text-ink transition-colors hover:bg-hover">{{ $searchCategory->name }}</a>
             @endforeach
           </div>
         </div>
@@ -59,20 +111,17 @@
             $filterClass = 'px-4 py-2.5 font-body text-[11px] font-bold tracking-[0.06em] uppercase border-2 border-action/25 bg-surface text-muted shadow-ui-sm cursor-pointer inline-block no-underline transition-all hover:bg-hover hover:text-ink hover:border-action/30 hover:-translate-x-px hover:-translate-y-px focus-visible:outline-2 focus-visible:outline-action focus-visible:outline-offset-2';
             $filterActiveClass = ' is-active bg-hover text-ink border-ink shadow-brutal-sm';
           @endphp
-          <a href="{{ route('shops', array_filter(['siralama' => request('siralama'), 'q' => request('q')])) }}"
-             class="{{ $filterClass }}{{ request('kategori') ? '' : $filterActiveClass }}"
-             role="tab" aria-selected="{{ request('kategori') ? 'false' : 'true' }}" data-i5="filter">Tümü</a>
+            <a href="{{ route('shops', array_filter(['siralama' => request('siralama'), 'q' => request('q')])) }}"
+             class="{{ $filterClass }}{{ $activeCategory ? '' : $filterActiveClass }}"
+             role="tab" aria-selected="{{ $activeCategory ? 'false' : 'true' }}" data-i5="filter">Tümü</a>
           @foreach ($categories as $category)
-            <a href="{{ route('shops', array_filter(['kategori' => $category->slug, 'siralama' => request('siralama'), 'q' => request('q')])) }}"
-               class="{{ $filterClass }}{{ request('kategori') === $category->slug ? $filterActiveClass : '' }}"
-               role="tab" aria-selected="{{ request('kategori') === $category->slug ? 'true' : 'false' }}" data-i5="filter">{{ $category->name }}</a>
+            <a href="{{ route('categoryShow', array_filter(['slug' => $category->slug, 'siralama' => request('siralama'), 'q' => request('q')])) }}"
+               class="{{ $filterClass }}{{ $activeCategory?->slug === $category->slug ? $filterActiveClass : '' }}"
+               role="tab" aria-selected="{{ $activeCategory?->slug === $category->slug ? 'true' : 'false' }}" data-i5="filter">{{ $category->name }}</a>
           @endforeach
         </div>
 
-        <form method="get" action="{{ route('shops') }}" class="flex items-center gap-4 shrink-0 max-[899px]:w-full max-[899px]:justify-between max-[899px]:flex-col max-[899px]:items-stretch max-[899px]:gap-2.5" data-i5="shop__meta">
-          @if (request('kategori'))
-            <input type="hidden" name="kategori" value="{{ request('kategori') }}">
-          @endif
+        <form method="get" action="{{ $listFormAction }}" class="flex items-center gap-4 shrink-0 max-[899px]:w-full max-[899px]:justify-between max-[899px]:flex-col max-[899px]:items-stretch max-[899px]:gap-2.5" data-i5="shop__meta">
           @if (request('q'))
             <input type="hidden" name="q" value="{{ request('q') }}">
           @endif
@@ -98,7 +147,7 @@
             <p class="font-heading text-section-title font-semibold text-ink">Ürün bulunamadı</p>
             <p class="mt-2 font-body text-[15px] text-muted">Bu kategoride henüz ürün yok veya filtreyi değiştirmeyi deneyin.</p>
             @if (request('q'))
-              <a href="{{ route('shops', array_filter(['kategori' => request('kategori')])) }}" class="mt-6 inline-flex items-center gap-2 px-6 py-3.5 font-body text-[13px] font-bold uppercase tracking-[0.06em] border-[3px] border-ink bg-surface text-ink shadow-brutal hover:bg-hover">Aramayı Temizle</a>
+              <a href="{{ $activeCategory ? route('categoryShow', $activeCategory->slug) : route('shops') }}" class="mt-6 inline-flex items-center gap-2 px-6 py-3.5 font-body text-[13px] font-bold uppercase tracking-[0.06em] border-[3px] border-ink bg-surface text-ink shadow-brutal hover:bg-hover">Aramayı Temizle</a>
             @else
             <a href="{{ route('shops') }}" class="mt-6 inline-flex items-center gap-2 px-6 py-3.5 font-body text-[13px] font-bold uppercase tracking-[0.06em] border-[3px] border-ink bg-action text-on-dark shadow-brutal hover:bg-action-hover">Tüm Ürünleri Gör</a>
             @endif

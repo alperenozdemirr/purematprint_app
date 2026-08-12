@@ -5,7 +5,7 @@
 
 @foreach ($menuCategories as $category)
   @php
-    $categoryUrl = route('shops', ['kategori' => $category->slug]);
+    $categoryUrl = route('categoryShow', $category->slug);
     $childCount = $category->children->count();
     $gridClass = match (true) {
         $childCount <= 1 => 'grid-cols-1 min-[1200px]:grid-cols-1',

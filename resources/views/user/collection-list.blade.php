@@ -1,5 +1,32 @@
 @extends('user.layout')
-@section('title','Koleksiyonlar')
+@php
+  use App\Support\Seo;
+
+  $collectionListDescription = 'PureMatPrint koleksiyonlarında kürate edilmiş tabela, baskı ve marka materyallerini keşfedin. Projenize uygun ürün gruplarını inceleyin.';
+  $collectionListSchemaItems = $collections->map(fn ($collection) => [
+      'name' => $collection->title,
+      'url' => route('collectionShow', $collection->slug),
+  ])->all();
+  $collectionListSchema = Seo::collectionPageSchema(
+      'Koleksiyon',
+      Seo::limitDescription($collectionListDescription),
+      route('collectionList'),
+      $collections->count(),
+      1,
+      $collectionListSchemaItems,
+  );
+  $collectionBreadcrumb = Seo::breadcrumbSchema([
+      ['name' => 'Anasayfa', 'url' => route('index')],
+      ['name' => 'Koleksiyon', 'url' => route('collectionList')],
+  ]);
+@endphp
+@section('title', 'Koleksiyon')
+@section('metaDescription', $collectionListDescription)
+@section('canonicalUrl', route('collectionList'))
+@push('head')
+<script type="application/ld+json">@json($collectionListSchema, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)</script>
+<script type="application/ld+json">@json($collectionBreadcrumb, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)</script>
+@endpush
 @section('content')
 @php
   $placeholder = asset('user/assets/foto5.jpeg');
@@ -29,7 +56,7 @@
             @endphp
             <a data-i5-tags="collection__card" href="{{ route('collectionShow', $collection->slug) }}" class="group/col flex flex-col border-[3px] border-ink bg-surface shadow-brutal-sm opacity-0 translate-y-10 scale-[0.97] transition-[opacity,transform,box-shadow] duration-[600ms] ease-[cubic-bezier(0.34,1.2,0.64,1)] motion-reduce:opacity-100 motion-reduce:translate-y-0 motion-reduce:scale-100 hover:-translate-x-[3px] hover:-translate-y-[3px] hover:shadow-brutal [&.is-col-in]:translate-y-0 [&.is-col-in]:scale-100 [&.is-col-in]:opacity-100">
               <div class="relative aspect-[16/10] overflow-hidden border-b-[3px] border-ink bg-dark" data-i5="collection__media">
-                <img src="{{ $imageUrl }}" alt="{{ $collection->title }}" class="h-full w-full object-cover scale-105 opacity-0 transition-[transform,opacity] duration-[750ms] ease-out group-[.is-col-in]/col:scale-100 group-[.is-col-in]/col:opacity-100 group-hover/col:scale-[1.04]">
+                <img src="{{ $imageUrl }}" alt="{{ $collection->title }}" class="h-full w-full object-cover scale-105 opacity-0 transition-[transform,opacity] duration-[750ms] ease-out group-[.is-col-in]/col:scale-100 group-[.is-col-in]/col:opacity-100 group-hover/col:scale-[1.04]" loading="lazy">
               </div>
               <div class="flex flex-1 flex-col p-6 [&_h2]:mb-2.5 [&_h2]:font-heading [&_h2]:text-feature-title [&_h2]:font-semibold [&_h2]:leading-snug [&_h2]:normal-case [&_p]:mb-4 [&_p]:flex-1 [&_p]:text-sm [&_p]:leading-relaxed [&_p]:text-muted" data-i5="collection__body">
                 <p class="mb-2 font-body text-[11px] font-bold uppercase tracking-[0.1em] text-accent" data-i5="collection__label">{{ $label }}</p>

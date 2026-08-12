@@ -1,5 +1,6 @@
 @extends('user.layout')
 @section('title','Ödeme')
+@section('metaRobots', 'noindex,nofollow')
 @section('content')
 @php
   use App\Enums\AddressScope;
