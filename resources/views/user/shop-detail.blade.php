@@ -181,18 +181,6 @@
               <li>Stok: {{ $product->stock_count }} adet</li>
             </ul>
           </div>
-
-          <div class="mt-8 border-t-[3px] border-ink [&_details]:border-b-[3px] [&_details]:border-ink [&_summary]:flex [&_summary]:items-center [&_summary]:justify-between [&_summary]:gap-4 [&_summary]:py-[18px] [&_summary]:font-body [&_summary]:text-[13px] [&_summary]:font-bold [&_summary]:uppercase [&_summary]:tracking-[0.04em] [&_summary]:cursor-pointer [&_summary]:list-none [&_summary::-webkit-details-marker]:hidden [&_summary_svg]:shrink-0 [&_summary_svg]:transition-transform [&_details[open]_summary_svg]:rotate-180" data-i5="pdp-accordion">
-            <details>
-              <summary>
-                Kargo &amp; Teslimat
-                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
-              </summary>
-              <div class="pb-5 text-muted text-sm leading-[1.7]" data-i5="pdp-accordion__body">
-                <p>{{ $siteSetting->shippingDetailText() }}</p>
-              </div>
-            </details>
-          </div>
         </section>
       </form>
     @else
@@ -294,15 +282,6 @@
                 <ul class="mt-4 space-y-2 list-disc pl-4">
                   <li>Ürün kodu: {{ $product->code }}</li>
                 </ul>
-              </div>
-            </details>
-            <details>
-              <summary>
-                Kargo &amp; Teslimat
-                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
-              </summary>
-              <div class="pb-5 text-muted text-sm leading-[1.7]" data-i5="pdp-accordion__body">
-                <p>{{ $siteSetting->shippingDetailText() }}</p>
               </div>
             </details>
           </div>

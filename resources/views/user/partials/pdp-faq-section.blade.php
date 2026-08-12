@@ -1,12 +1,12 @@
 @if ($homepageFaqs->isNotEmpty())
-  <section class="pt-16 border-t-[3px] border-ink mt-16" id="sss" data-i5="pdp-faq">
+  <section class="mt-10 pt-10 border-t border-ink/12" id="sss" data-i5="pdp-faq">
     <div class="w-full max-w-[760px] mx-auto">
       <div class="mb-8 text-center">
         <h2 class="font-heading text-[clamp(1.5rem,3vw,2rem)] font-bold leading-tight tracking-[-0.02em] text-ink normal-case mb-3">Sık Sorulan Sorular</h2>
         <p class="m-0 text-[15px] leading-relaxed text-muted">Sipariş ve teslimat süreci hakkında hızlı yanıtlar.</p>
       </div>
 
-      <div class="border-t border-ink/12">
+      <div>
         @foreach ($homepageFaqs as $faq)
           <details class="group/faq border-b border-ink/12">
             <summary class="flex items-center justify-between gap-4 py-5 list-none cursor-pointer text-ink font-heading text-[clamp(1rem,2.2vw,1.25rem)] font-bold leading-tight tracking-tight [&::-webkit-details-marker]:hidden">
