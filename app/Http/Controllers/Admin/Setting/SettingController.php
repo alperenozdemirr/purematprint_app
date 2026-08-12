@@ -23,7 +23,12 @@ class SettingController extends Controller
 
     public function edit(): View
     {
-        $setting = Setting::current()->load('logo');
+        $setting = Setting::current()->load([
+            'logo',
+            'spotlightImage',
+            'bandImage',
+            'teamNoteImage',
+        ]);
 
         return view('admin.settings', [
             'setting' => $setting,
@@ -41,7 +46,12 @@ class SettingController extends Controller
         $shippingMode = ShippingMode::from($validated['shipping_mode']);
         $freeLimitEnabled = (bool) ($validated['shipping_free_limit_enabled'] ?? false);
 
-        $setting = Setting::current()->load('logo');
+        $setting = Setting::current()->load([
+            'logo',
+            'spotlightImage',
+            'bandImage',
+            'teamNoteImage',
+        ]);
 
         $notificationEmails = collect($validated['order_notification_emails'] ?? [])
             ->map(fn ($email) => strtolower(trim((string) $email)))
@@ -80,6 +90,18 @@ class SettingController extends Controller
             'facebook_url' => $validated['facebook_url'] ?? null,
             'whatsapp_phone' => $validated['whatsapp_phone'] ?? null,
             'short_info' => $validated['short_info'] ?? null,
+            'spotlight_title' => filled($validated['spotlight_title'] ?? null)
+                ? trim((string) $validated['spotlight_title'])
+                : null,
+            'spotlight_subtitle' => filled($validated['spotlight_subtitle'] ?? null)
+                ? trim((string) $validated['spotlight_subtitle'])
+                : null,
+            'team_note_title' => filled($validated['team_note_title'] ?? null)
+                ? trim((string) $validated['team_note_title'])
+                : null,
+            'team_note_description' => filled($validated['team_note_description'] ?? null)
+                ? trim((string) $validated['team_note_description'])
+                : null,
         ];
 
         if ($request->hasFile('logo')) {
@@ -97,10 +119,64 @@ class SettingController extends Controller
             $attributes['logo_id'] = $fileRecord->id;
         }
 
+        $spotlightImageId = $this->syncSettingImage(
+            $request,
+            'spotlight_image',
+            $setting->spotlight_image_id,
+            2,
+        );
+        if ($spotlightImageId !== null) {
+            $attributes['spotlight_image_id'] = $spotlightImageId;
+        }
+
+        $bandImageId = $this->syncSettingImage(
+            $request,
+            'band_image',
+            $setting->band_image_id,
+            3,
+        );
+        if ($bandImageId !== null) {
+            $attributes['band_image_id'] = $bandImageId;
+        }
+
+        $teamNoteImageId = $this->syncSettingImage(
+            $request,
+            'team_note_image',
+            $setting->team_note_image_id,
+            4,
+        );
+        if ($teamNoteImageId !== null) {
+            $attributes['team_note_image_id'] = $teamNoteImageId;
+        }
+
         Setting::saveSingleton($attributes);
 
         return redirect()
             ->route('admin.settings')
             ->with('success', 'Sistem ayarları güncellendi.');
+    }
+
+    private function syncSettingImage(
+        SettingUpdateRequest $request,
+        string $field,
+        ?int $currentFileId,
+        int $number,
+    ): ?int {
+        if (! $request->hasFile($field)) {
+            return null;
+        }
+
+        if ($currentFileId) {
+            $this->fileService->imageDelete($currentFileId, ContentType::OTHER);
+        }
+
+        $fileRecord = $this->fileService->imageUpload(
+            $request->file($field),
+            ContentType::OTHER,
+            Setting::SINGLETON_ID,
+            $number,
+        );
+
+        return $fileRecord->id;
     }
 }

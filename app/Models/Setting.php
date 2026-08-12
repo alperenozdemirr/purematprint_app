@@ -16,6 +16,20 @@ class Setting extends Model
 
     public const DEFAULT_LOGO = 'shared_directory/logo.avif';
 
+    public const DEFAULT_SPOTLIGHT_TITLE = 'İşlevsel, minimal ve oyunbaz baskı ürünleri';
+
+    public const DEFAULT_SPOTLIGHT_SUBTITLE = 'DESIGN';
+
+    public const DEFAULT_SPOTLIGHT_IMAGE = 'user/assets/foto1.jpeg';
+
+    public const DEFAULT_BAND_IMAGE = 'user/assets/foto2.jpeg';
+
+    public const DEFAULT_TEAM_NOTE_TITLE = "PureMatPrint'ten Bir Not";
+
+    public const DEFAULT_TEAM_NOTE_DESCRIPTION = "Yaratıcı mekanlar için sade baskı ürünleri üretmek amacıyla kurulduk. Bugün hâlâ aynı tutkuyla çalışıyor, sizin gibi markaların mekanlarını yükseltmelerine yardımcı oluyoruz. Sorularınız olursa bizimle iletişime geçmekten çekinmeyin.\n\nKeyifli projeler,";
+
+    public const DEFAULT_TEAM_NOTE_IMAGE = 'user/assets/foto2.jpeg';
+
     protected $fillable = [
         'site_open',
         'discount_enabled',
@@ -40,6 +54,13 @@ class Setting extends Model
         'short_info',
         'show_real_homepage_reviews',
         'logo_id',
+        'spotlight_title',
+        'spotlight_subtitle',
+        'spotlight_image_id',
+        'band_image_id',
+        'team_note_title',
+        'team_note_description',
+        'team_note_image_id',
         'shipink_warehouse_id',
         'shipink_warehouse_name',
         'shipink_carrier_account_id',
@@ -66,6 +87,9 @@ class Setting extends Model
         'shipping_free_limit' => 'decimal:2',
         'show_real_homepage_reviews' => 'boolean',
         'logo_id' => 'integer',
+        'spotlight_image_id' => 'integer',
+        'band_image_id' => 'integer',
+        'team_note_image_id' => 'integer',
         'shipink_default_weight' => 'integer',
         'shipink_default_length' => 'integer',
         'shipink_default_width' => 'integer',
@@ -76,6 +100,90 @@ class Setting extends Model
     public function logo(): BelongsTo
     {
         return $this->belongsTo(File::class, 'logo_id');
+    }
+
+    public function spotlightImage(): BelongsTo
+    {
+        return $this->belongsTo(File::class, 'spotlight_image_id');
+    }
+
+    public function bandImage(): BelongsTo
+    {
+        return $this->belongsTo(File::class, 'band_image_id');
+    }
+
+    public function teamNoteImage(): BelongsTo
+    {
+        return $this->belongsTo(File::class, 'team_note_image_id');
+    }
+
+    public function spotlightTitleLabel(): string
+    {
+        return filled($this->spotlight_title)
+            ? (string) $this->spotlight_title
+            : self::DEFAULT_SPOTLIGHT_TITLE;
+    }
+
+    public function spotlightSubtitleLabel(): string
+    {
+        return filled($this->spotlight_subtitle)
+            ? (string) $this->spotlight_subtitle
+            : self::DEFAULT_SPOTLIGHT_SUBTITLE;
+    }
+
+    public function spotlightImageUrl(): string
+    {
+        return $this->spotlightImage?->url ?? asset(self::DEFAULT_SPOTLIGHT_IMAGE);
+    }
+
+    public function bandImageUrl(): string
+    {
+        return $this->bandImage?->url ?? asset(self::DEFAULT_BAND_IMAGE);
+    }
+
+    public function teamNoteTitleLabel(): string
+    {
+        return filled($this->team_note_title)
+            ? (string) $this->team_note_title
+            : self::DEFAULT_TEAM_NOTE_TITLE;
+    }
+
+    /**
+     * @return list<string>
+     */
+    public function teamNoteDescriptionParagraphs(): array
+    {
+        $text = filled($this->team_note_description)
+            ? (string) $this->team_note_description
+            : self::DEFAULT_TEAM_NOTE_DESCRIPTION;
+
+        $paragraphs = preg_split("/\r\n|\n|\r/", $text) ?: [];
+
+        return collect($paragraphs)
+            ->map(fn (string $paragraph) => trim($paragraph))
+            ->filter()
+            ->values()
+            ->all();
+    }
+
+    public function teamNoteImageUrl(): string
+    {
+        return $this->teamNoteImage?->url ?? asset(self::DEFAULT_TEAM_NOTE_IMAGE);
+    }
+
+    public function hasCustomSpotlightImage(): bool
+    {
+        return $this->spotlight_image_id !== null && $this->spotlightImage !== null;
+    }
+
+    public function hasCustomBandImage(): bool
+    {
+        return $this->band_image_id !== null && $this->bandImage !== null;
+    }
+
+    public function hasCustomTeamNoteImage(): bool
+    {
+        return $this->team_note_image_id !== null && $this->teamNoteImage !== null;
     }
 
     public static function current(): self

@@ -137,11 +137,11 @@
     <div class="w-full max-w-site mx-auto px-5 lg:px-8" data-i5="container">
       <div data-i5="reveal" data-i5-tags="spotlight__grid reveal" class="grid gap-10 items-center min-[900px]:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] min-[900px]:gap-x-[72px] min-[900px]:gap-y-14 opacity-0 translate-y-6 transition-all duration-700 [&.is-revealed]:opacity-100 [&.is-revealed]:translate-y-0">
         <div class="max-w-[700px]" data-i5="spotlight__media">
-          <img class="block w-full h-auto" src="{{asset('user')}}/assets/foto1.jpeg" alt="A-Frame tabela sokak uygulaması" loading="lazy">
+          <img class="block w-full h-auto" src="{{ $siteSetting->spotlightImageUrl() }}" alt="A-Frame tabela sokak uygulaması" loading="lazy">
         </div>
         <div class="text-center min-[900px]:text-center" data-i5="spotlight__body">
-          <h2 class="font-heading mb-7 text-[clamp(1.5rem,3.5vw,2.5rem)] font-bold leading-tight tracking-[-0.03em] text-balance" data-i5="spotlight__quote">"İşlevsel, minimal ve oyunbaz baskı ürünleri"</h2>
-          <div class="inline-flex items-center justify-center max-w-[160px] mx-auto text-ink opacity-85" data-i5="spotlight__mark"><span aria-label="Design Milk" class="font-heading text-2xl font-normal tracking-wide uppercase">DESIGN</span>
+          <h2 class="font-heading mb-7 text-[clamp(1.5rem,3.5vw,2.5rem)] font-bold leading-tight tracking-[-0.03em] text-balance" data-i5="spotlight__quote">"{{ $siteSetting->spotlightTitleLabel() }}"</h2>
+          <div class="inline-flex items-center justify-center max-w-[160px] mx-auto text-ink opacity-85" data-i5="spotlight__mark"><span class="font-heading text-2xl font-normal tracking-wide uppercase">{{ $siteSetting->spotlightSubtitleLabel() }}</span>
           </div>
         </div>
       </div>
@@ -150,7 +150,7 @@
 
   <!-- Video band — G&W background video -->
   <section class="relative overflow-hidden bg-dark" aria-label="Atölye" data-i5="video-band">
-    <div class="relative overflow-hidden h-[clamp(320px,50vw,560px)] after:absolute after:inset-0 after:bg-ink/20 after:pointer-events-none" data-i5="video-band__media"><img class="block w-full h-full object-cover" src="{{asset('user')}}/assets/foto2.jpeg" alt="PureMatPrint atölye" loading="lazy">
+    <div class="relative overflow-hidden h-[clamp(320px,50vw,560px)] after:absolute after:inset-0 after:bg-ink/20 after:pointer-events-none" data-i5="video-band__media"><img class="block w-full h-full object-cover" src="{{ $siteSetting->bandImageUrl() }}" alt="PureMatPrint atölye" loading="lazy">
     </div>
   </section>
 
@@ -315,13 +315,14 @@
     <div class="w-full max-w-site mx-auto px-5 lg:px-8" data-i5="container">
       <div data-i5="reveal" data-i5-tags="note__grid reveal" class="grid gap-10 items-center min-[768px]:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)] min-[768px]:gap-x-16 min-[768px]:gap-y-12 min-[1024px]:gap-x-20 min-[1024px]:gap-y-14 opacity-0 translate-y-6 transition-all duration-700 [&.is-revealed]:opacity-100 [&.is-revealed]:translate-y-0">
         <div class="w-full max-w-[450px] mx-auto min-[768px]:mx-0" data-i5="note__media">
-          <img class="block w-full h-auto" src="{{asset('user')}}/assets/foto2.jpeg" alt="PureMatPrint ekibi atölyede çalışırken">
+          <img class="block w-full h-auto" src="{{ $siteSetting->teamNoteImageUrl() }}" alt="PureMatPrint ekibi atölyede çalışırken" loading="lazy">
         </div>
         <div >
-          <h2 class="font-heading text-[clamp(1.75rem,3.5vw,2.5rem)] font-bold leading-[1.1] tracking-[-0.03em] mb-6 normal-case" data-i5="note__title">PureMatPrint'ten Bir Not</h2>
+          <h2 class="font-heading text-[clamp(1.75rem,3.5vw,2.5rem)] font-bold leading-[1.1] tracking-[-0.03em] mb-6 normal-case" data-i5="note__title">{{ $siteSetting->teamNoteTitleLabel() }}</h2>
           <div class="text-base leading-relaxed text-ink" data-i5="note__text">
-            <p class="mb-4">Yaratıcı mekanlar için sade baskı ürünleri üretmek amacıyla kurulduk. Bugün hâlâ aynı tutkuyla çalışıyor, sizin gibi markaların mekanlarını yükseltmelerine yardımcı oluyoruz. Sorularınız olursa bizimle iletişime geçmekten çekinmeyin.</p>
-            <p class="mb-0">Keyifli projeler,</p>
+            @foreach ($siteSetting->teamNoteDescriptionParagraphs() as $paragraph)
+              <p class="{{ $loop->last ? 'mb-0' : 'mb-4' }}">{{ $paragraph }}</p>
+            @endforeach
           </div>
           <div class="inline-block w-[180px] mt-5 text-ink" aria-hidden="true" data-i5="note__signature">
             <svg class="block w-full h-auto" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 56" fill="none" aria-hidden="true">

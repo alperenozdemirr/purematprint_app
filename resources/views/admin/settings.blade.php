@@ -157,6 +157,105 @@
 
     <section class="overflow-hidden rounded-xl bg-surface shadow-card">
       <div class="border-b border-ink/10 px-5 py-4">
+        <h3 class="font-heading text-[16px] font-bold text-ink">Anasayfa — Spotlight</h3>
+        <p class="mt-1 font-body text-[12px] text-muted">Görsel, alıntı metni ve sağ alt marka yazısı. Boş bırakılırsa varsayılan içerik gösterilir.</p>
+      </div>
+      <div class="grid gap-5 p-5 md:grid-cols-2">
+        <div class="md:col-span-2">
+          @if ($setting->hasCustomSpotlightImage())
+            <div class="mb-4 flex items-center gap-4">
+              <img src="{{ $setting->spotlightImageUrl() }}" alt="Spotlight görseli" class="h-24 w-auto max-w-[280px] rounded-lg border border-ink/10 bg-cream object-cover p-1">
+              <p class="font-body text-[13px] text-muted">Mevcut görsel yüklü. Yeni dosya seçerseniz eskisi silinir.</p>
+            </div>
+          @else
+            <p class="mb-4 font-body text-[13px] text-muted">Görsel yüklenmemiş — varsayılan anasayfa görseli kullanılır.</p>
+          @endif
+          <label for="spotlight_image" class="mb-1.5 block font-body text-[13px] font-bold text-ink">Spotlight Görseli</label>
+          <input type="file" id="spotlight_image" name="spotlight_image" accept="{{ \App\Support\ImageUploadRules::acceptAttribute() }}"
+                 class="w-full rounded-lg border border-ink/10 bg-cream px-3.5 py-2.5 font-body text-[14px] text-ink outline-none focus:border-accent focus:ring-2 focus:ring-accent/15">
+          @error('spotlight_image') <p class="mt-1.5 font-body text-[12px] font-medium text-danger">{{ $message }}</p> @enderror
+        </div>
+        <div class="md:col-span-2">
+          <label for="spotlight_title" class="mb-1.5 block font-body text-[13px] font-bold text-ink">Spotlight Başlık (Alıntı)</label>
+          <input type="text" id="spotlight_title" name="spotlight_title" value="{{ old('spotlight_title', $setting->spotlight_title) }}"
+                 class="w-full rounded-lg border border-ink/10 bg-cream px-3.5 py-2.5 font-body text-[14px] text-ink outline-none focus:border-accent focus:ring-2 focus:ring-accent/15"
+                 placeholder="{{ \App\Models\Setting::DEFAULT_SPOTLIGHT_TITLE }}">
+          @error('spotlight_title') <p class="mt-1.5 font-body text-[12px] font-medium text-danger">{{ $message }}</p> @enderror
+        </div>
+        <div class="md:col-span-2">
+          <label for="spotlight_subtitle" class="mb-1.5 block font-body text-[13px] font-bold text-ink">Spotlight Alt Yazı (Marka)</label>
+          <input type="text" id="spotlight_subtitle" name="spotlight_subtitle" value="{{ old('spotlight_subtitle', $setting->spotlight_subtitle) }}"
+                 class="w-full rounded-lg border border-ink/10 bg-cream px-3.5 py-2.5 font-body text-[14px] text-ink outline-none focus:border-accent focus:ring-2 focus:ring-accent/15"
+                 placeholder="{{ \App\Models\Setting::DEFAULT_SPOTLIGHT_SUBTITLE }}">
+          <p class="mt-1.5 font-body text-[12px] text-muted">Sağ taraftaki kısa marka / basın yazısı (ör. DESIGN).</p>
+          @error('spotlight_subtitle') <p class="mt-1.5 font-body text-[12px] font-medium text-danger">{{ $message }}</p> @enderror
+        </div>
+      </div>
+    </section>
+
+    <section class="overflow-hidden rounded-xl bg-surface shadow-card">
+      <div class="border-b border-ink/10 px-5 py-4">
+        <h3 class="font-heading text-[16px] font-bold text-ink">Anasayfa — Atölye Bandı</h3>
+        <p class="mt-1 font-body text-[12px] text-muted">Video-band alanındaki geniş arka plan görseli.</p>
+      </div>
+      <div class="grid gap-5 p-5">
+        @if ($setting->hasCustomBandImage())
+          <div class="flex items-center gap-4">
+            <img src="{{ $setting->bandImageUrl() }}" alt="Atölye band görseli" class="h-24 w-auto max-w-[320px] rounded-lg border border-ink/10 bg-cream object-cover p-1">
+            <p class="font-body text-[13px] text-muted">Mevcut görsel yüklü. Yeni dosya seçerseniz eskisi silinir.</p>
+          </div>
+        @else
+          <p class="font-body text-[13px] text-muted">Görsel yüklenmemiş — varsayılan atölye görseli kullanılır.</p>
+        @endif
+        <div>
+          <label for="band_image" class="mb-1.5 block font-body text-[13px] font-bold text-ink">Atölye Band Görseli</label>
+          <input type="file" id="band_image" name="band_image" accept="{{ \App\Support\ImageUploadRules::acceptAttribute() }}"
+                 class="w-full rounded-lg border border-ink/10 bg-cream px-3.5 py-2.5 font-body text-[14px] text-ink outline-none focus:border-accent focus:ring-2 focus:ring-accent/15">
+          @error('band_image') <p class="mt-1.5 font-body text-[12px] font-medium text-danger">{{ $message }}</p> @enderror
+        </div>
+      </div>
+    </section>
+
+    <section class="overflow-hidden rounded-xl bg-surface shadow-card">
+      <div class="border-b border-ink/10 px-5 py-4">
+        <h3 class="font-heading text-[16px] font-bold text-ink">Anasayfa — Ekip Notu</h3>
+        <p class="mt-1 font-body text-[12px] text-muted">Ekip notu bölümünün başlık, metin ve görseli. Boş bırakılırsa varsayılan içerik gösterilir.</p>
+      </div>
+      <div class="grid gap-5 p-5 md:grid-cols-2">
+        <div class="md:col-span-2">
+          @if ($setting->hasCustomTeamNoteImage())
+            <div class="mb-4 flex items-center gap-4">
+              <img src="{{ $setting->teamNoteImageUrl() }}" alt="Ekip notu görseli" class="h-24 w-auto max-w-[280px] rounded-lg border border-ink/10 bg-cream object-cover p-1">
+              <p class="font-body text-[13px] text-muted">Mevcut görsel yüklü. Yeni dosya seçerseniz eskisi silinir.</p>
+            </div>
+          @else
+            <p class="mb-4 font-body text-[13px] text-muted">Görsel yüklenmemiş — varsayılan ekip görseli kullanılır.</p>
+          @endif
+          <label for="team_note_image" class="mb-1.5 block font-body text-[13px] font-bold text-ink">Ekip Notu Görseli</label>
+          <input type="file" id="team_note_image" name="team_note_image" accept="{{ \App\Support\ImageUploadRules::acceptAttribute() }}"
+                 class="w-full rounded-lg border border-ink/10 bg-cream px-3.5 py-2.5 font-body text-[14px] text-ink outline-none focus:border-accent focus:ring-2 focus:ring-accent/15">
+          @error('team_note_image') <p class="mt-1.5 font-body text-[12px] font-medium text-danger">{{ $message }}</p> @enderror
+        </div>
+        <div class="md:col-span-2">
+          <label for="team_note_title" class="mb-1.5 block font-body text-[13px] font-bold text-ink">Ekip Notu Başlık</label>
+          <input type="text" id="team_note_title" name="team_note_title" value="{{ old('team_note_title', $setting->team_note_title) }}"
+                 class="w-full rounded-lg border border-ink/10 bg-cream px-3.5 py-2.5 font-body text-[14px] text-ink outline-none focus:border-accent focus:ring-2 focus:ring-accent/15"
+                 placeholder="{{ \App\Models\Setting::DEFAULT_TEAM_NOTE_TITLE }}">
+          @error('team_note_title') <p class="mt-1.5 font-body text-[12px] font-medium text-danger">{{ $message }}</p> @enderror
+        </div>
+        <div class="md:col-span-2">
+          <label for="team_note_description" class="mb-1.5 block font-body text-[13px] font-bold text-ink">Ekip Notu Metni</label>
+          <textarea id="team_note_description" name="team_note_description" rows="5"
+                    class="w-full rounded-lg border border-ink/10 bg-cream px-3.5 py-2.5 font-body text-[14px] text-ink outline-none focus:border-accent focus:ring-2 focus:ring-accent/15"
+                    placeholder="{{ \App\Models\Setting::DEFAULT_TEAM_NOTE_DESCRIPTION }}">{{ old('team_note_description', $setting->team_note_description) }}</textarea>
+          <p class="mt-1.5 font-body text-[12px] text-muted">Her satır ayrı paragraf olarak gösterilir. Boş bırakılırsa varsayılan metin kullanılır.</p>
+          @error('team_note_description') <p class="mt-1.5 font-body text-[12px] font-medium text-danger">{{ $message }}</p> @enderror
+        </div>
+      </div>
+    </section>
+
+    <section class="overflow-hidden rounded-xl bg-surface shadow-card">
+      <div class="border-b border-ink/10 px-5 py-4">
         <h3 class="font-heading text-[16px] font-bold text-ink">Sipariş Bildirimleri</h3>
       </div>
       <div class="grid gap-5 p-5">

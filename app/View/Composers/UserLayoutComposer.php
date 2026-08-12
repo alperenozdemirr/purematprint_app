@@ -36,7 +36,12 @@ class UserLayoutComposer
                 ->sum('quantity');
         }
 
-        $setting = Setting::current()->loadMissing('logo');
+        $setting = Setting::current()->loadMissing([
+            'logo',
+            'spotlightImage',
+            'bandImage',
+            'teamNoteImage',
+        ]);
 
         $view->with([
             'authUser' => $authUser,

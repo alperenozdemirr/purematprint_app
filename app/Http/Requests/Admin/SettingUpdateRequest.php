@@ -64,6 +64,13 @@ class SettingUpdateRequest extends FormRequest
             'whatsapp_phone' => ['nullable', 'string', 'max:50'],
             'short_info' => ['nullable', 'string', 'max:500'],
             'logo' => ImageUploadRules::adminImageRules(required: false),
+            'spotlight_title' => ['nullable', 'string', 'max:255'],
+            'spotlight_subtitle' => ['nullable', 'string', 'max:120'],
+            'spotlight_image' => ImageUploadRules::adminImageRules(required: false),
+            'band_image' => ImageUploadRules::adminImageRules(required: false),
+            'team_note_title' => ['nullable', 'string', 'max:255'],
+            'team_note_description' => ['nullable', 'string', 'max:2000'],
+            'team_note_image' => ImageUploadRules::adminImageRules(required: false),
         ];
     }
 
@@ -74,6 +81,12 @@ class SettingUpdateRequest extends FormRequest
             'order_notification_emails.max' => 'En fazla 4 bildirim e-posta adresi girebilirsiniz.',
             'logo.max' => 'Logo en fazla 40MB olabilir.',
             'logo.mimes' => 'Logo yalnızca '.ImageUploadRules::humanList().' formatlarında olabilir.',
+            'spotlight_image.max' => 'Spotlight görseli en fazla 40MB olabilir.',
+            'spotlight_image.mimes' => 'Spotlight görseli yalnızca '.ImageUploadRules::humanList().' formatlarında olabilir.',
+            'band_image.max' => 'Atölye band görseli en fazla 40MB olabilir.',
+            'band_image.mimes' => 'Atölye band görseli yalnızca '.ImageUploadRules::humanList().' formatlarında olabilir.',
+            'team_note_image.max' => 'Ekip notu görseli en fazla 40MB olabilir.',
+            'team_note_image.mimes' => 'Ekip notu görseli yalnızca '.ImageUploadRules::humanList().' formatlarında olabilir.',
         ];
     }
 }
