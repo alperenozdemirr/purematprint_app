@@ -20,7 +20,7 @@
           <tr>
             <td style="padding:28px 24px;">
               <p style="margin:0 0 16px;font-size:15px;line-height:1.7;color:{{ $mailMuted }};">
-                <strong>{{ $order->code }}</strong> numaralı sipariş müşteri tarafından iptal edildi ve ödeme iadesi tamamlandı.
+                <strong>{{ $order->code }}</strong> numaralı sipariş müşteri tarafından iptal edildi ve ödeme iade süreci başlatıldı.
               </p>
 
               @if ($refundMessage)
@@ -28,6 +28,10 @@
                 {{ $refundMessage }}
               </p>
               @endif
+
+              <p style="margin:0 0 16px;font-size:14px;line-height:1.7;color:{{ $mailMuted }};">
+                {{ $order->payment?->provider?->refundSettlementNotice() ?? \App\Enums\PaymentProvider::IYZICO->refundSettlementNotice() }}
+              </p>
 
               <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin:0 0 20px;background:{{ $mailCream }};border:2px solid {{ $mailInk }};">
                 <tr>

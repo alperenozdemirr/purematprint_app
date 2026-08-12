@@ -23,7 +23,7 @@
                 Merhaba <strong>{{ $order->user->name }}</strong>,
               </p>
               <p style="margin:0 0 16px;font-size:15px;line-height:1.7;color:{{ $mailMuted }};">
-                <strong>{{ $order->code }}</strong> numaralı siparişiniz iptal edildi. Ödemeniz iade edilmiştir.
+                <strong>{{ $order->code }}</strong> numaralı siparişiniz iptal edildi. Ödeme iade süreciniz başlatıldı.
               </p>
 
               @if ($refundMessage)
@@ -47,7 +47,7 @@
               </table>
 
               <p style="margin:0 0 20px;font-size:14px;line-height:1.7;color:{{ $mailMuted }};">
-                İadenin banka/kart hesabınıza yansıması ödeme sağlayıcısına göre birkaç iş günü sürebilir.
+                {{ $order->payment?->provider?->refundSettlementNotice() ?? \App\Enums\PaymentProvider::IYZICO->refundSettlementNotice() }}
               </p>
 
               <table role="presentation" cellspacing="0" cellpadding="0">

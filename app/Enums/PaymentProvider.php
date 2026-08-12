@@ -16,4 +16,12 @@ enum PaymentProvider: string
             self::STRIPE => 'Stripe',
         };
     }
+
+    public function refundSettlementNotice(): string
+    {
+        return match ($this) {
+            self::IYZICO => 'İadenin kart veya banka hesabınıza yansıması genellikle 1–7 iş günü sürebilir. Para anında hesabınıza düşmeyebilir.',
+            self::STRIPE => 'İadenin kart veya banka hesabınıza yansıması genellikle 5–10 iş günü sürebilir. Para anında hesabınıza düşmeyebilir.',
+        };
+    }
 }

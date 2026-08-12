@@ -30,6 +30,8 @@
   $canSelfCancel = $order->canSelfCancel();
   $cancelMinutesRemaining = $order->selfCancelMinutesRemaining();
   $cancelDeadline = $order->selfCancelDeadline();
+  $refundSettlementNotice = $order->payment?->provider?->refundSettlementNotice()
+      ?? \App\Enums\PaymentProvider::IYZICO->refundSettlementNotice();
 @endphp
 <main id="order-detail-root" class="pt-8 pb-20">
     <div class="w-full max-w-site mx-auto px-5 lg:px-8" data-i5="container">
@@ -59,7 +61,8 @@
       <div class="flex flex-wrap items-center gap-2.5 mb-7 pb-6 border-b-[3px] border-ink" data-i5="order-detail__actions">
         @if ($order->canSelfCancel())
         <form action="{{ route('orderCancel', $order->code) }}" method="POST"
-              onsubmit="return confirm('Siparişinizi iptal etmek istediğinize emin misiniz? Ödemeniz iade edilecektir.');">
+              data-refund-notice="{{ e($refundSettlementNotice) }}"
+              onsubmit="return confirm('Siparişinizi iptal etmek istediğinize emin misiniz?\n\nÖdemeniz iade sürecine alınır; para anında hesabınıza düşmeyebilir.\n\n{{ $refundSettlementNotice }}');">
           @csrf
           <button type="submit" data-i5="btn--danger"
                   class="inline-flex items-center gap-2 px-6 py-3.5 font-body text-[13px] font-bold uppercase tracking-[0.06em] border-[3px] border-announce transition-[transform,box-shadow,background-color] bg-[rgba(182,29,15,0.08)] text-announce shadow-ui hover:bg-[rgba(182,29,15,0.14)]">
@@ -95,7 +98,8 @@
                 @if ($cancelMinutesRemaining > 0)
                   (yaklaşık {{ $cancelMinutesRemaining }} dk kaldı).
                 @endif
-                Ödemeniz otomatik iade edilir.
+                Ödemeniz otomatik iade sürecine alınır; para anında hesabınıza düşmeyebilir.
+                {{ $refundSettlementNotice }}
               @endif
             </div>
             @endif

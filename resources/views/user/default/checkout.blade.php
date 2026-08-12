@@ -81,8 +81,9 @@
               <div id="invoice-individual-fields" class="grid gap-4 {{ $invoiceType === InvoiceType::INDIVIDUAL->value ? '' : 'hidden' }}">
                 <div>
                   <label for="checkout-tc-no" class="block font-body text-[11px] font-bold uppercase tracking-[0.06em] mb-1.5">T.C. Kimlik Numarası *</label>
-                  <input type="text" id="checkout-tc-no" name="tc_no" value="{{ old('tc_no') }}" inputmode="numeric" maxlength="11" placeholder="11 haneli T.C. kimlik no" data-individual-required
+                  <input type="text" id="checkout-tc-no" name="tc_no" value="{{ old('tc_no') }}" inputmode="numeric" maxlength="11" placeholder="11 haneli T.C. kimlik no" data-individual-required autocomplete="off"
                          class="w-full px-3.5 py-[13px] border-[3px] border-ink text-[15px] bg-surface outline-none focus:shadow-brutal-sm">
+                  <p id="checkout-tc-no-feedback" class="mt-1.5 text-xs text-announce hidden" role="alert" aria-live="polite"></p>
                   @error('tc_no')<span class="text-xs text-announce">{{ $message }}</span>@enderror
                 </div>
               </div>
@@ -96,8 +97,9 @@
                 </div>
                 <div class="min-[640px]:col-span-2">
                   <label for="checkout-tax-number" class="block font-body text-[11px] font-bold uppercase tracking-[0.06em] mb-1.5">Vergi Numarası *</label>
-                  <input type="text" id="checkout-tax-number" name="tax_number" value="{{ old('tax_number') }}" inputmode="numeric" maxlength="11" placeholder="10 veya 11 haneli vergi no" data-corporate-required
+                  <input type="text" id="checkout-tax-number" name="tax_number" value="{{ old('tax_number') }}" inputmode="numeric" maxlength="11" placeholder="10 veya 11 haneli vergi no" data-corporate-required autocomplete="off"
                          class="w-full px-3.5 py-[13px] border-[3px] border-ink text-[15px] bg-surface outline-none focus:shadow-brutal-sm">
+                  <p id="checkout-tax-number-feedback" class="mt-1.5 text-xs text-announce hidden" role="alert" aria-live="polite"></p>
                   @error('tax_number')<span class="text-xs text-announce">{{ $message }}</span>@enderror
                 </div>
               </div>
@@ -288,8 +290,157 @@
     });
   };
 
-  invoiceTypeInputs.forEach((input) => input.addEventListener('change', toggleInvoiceFields));
+  invoiceTypeInputs.forEach((input) => input.addEventListener('change', () => {
+    toggleInvoiceFields();
+    validateTcField(true);
+    validateTaxField(true);
+  }));
   toggleInvoiceFields();
+
+  const tcInput = document.getElementById('checkout-tc-no');
+  const taxInput = document.getElementById('checkout-tax-number');
+  const tcFeedback = document.getElementById('checkout-tc-no-feedback');
+  const taxFeedback = document.getElementById('checkout-tax-number-feedback');
+  const checkoutForm = document.getElementById('checkout-form');
+
+  const onlyDigits = (value) => String(value || '').replace(/\D+/g, '');
+
+  const isValidTurkishIdentityNumber = (value) => {
+    const tc = onlyDigits(value);
+
+    if (!/^[1-9][0-9]{10}$/.test(tc)) {
+      return false;
+    }
+
+    const digits = tc.split('').map(Number);
+    const oddSum = digits[0] + digits[2] + digits[4] + digits[6] + digits[8];
+    const evenSum = digits[1] + digits[3] + digits[5] + digits[7];
+
+    if (((oddSum * 7) - evenSum) % 10 !== digits[9]) {
+      return false;
+    }
+
+    return digits.slice(0, 10).reduce((sum, digit) => sum + digit, 0) % 10 === digits[10];
+  };
+
+  const isValidTaxNumber = (value) => /^[0-9]{10,11}$/.test(onlyDigits(value));
+
+  const setFieldFeedback = (input, feedback, message) => {
+    if (!input || !feedback) {
+      return;
+    }
+
+    if (message) {
+      feedback.textContent = message;
+      feedback.classList.remove('hidden');
+      input.classList.add('border-announce');
+      input.setAttribute('aria-invalid', 'true');
+      return;
+    }
+
+    feedback.textContent = '';
+    feedback.classList.add('hidden');
+    input.classList.remove('border-announce');
+    input.removeAttribute('aria-invalid');
+  };
+
+  const validateTcField = (showEmptyError = false) => {
+    if (!tcInput || tcInput.disabled) {
+      setFieldFeedback(tcInput, tcFeedback, null);
+      return true;
+    }
+
+    const value = onlyDigits(tcInput.value);
+
+    if (value === '') {
+      if (showEmptyError) {
+        setFieldFeedback(tcInput, tcFeedback, 'T.C. kimlik numarası zorunludur.');
+        return false;
+      }
+
+      setFieldFeedback(tcInput, tcFeedback, null);
+      return false;
+    }
+
+    if (value.length < 11) {
+      setFieldFeedback(tcInput, tcFeedback, 'T.C. kimlik numarası 11 haneli olmalıdır.');
+      return false;
+    }
+
+    if (!isValidTurkishIdentityNumber(value)) {
+      setFieldFeedback(tcInput, tcFeedback, 'Geçerli bir T.C. kimlik numarası girin.');
+      return false;
+    }
+
+    setFieldFeedback(tcInput, tcFeedback, null);
+    return true;
+  };
+
+  const validateTaxField = (showEmptyError = false) => {
+    if (!taxInput || taxInput.disabled) {
+      setFieldFeedback(taxInput, taxFeedback, null);
+      return true;
+    }
+
+    const value = onlyDigits(taxInput.value);
+
+    if (value === '') {
+      if (showEmptyError) {
+        setFieldFeedback(taxInput, taxFeedback, 'Vergi numarası zorunludur.');
+        return false;
+      }
+
+      setFieldFeedback(taxInput, taxFeedback, null);
+      return false;
+    }
+
+    if (value.length < 10) {
+      setFieldFeedback(taxInput, taxFeedback, 'Vergi numarası 10 veya 11 haneli olmalıdır.');
+      return false;
+    }
+
+    if (!isValidTaxNumber(value)) {
+      setFieldFeedback(taxInput, taxFeedback, 'Vergi numarası 10 veya 11 haneli olmalıdır.');
+      return false;
+    }
+
+    setFieldFeedback(taxInput, taxFeedback, null);
+    return true;
+  };
+
+  const bindNumericInvoiceInput = (input, validateFn) => {
+    if (!input) {
+      return;
+    }
+
+    input.addEventListener('input', () => {
+      const digits = onlyDigits(input.value);
+      if (input.value !== digits) {
+        input.value = digits;
+      }
+      validateFn(false);
+    });
+
+    input.addEventListener('blur', () => validateFn(true));
+  };
+
+  bindNumericInvoiceInput(tcInput, validateTcField);
+  bindNumericInvoiceInput(taxInput, validateTaxField);
+
+  checkoutForm?.addEventListener('submit', (event) => {
+    const tcValid = validateTcField(true);
+    const taxValid = validateTaxField(true);
+
+    if (!tcValid || !taxValid) {
+      event.preventDefault();
+      const firstInvalid = (!tcValid && tcInput && !tcInput.disabled) ? tcInput : taxInput;
+      firstInvalid?.focus();
+      firstInvalid?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  });
+
+  validateTcField(Boolean(tcInput?.value));
+  validateTaxField(Boolean(taxInput?.value));
 
   const addressInputs = document.querySelectorAll('.checkout-address-input');
   const paymentIyzico = document.getElementById('checkout-payment-iyzico');
