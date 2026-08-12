@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace App\Http\Services;
 
 use App\Models\User;
+use App\Support\PaymentRefundResult;
 use Illuminate\Support\Str;
 use Stripe\Checkout\Session;
+use Stripe\Refund;
 use Stripe\Stripe;
 
 class StripePaymentService
@@ -98,6 +100,57 @@ class StripePaymentService
         }
 
         return $session->id;
+    }
+
+    public function refundPayment(string $providerPaymentId, ?string $providerToken, float $amount): PaymentRefundResult
+    {
+        if (! $this->isConfigured()) {
+            return PaymentRefundResult::fail('Stripe ödeme sistemi yapılandırılmamış.');
+        }
+
+        try {
+            Stripe::setApiKey((string) config('stripe.secret'));
+
+            $paymentIntentId = $this->resolvePaymentIntentId($providerPaymentId, $providerToken);
+
+            if ($paymentIntentId === null) {
+                return PaymentRefundResult::fail('Stripe ödeme referansı bulunamadı.');
+            }
+
+            Refund::create([
+                'payment_intent' => $paymentIntentId,
+            ]);
+
+            return PaymentRefundResult::ok(
+                'stripe_refund',
+                'Ödeme Stripe üzerinden iade edildi ('.number_format($amount, 2, ',', '.').' ₺).',
+            );
+        } catch (\Throwable $exception) {
+            report($exception);
+
+            return PaymentRefundResult::fail('Stripe iade işlemi başarısız: '.$exception->getMessage());
+        }
+    }
+
+    private function resolvePaymentIntentId(string $providerPaymentId, ?string $providerToken): ?string
+    {
+        if (str_starts_with($providerPaymentId, 'pi_')) {
+            return $providerPaymentId;
+        }
+
+        if ($providerToken !== null && str_starts_with($providerToken, 'cs_')) {
+            $session = Session::retrieve($providerToken);
+
+            return is_string($session->payment_intent) ? $session->payment_intent : null;
+        }
+
+        if (str_starts_with($providerPaymentId, 'cs_')) {
+            $session = Session::retrieve($providerPaymentId);
+
+            return is_string($session->payment_intent) ? $session->payment_intent : null;
+        }
+
+        return null;
     }
 
     /**

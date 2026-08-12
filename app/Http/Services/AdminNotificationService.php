@@ -85,6 +85,26 @@ class AdminNotificationService
         );
     }
 
+    public function notifyOrderCancelled(Order $order, ?string $refundMessage = null): void
+    {
+        $this->notify(
+            AdminNotificationType::ORDER_CANCELLED,
+            'Sipariş iptal edildi: '.$order->code,
+            $refundMessage ?: 'Müşteri siparişi iptal etti ve ödeme iadesi tamamlandı.',
+            $order,
+        );
+    }
+
+    public function notifyOrderCancellationFailed(Order $order, string $reason): void
+    {
+        $this->notify(
+            AdminNotificationType::ORDER_CANCELLATION_FAILED,
+            'İptal / iade hatası: '.$order->code,
+            $reason,
+            $order,
+        );
+    }
+
     public function unreadCount(): int
     {
         return AdminNotification::query()->unread()->count();

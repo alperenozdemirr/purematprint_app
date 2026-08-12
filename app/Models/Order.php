@@ -61,6 +61,7 @@ class Order extends Model
         'shipped_email_shipment_id',
         'delivered_email_sent_at',
         'carrier_picked_up_at',
+        'cancellation_requested_at',
     ];
 
     protected $casts = [
@@ -83,6 +84,7 @@ class Order extends Model
         'shipped_email_sent_at' => 'datetime',
         'delivered_email_sent_at' => 'datetime',
         'carrier_picked_up_at' => 'datetime',
+        'cancellation_requested_at' => 'datetime',
         'status' => OrderStatus::class,
         'design_status' => OrderDesignStatus::class,
         'design_type' => OrderDesignType::class,
@@ -279,5 +281,55 @@ class Order extends Model
     public function canBeCancelledByAdmin(): bool
     {
         return ! in_array($this->status, [OrderStatus::COMPLETED, OrderStatus::CANCELLED], true);
+    }
+
+    public function selfCancelMinutes(): int
+    {
+        return max(1, (int) config('orders.self_cancel_minutes', 60));
+    }
+
+    public function selfCancelDeadline(): \Illuminate\Support\Carbon
+    {
+        return $this->created_at->copy()->addMinutes($this->selfCancelMinutes());
+    }
+
+    public function canSelfCancel(bool $includeRequested = false): bool
+    {
+        if ($this->status !== OrderStatus::PREPARING) {
+            return false;
+        }
+
+        if ($this->cancelled_at !== null) {
+            return false;
+        }
+
+        if (! $includeRequested && $this->cancellation_requested_at !== null) {
+            return false;
+        }
+
+        if ($this->payment?->status !== \App\Enums\PaymentStatus::COMPLETED) {
+            return false;
+        }
+
+        if (in_array($this->status, [OrderStatus::SHIPPED, OrderStatus::COMPLETED], true)) {
+            return false;
+        }
+
+        return now()->lte($this->selfCancelDeadline());
+    }
+
+    public function selfCancelMinutesRemaining(): int
+    {
+        if (! $this->canSelfCancel(includeRequested: true)) {
+            return 0;
+        }
+
+        return max(0, (int) now()->diffInMinutes($this->selfCancelDeadline(), false));
+    }
+
+    public function isCancellationPending(): bool
+    {
+        return $this->cancellation_requested_at !== null
+            && $this->status !== OrderStatus::CANCELLED;
     }
 }

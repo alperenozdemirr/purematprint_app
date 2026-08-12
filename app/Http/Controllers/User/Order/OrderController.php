@@ -13,6 +13,7 @@ use App\Http\Requests\User\OrderDesignDecisionRequest;
 use App\Http\Services\CheckoutDraftService;
 use App\Http\Services\CheckoutOrderFileService;
 use App\Http\Services\IyzicoPaymentService;
+use App\Http\Services\OrderCancellationService;
 use App\Http\Services\OrderFileDownloadService;
 use App\Http\Services\OrderPreparingFileService;
 use App\Http\Services\OrderPricingService;
@@ -23,6 +24,7 @@ use App\Models\File;
 use App\Models\Order;
 use App\Models\ShoppingCart;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -140,6 +142,25 @@ class OrderController extends Controller
             $validated['decision'] === 'approve'
                 ? 'Tasarım onayınız kaydedildi. Bilgilendirme e-postası gönderilecek.'
                 : 'Revize talebiniz kaydedildi. Bilgilendirme e-postası gönderilecek.'
+        );
+    }
+
+    public function cancel(Request $request, string $code, OrderCancellationService $cancellationService): RedirectResponse
+    {
+        $order = $this->ownedOrder($code)->load('payment');
+
+        try {
+            $cancellationService->requestSelfCancellation(
+                $order,
+                $request->ip() ?? '127.0.0.1',
+            );
+        } catch (ValidationException $exception) {
+            return back()->withErrors($exception->errors());
+        }
+
+        return back()->with(
+            'success',
+            'İptal talebiniz alındı. Ödemeniz iade edilecek ve e-posta ile bilgilendirileceksiniz.',
         );
     }
 

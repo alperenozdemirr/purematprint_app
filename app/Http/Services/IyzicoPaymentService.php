@@ -7,16 +7,23 @@ namespace App\Http\Services;
 use App\Enums\InvoiceType;
 use App\Models\Address;
 use App\Models\User;
+use App\Support\PaymentRefundResult;
 use Illuminate\Support\Str;
 use Iyzipay\Model\Address as IyzicoAddress;
 use Iyzipay\Model\BasketItem;
 use Iyzipay\Model\BasketItemType;
 use Iyzipay\Model\Buyer;
+use Iyzipay\Model\Cancel;
 use Iyzipay\Model\CheckoutForm;
 use Iyzipay\Model\CheckoutFormInitialize;
+use Iyzipay\Model\Payment;
+use Iyzipay\Model\Refund;
 use Iyzipay\Options;
+use Iyzipay\Request\CreateCancelRequest;
 use Iyzipay\Request\CreateCheckoutFormInitializeRequest;
+use Iyzipay\Request\CreateRefundRequest;
 use Iyzipay\Request\RetrieveCheckoutFormRequest;
+use Iyzipay\Request\RetrievePaymentRequest;
 
 class IyzicoPaymentService
 {
@@ -101,6 +108,94 @@ class IyzicoPaymentService
     {
         return $checkoutForm->getStatus() === 'success'
             && $checkoutForm->getPaymentStatus() === 'SUCCESS';
+    }
+
+    public function refundPayment(string $paymentId, float $amount, string $clientIp): PaymentRefundResult
+    {
+        if (! $this->isConfigured()) {
+            return PaymentRefundResult::fail('iyzico ödeme sistemi yapılandırılmamış.');
+        }
+
+        if ($paymentId === '') {
+            return PaymentRefundResult::fail('iyzico ödeme kaydı bulunamadı.');
+        }
+
+        $cancel = $this->cancelPayment($paymentId, $clientIp);
+
+        if ($cancel->success) {
+            return $cancel;
+        }
+
+        return $this->refundPaymentItems($paymentId, $amount, $clientIp);
+    }
+
+    private function cancelPayment(string $paymentId, string $clientIp): PaymentRefundResult
+    {
+        $request = new CreateCancelRequest();
+        $request->setLocale('tr');
+        $request->setConversationId(Str::uuid()->toString());
+        $request->setPaymentId($paymentId);
+        $request->setIp($clientIp);
+        $request->setReason('OTHER');
+        $request->setDescription('PureMatPrint sipariş iptali');
+
+        $response = Cancel::create($request, $this->options());
+
+        if ($response->getStatus() === 'success') {
+            return PaymentRefundResult::ok('iyzico_cancel', 'Ödeme iyzico üzerinden iptal edildi.');
+        }
+
+        return PaymentRefundResult::fail($response->getErrorMessage() ?: 'iyzico iptal işlemi başarısız.');
+    }
+
+    private function refundPaymentItems(string $paymentId, float $amount, string $clientIp): PaymentRefundResult
+    {
+        $detailRequest = new RetrievePaymentRequest();
+        $detailRequest->setLocale('tr');
+        $detailRequest->setConversationId(Str::uuid()->toString());
+        $detailRequest->setPaymentId($paymentId);
+
+        $payment = Payment::retrieve($detailRequest, $this->options());
+
+        if ($payment->getStatus() !== 'success') {
+            return PaymentRefundResult::fail($payment->getErrorMessage() ?: 'iyzico ödeme detayı alınamadı.');
+        }
+
+        $items = $payment->getPaymentItems() ?? [];
+
+        if ($items === []) {
+            return PaymentRefundResult::fail('iyzico iade kalemi bulunamadı.');
+        }
+
+        foreach ($items as $item) {
+            $transactionId = (string) $item->getPaymentTransactionId();
+            $itemAmount = (float) ($item->getPaidPrice() ?? $item->getPrice() ?? 0);
+
+            if ($transactionId === '' || $itemAmount <= 0) {
+                continue;
+            }
+
+            $refundRequest = new CreateRefundRequest();
+            $refundRequest->setLocale('tr');
+            $refundRequest->setConversationId(Str::uuid()->toString());
+            $refundRequest->setPaymentTransactionId($transactionId);
+            $refundRequest->setPrice($this->formatAmount($itemAmount));
+            $refundRequest->setCurrency('TRY');
+            $refundRequest->setIp($clientIp);
+            $refundRequest->setReason('OTHER');
+            $refundRequest->setDescription('PureMatPrint sipariş iptali');
+
+            $refund = Refund::create($refundRequest, $this->options());
+
+            if ($refund->getStatus() !== 'success') {
+                return PaymentRefundResult::fail($refund->getErrorMessage() ?: 'iyzico iade işlemi başarısız.');
+            }
+        }
+
+        return PaymentRefundResult::ok(
+            'iyzico_refund',
+            'Ödeme iyzico üzerinden iade edildi ('.number_format($amount, 2, ',', '.').' ₺).',
+        );
     }
 
     /**

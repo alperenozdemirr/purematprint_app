@@ -22,12 +22,14 @@ class Payment extends Model
         'provider',
         'provider_payment_id',
         'provider_token',
+        'refunded_at',
     ];
 
     protected $casts = [
         'paid_amount' => 'decimal:2',
         'status' => PaymentStatus::class,
         'provider' => PaymentProvider::class,
+        'refunded_at' => 'datetime',
     ];
 
     public function user(): BelongsTo

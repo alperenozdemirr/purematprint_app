@@ -114,6 +114,7 @@ Route::group(['middleware' => 'user'],function (){
 
     Route::get('siparislerim', [UserOrderController::class, 'index'])->name('orderList');
     Route::get('siparislerim/{code}', [UserOrderController::class, 'show'])->name('orderShow');
+    Route::post('siparislerim/{code}/iptal', [UserOrderController::class, 'cancel'])->name('orderCancel');
     Route::post('siparislerim/{code}/tekrarla', [UserOrderController::class, 'reorder'])->name('orderReorder');
     Route::get('siparislerim/{code}/dosya/{fileId}', [UserOrderController::class, 'downloadFile'])->name('orderFileDownload');
     Route::post('siparislerim/{code}/dosya', [UserOrderController::class, 'uploadCustomerFile'])->name('orderCustomerFileUpload');

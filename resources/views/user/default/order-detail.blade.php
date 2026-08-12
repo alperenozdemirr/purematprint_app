@@ -26,6 +26,9 @@
       default => 0,
   };
   $waLink = $siteSetting->whatsappLink('Merhaba, '.$order->code.' numaralı siparişim hakkında bilgi almak istiyorum.');
+  $canSelfCancel = $order->canSelfCancel();
+  $cancelMinutesRemaining = $order->selfCancelMinutesRemaining();
+  $cancelDeadline = $order->selfCancelDeadline();
 @endphp
 <main id="order-detail-root" class="pt-8 pb-20">
     <div class="w-full max-w-site mx-auto px-5 lg:px-8" data-i5="container">
@@ -53,6 +56,20 @@
       </div>
 
       <div class="flex flex-wrap items-center gap-2.5 mb-7 pb-6 border-b-[3px] border-ink" data-i5="order-detail__actions">
+        @if ($order->canSelfCancel())
+        <form action="{{ route('orderCancel', $order->code) }}" method="POST"
+              onsubmit="return confirm('Siparişinizi iptal etmek istediğinize emin misiniz? Ödemeniz iade edilecektir.');">
+          @csrf
+          <button type="submit" data-i5="btn--danger"
+                  class="inline-flex items-center gap-2 px-6 py-3.5 font-body text-[13px] font-bold uppercase tracking-[0.06em] border-[3px] border-announce transition-[transform,box-shadow,background-color] bg-[rgba(182,29,15,0.08)] text-announce shadow-ui hover:bg-[rgba(182,29,15,0.14)]">
+            Siparişi İptal Et
+          </button>
+        </form>
+        @elseif ($order->isCancellationPending())
+        <span class="inline-flex items-center gap-2 px-4 py-3 font-body text-[13px] font-semibold border-[3px] border-[#d97706] bg-[#fff8e6] text-[#92400e]">
+          İptal talebiniz işleniyor…
+        </span>
+        @endif
         <a data-i5="btn--outline" href="{{ route('orderReorder', $order->code) }}"
            onclick="event.preventDefault(); document.getElementById('order-reorder-form').submit();"
            class="inline-flex items-center gap-2 px-6 py-3.5 font-body text-[13px] font-bold uppercase tracking-[0.06em] border-[3px] border-ink transition-[transform,box-shadow,background-color] bg-surface text-ink shadow-ui hover:bg-hover">Siparişi Tekrarla</a>
@@ -68,6 +85,19 @@
           @if ($order->status !== \App\Enums\OrderStatus::CANCELLED)
           <section class="border-[3px] border-ink shadow-brutal-sm bg-surface p-6 [&_h2]:font-body [&_h2]:text-[13px] [&_h2]:font-bold [&_h2]:uppercase [&_h2]:tracking-[0.06em] [&_h2]:mb-5 [&_h2]:pb-3 [&_h2]:border-b-[3px] [&_h2]:border-ink" data-i5="order-detail__section">
             <h2>Sipariş Durumu</h2>
+            @if ($canSelfCancel || $order->isCancellationPending())
+            <div class="mb-5 p-4 border-2 border-[#d97706] bg-[#fff8e6] text-sm text-[#92400e]">
+              @if ($order->isCancellationPending())
+                İptal talebiniz alındı ve işleniyor. Tamamlandığında e-posta ile bilgilendirileceksiniz.
+              @else
+                Bu siparişi {{ $cancelDeadline->translatedFormat('j F Y H:i') }} tarihine kadar iptal edebilirsiniz
+                @if ($cancelMinutesRemaining > 0)
+                  (yaklaşık {{ $cancelMinutesRemaining }} dk kaldı).
+                @endif
+                Ödemeniz otomatik iade edilir.
+              @endif
+            </div>
+            @endif
             <div class="grid gap-0" data-i5="order-timeline">
               @foreach ($steps as $index => $step)
               <div class="flex gap-4 relative pb-6 last:pb-0 {{ $step['done'] ? 'is-done' : '' }} {{ $currentStep === $index ? 'is-current' : '' }} group/step [&:not(:last-child)]:after:absolute [&:not(:last-child)]:after:left-[11px] [&:not(:last-child)]:after:top-6 [&:not(:last-child)]:after:bottom-0 [&:not(:last-child)]:after:w-0.5 [&:not(:last-child)]:after:bg-ink/20" data-i5="order-timeline__step">

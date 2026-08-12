@@ -11,6 +11,8 @@ enum AdminNotificationType: string
     case CUSTOMER_FILE_UPLOADED = 'customer_file_uploaded';
     case DESIGN_APPROVED = 'design_approved';
     case DESIGN_REVISION_REQUESTED = 'design_revision_requested';
+    case ORDER_CANCELLED = 'order_cancelled';
+    case ORDER_CANCELLATION_FAILED = 'order_cancellation_failed';
 
     public function label(): string
     {
@@ -20,6 +22,8 @@ enum AdminNotificationType: string
             self::CUSTOMER_FILE_UPLOADED => 'Dosya Yüklendi',
             self::DESIGN_APPROVED => 'Tasarım Onaylandı',
             self::DESIGN_REVISION_REQUESTED => 'Revize Talebi',
+            self::ORDER_CANCELLED => 'Sipariş İptali',
+            self::ORDER_CANCELLATION_FAILED => 'İptal / İade Hatası',
         };
     }
 
