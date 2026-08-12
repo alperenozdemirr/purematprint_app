@@ -269,47 +269,6 @@
     </div>
   </section>
 
-  <!-- Press / Partners -->
-  <section class="py-16 border-b border-ink/12 bg-bg md:py-20" aria-label="Referans markalar" data-i5="press">
-    <div class="w-full max-w-site mx-auto px-5 lg:px-8" data-i5="container">
-      <ul data-i5="reveal" data-i5-tags="press__grid reveal" class="grid grid-cols-2 gap-x-6 gap-y-10 list-none m-0 p-0 min-[768px]:grid-cols-4 min-[768px]:gap-8 opacity-0 translate-y-6 transition-all duration-700 [&.is-revealed]:opacity-100 [&.is-revealed]:translate-y-0">
-        <li class="flex flex-col items-center text-center gap-4" data-i5="press__item">
-          <div class="flex items-center justify-center w-full max-w-[160px] min-h-12 text-ink" aria-hidden="true" data-i5="press__mark">
-            <svg viewBox="0 0 160 40" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Studio Noir">
-              <text x="80" y="28" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="22" font-weight="400" letter-spacing="0.18em" fill="currentColor">STUDIO NOIR</text>
-            </svg>
-          </div>
-          <p class="m-0 max-w-[22ch] text-sm leading-normal text-muted italic min-[768px]:text-[15px] min-[768px]:max-w-[24ch]" data-i5="press__quote">"Vitrinimizi müşteriler içeri girmeden yükseltiyor."</p>
-        </li>
-        <li class="flex flex-col items-center text-center gap-4" data-i5="press__item">
-          <div class="flex items-center justify-center w-full max-w-[160px] min-h-12 text-ink" aria-hidden="true" data-i5="press__mark">
-            <svg viewBox="0 0 160 40" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Demir Mimarlık">
-              <text x="80" y="18" text-anchor="middle" font-family="'Space Grotesk', sans-serif" font-size="11" font-weight="700" letter-spacing="0.28em" fill="currentColor">DEMIR</text>
-              <text x="80" y="34" text-anchor="middle" font-family="'Space Grotesk', sans-serif" font-size="11" font-weight="700" letter-spacing="0.28em" fill="currentColor">MIMARLIK</text>
-            </svg>
-          </div>
-          <p class="m-0 max-w-[22ch] text-sm leading-normal text-muted italic min-[768px]:text-[15px] min-[768px]:max-w-[24ch]" data-i5="press__quote">"Zamansız sadelik ve profesyonellik bir arada."</p>
-        </li>
-        <li class="flex flex-col items-center text-center gap-4" data-i5="press__item">
-          <div class="flex items-center justify-center w-full max-w-[160px] min-h-12 text-ink" aria-hidden="true" data-i5="press__mark">
-            <svg viewBox="0 0 160 40" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Kaya Coffee">
-              <text x="80" y="28" text-anchor="middle" font-family="'IBM Plex Sans', sans-serif" font-size="24" font-style="italic" font-weight="500" fill="currentColor">Kaya Coffee</text>
-            </svg>
-          </div>
-          <p class="m-0 max-w-[22ch] text-sm leading-normal text-muted italic min-[768px]:text-[15px] min-[768px]:max-w-[24ch]" data-i5="press__quote">"Yoğun dönemlerde hızlı prova, kusursuz teslimat."</p>
-        </li>
-        <li class="flex flex-col items-center text-center gap-4" data-i5="press__item">
-          <div class="flex items-center justify-center w-full max-w-[160px] min-h-12 text-ink" aria-hidden="true" data-i5="press__mark">
-            <svg viewBox="0 0 160 40" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Atlas Reklam">
-              <text x="80" y="28" text-anchor="middle" font-family="'Space Grotesk', sans-serif" font-size="20" font-weight="700" letter-spacing="0.06em" fill="currentColor">ATLAS</text>
-            </svg>
-          </div>
-          <p class="m-0 max-w-[22ch] text-sm leading-normal text-muted italic min-[768px]:text-[15px] min-[768px]:max-w-[24ch]" data-i5="press__quote">"Marka kimliğimizi mekâna taşıyan güvenilir ortak."</p>
-        </li>
-      </ul>
-    </div>
-  </section>
-
   <!-- Team Note -->
   <section class="py-[72px] border-b border-ink/12 bg-bg min-[768px]:py-[88px]" id="ekip-notu" data-i5="note">
     <div class="w-full max-w-site mx-auto px-5 lg:px-8" data-i5="container">

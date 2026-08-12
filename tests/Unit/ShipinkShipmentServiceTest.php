@@ -190,4 +190,69 @@ class ShipinkShipmentServiceTest extends TestCase
         $this->assertFalse($result['success']);
         $this->assertStringContainsString('zaten oluşturulmuş', $result['message']);
     }
+
+    public function test_create_applies_admin_package_override(): void
+    {
+        config([
+            'shipink.username' => 'test-user',
+            'shipink.password' => 'test-pass',
+        ]);
+
+        \App\Models\Setting::saveSingleton([
+            'shipink_warehouse_id' => '11111111-1111-1111-1111-111111111111',
+            'shipink_carrier_account_id' => '22222222-2222-2222-2222-222222222222',
+            'shipink_carrier_provider' => 'own',
+        ]);
+
+        $order = $this->createDomesticOrder([
+            'status' => OrderStatus::PREPARING,
+        ]);
+
+        $carrierAccount = [
+            'id' => '22222222-2222-2222-2222-222222222222',
+            'carrier_id' => 'aras',
+            'provider' => 'own',
+            'status' => 'active',
+            'carrier_services' => [
+                ['id' => 'aras_standart'],
+            ],
+        ];
+
+        $api = Mockery::mock(ShipinkApiService::class);
+        $api->shouldReceive('listCarrierAccounts')->once()->andReturn([$carrierAccount]);
+        $api->shouldReceive('createOrder')->once()->andReturn(['id' => 'order-new']);
+        $api->shouldReceive('createShipment')
+            ->once()
+            ->with(Mockery::on(function (array $payload) {
+                $package = $payload['packages'][0] ?? [];
+
+                return ($package['weight'] ?? null) === 5
+                    && ($package['length'] ?? null) === 30
+                    && ($package['width'] ?? null) === 25
+                    && ($package['height'] ?? null) === 20;
+            }))
+            ->andReturn([
+                'id' => 'shipment-new',
+                'carrier' => ['carrier_id' => 'aras'],
+            ]);
+
+        $warehouse = Mockery::mock(ShipinkWarehouseService::class);
+        $warehouse->shouldReceive('ensureReady')->once();
+
+        $service = new ShipinkShipmentService(
+            $api,
+            app(ShipinkConfigService::class),
+            $warehouse,
+            app(OrderPackageCalculator::class),
+        );
+
+        $result = $service->createShipmentForOrder($order->fresh(), [
+            'weight' => 5,
+            'length' => 30,
+            'width' => 25,
+            'height' => 20,
+        ]);
+
+        $this->assertTrue($result['success']);
+    }
 }

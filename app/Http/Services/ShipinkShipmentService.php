@@ -98,7 +98,7 @@ class ShipinkShipmentService
         }
 
         try {
-            return DB::transaction(function () use ($order) {
+            return DB::transaction(function () use ($order, $packageOverride) {
                 /** @var Order $lockedOrder */
                 $lockedOrder = Order::query()->lockForUpdate()->findOrFail($order->id);
                 $lockedOrder->loadMissing(['user', 'address.city', 'address.county', 'details.product']);
