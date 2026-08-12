@@ -84,26 +84,22 @@ class MailBranding
 
     private static function mediaPathUrl(string $path): string
     {
+        MailUrl::apply();
+
         if (is_file(public_path($path))) {
-            return asset($path);
+            return MailUrl::to(asset($path));
         }
 
-        return route('media.show', ['path' => $path], absolute: true);
+        return MailUrl::route('media.show', ['path' => $path]);
     }
 
     private static function absoluteUrl(string $url): string
     {
         if (Str::startsWith($url, ['http://', 'https://'])) {
-            return $url;
+            return MailUrl::rewriteHost($url);
         }
 
-        $root = rtrim((string) (config('app.asset_url') ?: config('app.url')), '/');
-
-        if (Str::startsWith($url, '/')) {
-            return $root.$url;
-        }
-
-        return $root.'/'.ltrim($url, '/');
+        return MailUrl::to($url);
     }
 
     private static function emailSafeImageUrl(string $url): string

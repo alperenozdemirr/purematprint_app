@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Notifications;
 
+use App\Support\MailUrl;
 use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -15,10 +16,10 @@ class UserResetPasswordNotification extends ResetPassword implements ShouldQueue
 
     public function toMail($notifiable): MailMessage
     {
-        $url = url(route('password.reset', [
+        $url = MailUrl::route('password.reset', [
             'token' => $this->token,
             'email' => $notifiable->getEmailForPasswordReset(),
-        ], false));
+        ]);
 
         return (new MailMessage)
             ->subject('PureMatPrint — Şifre Sıfırlama')

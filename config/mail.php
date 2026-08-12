@@ -131,4 +131,17 @@ return [
         ],
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Mail Application URL
+    |--------------------------------------------------------------------------
+    |
+    | Queued mail jobs may run with a stale APP_URL (e.g. localhost). Set
+    | MAIL_APP_URL in production so links and assets in emails always use
+    | the public site domain.
+    |
+    */
+
+    'app_url' => env('MAIL_APP_URL', env('APP_URL', 'http://localhost')),
+
 ];
