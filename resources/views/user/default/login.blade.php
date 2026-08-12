@@ -53,6 +53,7 @@
               </label>
               <a href="{{ route('password.request') }}" class="text-[13px] font-semibold text-accent underline underline-offset-[3px] hover:text-accent-dark" data-i5="login-forgot">Şifremi unuttum</a>
             </div>
+            @include('partials.turnstile-widget', ['showError' => false])
             <button data-i5="login-submit" data-i5-tags="btn btn--fill login-submit" type="submit" class="inline-flex items-center gap-2 px-6 py-3.5 font-body text-[13px] font-bold uppercase tracking-[0.06em] border-[3px] border-ink transition-[transform,box-shadow,background-color] bg-action text-on-dark shadow-brutal hover:bg-action-hover hover:-translate-x-0.5 hover:-translate-y-0.5 w-full justify-center text-center">Giriş Yap</button>
           </form>
 

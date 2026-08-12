@@ -118,6 +118,11 @@
               </label>
             </div>
 
+            @include('partials.turnstile-widget', [
+                'loadScriptInline' => true,
+                'errorClass' => 'mt-1.5 font-body text-[12px] font-medium text-danger',
+            ])
+
             <button type="submit"
                     class="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-accent px-5 py-3 font-body text-[13px] font-bold uppercase tracking-[0.06em] text-on-dark transition-colors hover:bg-accent-dark">
               <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M15 12H3"/></svg>

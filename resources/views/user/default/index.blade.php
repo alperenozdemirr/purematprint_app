@@ -140,7 +140,7 @@
           <img class="block w-full h-auto" src="{{ $siteSetting->spotlightImageUrl() }}" alt="A-Frame tabela sokak uygulaması" loading="lazy">
         </div>
         <div class="text-center min-[900px]:text-center" data-i5="spotlight__body">
-          <h2 class="font-heading mb-7 text-[clamp(1.5rem,3.5vw,2.5rem)] font-bold leading-tight tracking-[-0.03em] text-balance" data-i5="spotlight__quote">"{{ $siteSetting->spotlightTitleLabel() }}"</h2>
+          <h2 class="font-heading mb-7 text-[clamp(1.5rem,3.5vw,2.5rem)] font-bold leading-tight tracking-[-0.03em] text-balance" data-i5="spotlight__quote">{{ $siteSetting->spotlightTitleLabel() }}</h2>
           <div class="inline-flex items-center justify-center max-w-[160px] mx-auto text-ink opacity-85" data-i5="spotlight__mark"><span class="font-heading text-2xl font-normal tracking-wide uppercase">{{ $siteSetting->spotlightSubtitleLabel() }}</span>
           </div>
         </div>
