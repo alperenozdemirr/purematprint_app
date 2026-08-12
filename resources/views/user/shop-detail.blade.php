@@ -119,20 +119,7 @@
             </div>
           @endif
 
-          <div class="grid grid-cols-3 gap-3 max-[599px]:grid-cols-1 mb-0" data-i5="pdp-trust">
-            <div class="p-3 border-[3px] border-ink bg-bg text-center" data-i5="pdp-trust__item">
-              <strong class="block font-body text-[11px] font-bold uppercase mb-1">3–5 Gün</strong>
-              <span class="text-[11px] text-muted">Teslimat</span>
-            </div>
-            <div class="p-3 border-[3px] border-ink bg-bg text-center" data-i5="pdp-trust__item">
-              <strong class="block font-body text-[11px] font-bold uppercase mb-1">500₺+</strong>
-              <span class="text-[11px] text-muted">Ücretsiz Kargo</span>
-            </div>
-            <div class="p-3 border-[3px] border-ink bg-bg text-center" data-i5="pdp-trust__item">
-              <strong class="block font-body text-[11px] font-bold uppercase mb-1">Prova</strong>
-              <span class="text-[11px] text-muted">Dijital Onay</span>
-            </div>
-          </div>
+          @include('user.partials.pdp-trust-badges')
         </div>
 
         <div class="order-4 min-w-0 max-w-full grid gap-3 mb-9 min-[960px]:order-none min-[960px]:mb-0" data-i5="pdp-actions">
@@ -281,20 +268,7 @@
             </div>
           @endif
 
-          <div class="grid grid-cols-3 gap-3 mb-7 max-[599px]:grid-cols-1" data-i5="pdp-trust">
-            <div class="p-3 border-[3px] border-ink bg-bg text-center" data-i5="pdp-trust__item">
-              <strong class="block font-body text-[11px] font-bold uppercase mb-1">3–5 Gün</strong>
-              <span class="text-[11px] text-muted">Teslimat</span>
-            </div>
-            <div class="p-3 border-[3px] border-ink bg-bg text-center" data-i5="pdp-trust__item">
-              <strong class="block font-body text-[11px] font-bold uppercase mb-1">500₺+</strong>
-              <span class="text-[11px] text-muted">Ücretsiz Kargo</span>
-            </div>
-            <div class="p-3 border-[3px] border-ink bg-bg text-center" data-i5="pdp-trust__item">
-              <strong class="block font-body text-[11px] font-bold uppercase mb-1">Prova</strong>
-              <span class="text-[11px] text-muted">Dijital Onay</span>
-            </div>
-          </div>
+          @include('user.partials.pdp-trust-badges', ['class' => 'mb-7'])
 
           <div class="grid gap-3 mb-9" data-i5="pdp-actions">
             <span class="inline-flex items-center justify-center w-full px-6 py-3.5 font-body text-[13px] font-bold uppercase tracking-[0.06em] text-center border-[3px] border-ink bg-cream text-muted cursor-not-allowed">Stokta Yok</span>
@@ -335,6 +309,8 @@
         </div>
       </div>
     @endif
+
+    @include('user.partials.pdp-faq-section')
 
     @if ($productReviews->isNotEmpty())
       <section class="pt-16 border-t-[3px] border-ink mt-16" aria-labelledby="urun-yorumlari-baslik" data-i5="pdp-reviews">

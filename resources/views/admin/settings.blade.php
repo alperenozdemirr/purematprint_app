@@ -110,6 +110,26 @@
             @error('shipping_free_limit') <p class="mt-1.5 font-body text-[12px] font-medium text-danger">{{ $message }}</p> @enderror
           </div>
         </div>
+
+        <div class="grid gap-5 md:grid-cols-2">
+          <div>
+            <label for="shipping_duration_text" class="mb-1.5 block font-body text-[13px] font-bold text-ink">Kargolama Süresi Metni</label>
+            <input type="text" id="shipping_duration_text" name="shipping_duration_text" value="{{ old('shipping_duration_text', $setting->shipping_duration_text) }}"
+                   class="w-full rounded-lg border border-ink/10 bg-cream px-3.5 py-2.5 font-body text-[14px] text-ink outline-none focus:border-accent focus:ring-2 focus:ring-accent/15"
+                   placeholder="Boş bırakılırsa: 3–5 Gün">
+            <p class="mt-1.5 font-body text-[12px] text-muted">Ürün detay ve kargo açıklamasında kargoya verilme süresi.</p>
+            @error('shipping_duration_text') <p class="mt-1.5 font-body text-[12px] font-medium text-danger">{{ $message }}</p> @enderror
+          </div>
+
+          <div>
+            <label for="delivery_time_text" class="mb-1.5 block font-body text-[13px] font-bold text-ink">Teslimat Süresi Metni</label>
+            <input type="text" id="delivery_time_text" name="delivery_time_text" value="{{ old('delivery_time_text', $setting->delivery_time_text) }}"
+                   class="w-full rounded-lg border border-ink/10 bg-cream px-3.5 py-2.5 font-body text-[14px] text-ink outline-none focus:border-accent focus:ring-2 focus:ring-accent/15"
+                   placeholder="Boş bırakılırsa: 1–5 Gün">
+            <p class="mt-1.5 font-body text-[12px] text-muted">Ürün detay sayfasındaki teslimat rozeti metni.</p>
+            @error('delivery_time_text') <p class="mt-1.5 font-body text-[12px] font-medium text-danger">{{ $message }}</p> @enderror
+          </div>
+        </div>
       </div>
     </section>
 

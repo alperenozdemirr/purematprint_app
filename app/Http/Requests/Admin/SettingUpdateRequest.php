@@ -50,6 +50,8 @@ class SettingUpdateRequest extends FormRequest
             'shipping_fee' => ['nullable', 'numeric', 'min:0', 'required_if:shipping_mode,paid'],
             'shipping_free_limit_enabled' => ['boolean'],
             'shipping_free_limit' => ['nullable', 'numeric', 'min:0', 'required_if:shipping_free_limit_enabled,1'],
+            'shipping_duration_text' => ['nullable', 'string', 'max:120'],
+            'delivery_time_text' => ['nullable', 'string', 'max:120'],
             'email' => ['nullable', 'email', 'max:255'],
             'order_notification_emails' => ['nullable', 'array', 'max:4'],
             'order_notification_emails.*' => ['nullable', 'email', 'max:255'],

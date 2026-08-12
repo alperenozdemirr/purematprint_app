@@ -26,6 +26,8 @@ class Setting extends Model
         'shipping_fee',
         'shipping_free_limit_enabled',
         'shipping_free_limit',
+        'shipping_duration_text',
+        'delivery_time_text',
         'email',
         'order_notification_emails',
         'address',
@@ -184,10 +186,55 @@ class Setting extends Model
         return null;
     }
 
-    public function shippingDetailText(): string
+    public function deliveryTimeLabel(): string
+    {
+        return filled($this->delivery_time_text)
+            ? (string) $this->delivery_time_text
+            : '1–5 Gün';
+    }
+
+    public function shippingDurationLabel(): string
+    {
+        return filled($this->shipping_duration_text)
+            ? (string) $this->shipping_duration_text
+            : '3–5 Gün';
+    }
+
+    /**
+     * @return array{title: string, subtitle: string}
+     */
+    public function shippingTrustBadge(): array
     {
         if ($this->shipping_mode === ShippingMode::FREE) {
-            return 'Tüm siparişlerde ücretsiz kargo uygulanır.';
+            return [
+                'title' => 'Ücretsiz',
+                'subtitle' => 'Kargo',
+            ];
+        }
+
+        if (
+            $this->shipping_free_limit_enabled
+            && $this->shipping_free_limit !== null
+            && (float) $this->shipping_free_limit > 0
+        ) {
+            return [
+                'title' => number_format((float) $this->shipping_free_limit, 0, ',', '.').'₺+',
+                'subtitle' => 'Ücretsiz Kargo',
+            ];
+        }
+
+        return [
+            'title' => number_format((float) $this->shipping_fee, 0, ',', '.').'₺',
+            'subtitle' => 'Kargo Ücreti',
+        ];
+    }
+
+    public function shippingDetailText(): string
+    {
+        $duration = $this->shippingDurationLabel();
+
+        if ($this->shipping_mode === ShippingMode::FREE) {
+            return "Tüm siparişlerde ücretsiz kargo uygulanır. Standart siparişler {$duration} içinde kargoya verilir.";
         }
 
         $fee = number_format((float) $this->shipping_fee, 0, ',', '.').'₺';
@@ -199,10 +246,10 @@ class Setting extends Model
         ) {
             $limit = number_format((float) $this->shipping_free_limit, 0, ',', '.').'₺';
 
-            return "Standart siparişler 3–5 iş günü içinde kargoya verilir. {$limit} üzeri siparişlerde kargo ücretsizdir; altında {$fee} kargo ücreti uygulanır.";
+            return "Standart siparişler {$duration} içinde kargoya verilir. {$limit} üzeri siparişlerde kargo ücretsizdir; altında {$fee} kargo ücreti uygulanır.";
         }
 
-        return "Standart siparişler 3–5 iş günü içinde kargoya verilir. Tüm siparişlerde {$fee} kargo ücreti uygulanır.";
+        return "Standart siparişler {$duration} içinde kargoya verilir. Tüm siparişlerde {$fee} kargo ücreti uygulanır.";
     }
 
     /**

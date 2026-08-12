@@ -64,6 +64,12 @@ class SettingController extends Controller
             'shipping_free_limit' => $shippingMode === ShippingMode::PAID && $freeLimitEnabled
                 ? ($validated['shipping_free_limit'] ?? null)
                 : null,
+            'shipping_duration_text' => filled($validated['shipping_duration_text'] ?? null)
+                ? trim((string) $validated['shipping_duration_text'])
+                : null,
+            'delivery_time_text' => filled($validated['delivery_time_text'] ?? null)
+                ? trim((string) $validated['delivery_time_text'])
+                : null,
             'email' => $validated['email'] ?? null,
             'order_notification_emails' => $notificationEmails !== [] ? $notificationEmails : null,
             'address' => $validated['address'] ?? null,

@@ -10,6 +10,7 @@ use App\Http\Requests\User\ProductIndexRequest;
 use App\Http\Services\FlexSearchService;
 use App\Models\Category;
 use App\Models\Collection;
+use App\Models\Faq;
 use App\Models\Product;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -96,12 +97,18 @@ class ProductController extends Controller
         $defaultPropertySelections = app(\App\Http\Services\ProductPropertySelectionService::class)
             ->defaultSelections($product);
 
+        $homepageFaqs = Faq::query()
+            ->fixed()
+            ->ordered()
+            ->get();
+
         return view('user.shop-detail', compact(
             'product',
             'categoryFilter',
             'relatedProducts',
             'productReviews',
             'defaultPropertySelections',
+            'homepageFaqs',
         ));
     }
 

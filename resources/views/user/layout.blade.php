@@ -343,16 +343,16 @@
         </nav>
       </div>
       <div class="flex flex-col gap-6 pt-7 min-[768px]:flex-row min-[768px]:items-center min-[768px]:justify-between min-[768px]:gap-8" data-i5="footer__lower">
-        <div class="flex items-center" aria-label="Ödeme yöntemleri" data-i5="footer__payments">
+        <div class="flex items-center justify-center min-[768px]:justify-start" aria-label="Ödeme yöntemleri" data-i5="footer__payments">
           <img src="{{ asset('shared_directory/iyzico-band.png') }}" alt="iyzico ile güvenli ödeme" class="h-6 w-auto max-w-[235px] object-contain opacity-90" loading="lazy" width="235" height="auto">
         </div>
         <div class="flex flex-col gap-2.5 min-[768px]:flex-row min-[768px]:flex-wrap min-[768px]:items-center min-[768px]:justify-end min-[768px]:gap-x-5 min-[768px]:gap-y-2.5" data-i5="footer__meta">
           @if ($siteSetting->short_info)
-            <p class="m-0 text-xs opacity-[0.72] max-w-[48ch] min-[768px]:text-right">{{ $siteSetting->short_info }}</p>
+            <p class="m-0 text-xs opacity-[0.72] max-w-[48ch] text-center min-[768px]:text-right">{{ $siteSetting->short_info }}</p>
           @endif
-          <p class="m-0 text-xs opacity-[0.55]" data-i5="footer__copy">&copy; 2026 PureMatPrint</p>
+          <p class="m-0 text-xs opacity-[0.55] text-center min-[768px]:text-left" data-i5="footer__copy">&copy; 2026 PureMatPrint</p>
           @if ($siteSetting->instagram_url || $siteSetting->twitter_url || $siteSetting->facebook_url)
-            <nav class="flex flex-wrap items-center gap-x-4 gap-y-2 [&_a]:text-[11px] [&_a]:text-on-dark/50 [&_a]:transition-colors hover:[&_a]:text-on-dark" aria-label="Sosyal medya">
+            <nav class="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 min-[768px]:justify-end [&_a]:text-[11px] [&_a]:text-on-dark/50 [&_a]:transition-colors hover:[&_a]:text-on-dark" aria-label="Sosyal medya">
               @if ($siteSetting->instagram_url)
                 <a href="{{ $siteSetting->instagram_url }}" target="_blank" rel="noopener noreferrer">Instagram</a>
               @endif
@@ -364,14 +364,18 @@
               @endif
             </nav>
           @endif
-          <nav class="flex flex-wrap items-center gap-x-4 gap-y-2 [&_a]:text-[11px] [&_a]:text-on-dark/50 [&_a]:transition-colors hover:[&_a]:text-on-dark" aria-label="Yasal" data-i5="footer__legal">
+          <nav class="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 min-[768px]:justify-end [&_a]:text-[11px] [&_a]:text-on-dark/50 [&_a]:transition-colors hover:[&_a]:text-on-dark" aria-label="Yasal" data-i5="footer__legal">
             <a href="{{ route('agreements') }}">Sözleşmeler</a>
             <a href="{{ route('agreements') }}#kvkk-aydinlatma">KVKK</a>
             <a href="{{ route('agreements') }}#gizlilik-politikasi">Gizlilik</a>
             <a href="{{ route('cookies') }}">Çerez Politikası</a>
             <a href="{{ route('agreements') }}#mesafeli-satis-sozlesmesi">Mesafeli Satış</a>
-            <a href="https://softxplorers.com/" target="_blank" rel="noopener noreferrer">SoftXplorers</a>
+            <span class="hidden min-[768px]:inline text-on-dark/50" aria-hidden="true">·</span>
+            <a href="https://softxplorers.com/" target="_blank" rel="noopener noreferrer" class="hidden min-[768px]:inline">SoftXplorers</a>
           </nav>
+          <p class="m-0 min-[768px]:hidden text-center">
+            <a href="https://softxplorers.com/" target="_blank" rel="noopener noreferrer" class="text-[11px] text-on-dark/50 transition-colors hover:text-on-dark">SoftXplorers</a>
+          </p>
         </div>
       </div>
     </div>
