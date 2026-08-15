@@ -152,6 +152,7 @@ Route::group(['prefix' => 'admin/', 'middleware' => 'admin'], function () {
     Route::post('products/update', [AdminProductController::class, 'update'])->name('admin.productUpdate');
     Route::get('products/image/{imageId}/delete', [AdminProductController::class, 'imageDelete'])->name('admin.productImageDelete');
     Route::get('products/{id}/delete', [AdminProductController::class, 'destroy'])->name('admin.productDelete');
+    Route::get('products/{id}/deactivate', [AdminProductController::class, 'deactivate'])->name('admin.productDeactivate');
     Route::post('products/{productId}/property-groups', [AdminProductPropertyController::class, 'storeGroup'])->name('admin.productPropertyGroupStore');
     Route::post('products/{productId}/property-groups/with-items', [AdminProductPropertyController::class, 'storeGroupWithItems'])->name('admin.productPropertyGroupWithItemsStore');
     Route::post('property-groups/{groupId}/update', [AdminProductPropertyController::class, 'updateGroup'])->name('admin.productPropertyGroupUpdate');
@@ -209,6 +210,7 @@ Route::group(['prefix' => 'admin/', 'middleware' => 'admin'], function () {
     Route::get('users', [AdminUserController::class, 'index'])->name('admin.userList');
     Route::post('users/update', [AdminUserController::class, 'update'])->name('admin.userUpdate');
     Route::get('users/{id}/delete', [AdminUserController::class, 'destroy'])->name('admin.userDelete');
+    Route::get('users/{id}/deactivate', [AdminUserController::class, 'deactivate'])->name('admin.userDeactivate');
     Route::get('users/{id}', [AdminUserController::class, 'show'])->name('admin.userDetailPage');
 
     Route::get('blogs', [AdminBlogController::class, 'index'])->name('admin.blogList');

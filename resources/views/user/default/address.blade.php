@@ -45,7 +45,11 @@
           </div>
           <div class="flex flex-wrap gap-2 px-4 py-3 border-t-[3px] border-ink" data-i5="address-card__actions">
             <a href="{{ route('addressEditPage', $address->id) }}" class="font-body text-[10px] font-bold uppercase tracking-[0.04em] px-3 py-2 border-[3px] border-ink shadow-brutal-sm bg-surface transition-colors inline-flex items-center justify-center hover:bg-hover" data-i5="address-card__btn">Düzenle</a>
+            @if ($address->shipping_orders_exists || $address->invoice_orders_exists)
+            <span class="font-body text-[10px] font-semibold uppercase tracking-[0.04em] px-3 py-2 text-muted" title="Siparişte kullanılan adresler silinemez">Siparişte kullanılıyor</span>
+            @else
             <a href="{{ route('addressDelete', $address->id) }}" class="font-body text-[10px] font-bold uppercase tracking-[0.04em] px-3 py-2 border-[3px] border-ink shadow-brutal-sm bg-surface transition-colors inline-flex items-center justify-center hover:bg-hover text-announce hover:bg-[rgba(182,29,15,0.08)]" data-i5="address-card__btn--danger" onclick="return confirm('Bu adresi silmek istediğinize emin misiniz?')">Sil</a>
+            @endif
           </div>
         </article>
         @empty

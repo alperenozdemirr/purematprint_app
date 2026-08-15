@@ -58,6 +58,7 @@ class AccountController extends Controller
         $addresses = Address::query()
             ->with(['city', 'county'])
             ->where('user_id', auth()->id())
+            ->withExists(['shippingOrders', 'invoiceOrders'])
             ->latest()
             ->get();
 
@@ -120,10 +121,17 @@ class AccountController extends Controller
 
     public function addressDestroy(int $id): RedirectResponse
     {
-        Address::query()
+        $address = Address::query()
             ->where('user_id', auth()->id())
-            ->where('id', $id)
-            ->delete();
+            ->findOrFail($id);
+
+        if ($address->isLinkedToOrder()) {
+            return redirect()
+                ->route('addressList')
+                ->with('error', 'Bu adres en az bir siparişte kullanıldığı için silinemez. Gerekirse düzenleyebilirsiniz.');
+        }
+
+        $address->delete();
 
         return redirect()
             ->route('addressList')

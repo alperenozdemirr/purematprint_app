@@ -5,29 +5,19 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Admin\User;
 
 use App\Enums\Status;
-use App\Enums\UserType;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\UserIndexRequest;
 use App\Http\Requests\Admin\UserUpdateRequest;
-use App\Enums\ContentType;
-use App\Http\Services\FileService;
-use App\Models\Address;
-use App\Models\Comment;
-use App\Models\EmailVerification;
-use App\Models\File;
-use App\Models\Order;
-use App\Models\OrderDetail;
-use App\Models\Payment;
-use App\Models\ShoppingCart;
+use App\Http\Services\UserDeletionService;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
+use RuntimeException;
 
 class UserController extends Controller
 {
-    public function __construct(protected FileService $fileService)
+    public function __construct(protected UserDeletionService $userDeletionService)
     {
     }
 
@@ -42,9 +32,9 @@ class UserController extends Controller
         if (! empty($validated['q'])) {
             $search = $validated['q'];
             $query->where(function ($builder) use ($search) {
-                $builder->where('name', 'like', '%' . $search . '%')
-                    ->orWhere('email', 'like', '%' . $search . '%')
-                    ->orWhere('phone', 'like', '%' . $search . '%');
+                $builder->where('name', 'like', '%'.$search.'%')
+                    ->orWhere('email', 'like', '%'.$search.'%')
+                    ->orWhere('phone', 'like', '%'.$search.'%');
             });
         }
 
@@ -57,7 +47,7 @@ class UserController extends Controller
         }
 
         $users = $query->paginate(15)->withQueryString();
-        $userTypes = UserType::cases();
+        $userTypes = \App\Enums\UserType::cases();
         $userStatuses = Status::cases();
 
         return view('admin.user-list', compact('users', 'userTypes', 'userStatuses'));
@@ -75,7 +65,7 @@ class UserController extends Controller
             ->findOrFail($id);
 
         $totalSpent = $user->orders()->sum('total');
-        $userTypes = UserType::cases();
+        $userTypes = \App\Enums\UserType::cases();
         $userStatuses = Status::cases();
 
         return view('admin.user-detail', compact('user', 'totalSpent', 'userTypes', 'userStatuses'));
@@ -92,22 +82,49 @@ class UserController extends Controller
                 return back()->with('error', 'Kendi hesabınızı pasife alamazsınız.');
             }
 
-            if ($validated['type'] !== UserType::ADMIN->value) {
+            if ($validated['type'] !== \App\Enums\UserType::ADMIN->value) {
                 return back()->with('error', 'Kendi hesabınızın rolünü değiştiremezsiniz.');
             }
         }
 
-        $payload = [
+        $wasActive = $user->status === Status::ACTIVE;
+
+        $user->update([
             'name' => $validated['name'],
             'phone' => $validated['phone'],
             'type' => $validated['type'],
             'status' => $validated['status'],
-        ];
+        ]);
 
-        $user->update($payload);
+        if ($wasActive && $user->status === Status::PASSIVE) {
+            $this->userDeletionService->clearPersonalDataOnDeactivation($user->fresh());
+        }
 
         return redirect()->route('admin.userDetailPage', $user->id)
             ->with('success', 'Kullanıcı başarıyla güncellendi.');
+    }
+
+    public function deactivate(int $id): RedirectResponse
+    {
+        $user = User::query()->findOrFail($id);
+
+        if ($user->id === Auth::guard('admin')->id()) {
+            return redirect()
+                ->route('admin.userDetailPage', $user->id)
+                ->with('error', 'Kendi hesabınızı pasife alamazsınız.');
+        }
+
+        if (! $this->userDeletionService->hasOrderHistory($user)) {
+            return redirect()
+                ->route('admin.userDetailPage', $user->id)
+                ->with('error', 'Siparişi olmayan kullanıcı pasife alınmak yerine silinebilir.');
+        }
+
+        $this->userDeletionService->deactivate($user);
+
+        return redirect()
+            ->route('admin.userDetailPage', $user->id)
+            ->with('success', 'Kullanıcı pasife alındı. Sepeti temizlendi ve yorumları gizlendi; sipariş kayıtları korundu.');
     }
 
     public function destroy(int $id): RedirectResponse
@@ -120,48 +137,22 @@ class UserController extends Controller
                 ->with('error', 'Kendi hesabınızı silemezsiniz.');
         }
 
-        DB::transaction(function () use ($user) {
-            $orderIds = Order::query()
-                ->where('user_id', $user->id)
-                ->pluck('id');
+        if ($this->userDeletionService->hasOrderHistory($user)) {
+            return redirect()
+                ->route('admin.userDetailPage', $user->id)
+                ->with('error', 'Bu kullanıcının sipariş geçmişi var. Silinemez; pasife alabilirsiniz.');
+        }
 
-            if ($orderIds->isNotEmpty()) {
-                $orderDetailIds = OrderDetail::query()
-                    ->whereIn('order_id', $orderIds)
-                    ->pluck('id');
-
-                if ($orderDetailIds->isNotEmpty()) {
-                    Comment::query()
-                        ->whereIn('order_detail_id', $orderDetailIds)
-                        ->delete();
-                }
-
-                OrderDetail::query()->whereIn('order_id', $orderIds)->delete();
-                Payment::query()->whereIn('order_id', $orderIds)->delete();
-                Order::query()->whereIn('id', $orderIds)->delete();
-            }
-
-            Comment::query()->where('user_id', $user->id)->delete();
-            Payment::query()->where('user_id', $user->id)->delete();
-            ShoppingCart::query()->where('user_id', $user->id)->delete();
-            Address::query()->where('user_id', $user->id)->delete();
-            EmailVerification::query()->where('email', $user->email)->delete();
-
-            File::query()
-                ->where('user_id', $user->id)
-                ->pluck('id')
-                ->each(fn (int $fileId) => $this->fileService->imageDelete($fileId, ContentType::USER));
-
-            if ($user->image_id) {
-                $this->fileService->imageDelete($user->image_id, ContentType::USER);
-            }
-
-            $user->tokens()->delete();
-            $user->delete();
-        });
+        try {
+            $this->userDeletionService->deleteFully($user);
+        } catch (RuntimeException $exception) {
+            return redirect()
+                ->route('admin.userDetailPage', $user->id)
+                ->with('error', $exception->getMessage());
+        }
 
         return redirect()
             ->route('admin.userList')
-            ->with('success', 'Kullanıcı ve ilişkili tüm veriler silindi.');
+            ->with('success', 'Kullanıcı ve ilişkili kişisel veriler kalıcı olarak silindi.');
     }
 }

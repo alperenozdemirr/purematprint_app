@@ -108,9 +108,17 @@
                   <a href="{{ route('admin.productEditPage', $product->slug) }}" aria-label="Düzenle" class="flex h-9 w-9 items-center justify-center rounded-lg bg-cream text-ink transition-colors hover:bg-accent hover:text-on-dark">
                     <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 20h9M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>
                   </a>
-                  <a href="{{ route('admin.productDelete', $product->id) }}" aria-label="Sil" onclick="return confirm('Bu ürünü silmek istediğinize emin misiniz?')" class="flex h-9 w-9 items-center justify-center rounded-lg bg-cream text-ink transition-colors hover:bg-danger hover:text-on-dark">
-                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m2 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg>
-                  </a>
+                  @if ($product->order_details_count > 0)
+                    @if ($product->status?->value === 'active')
+                      <a href="{{ route('admin.productDeactivate', $product->id) }}" aria-label="Pasife al" onclick="return confirm('Bu ürün siparişlerde kullanıldığı için silinemez. Pasife almak istiyor musunuz?')" class="flex h-9 w-9 items-center justify-center rounded-lg bg-cream text-ink transition-colors hover:bg-warning hover:text-on-dark" title="Pasife al">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 12H6"/></svg>
+                      </a>
+                    @endif
+                  @else
+                    <a href="{{ route('admin.productDelete', $product->id) }}" aria-label="Sil" onclick="return confirm('Bu ürün kalıcı olarak silinecek (görseller, sepet kayıtları, yorumlar dahil). Emin misiniz?')" class="flex h-9 w-9 items-center justify-center rounded-lg bg-cream text-ink transition-colors hover:bg-danger hover:text-on-dark" title="Sil">
+                      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m2 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg>
+                    </a>
+                  @endif
                 </div>
               </td>
             </tr>

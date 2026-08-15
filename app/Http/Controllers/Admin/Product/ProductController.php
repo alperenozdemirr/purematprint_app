@@ -11,6 +11,7 @@ use App\Http\Requests\Admin\ProductIndexRequest;
 use App\Http\Requests\Admin\ProductStoreRequest;
 use App\Http\Requests\Admin\ProductUpdateRequest;
 use App\Http\Services\FileService;
+use App\Http\Services\ProductDeletionService;
 use App\Models\Category;
 use App\Models\File;
 use App\Models\Product;
@@ -19,11 +20,14 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
+use RuntimeException;
 
 class ProductController extends Controller
 {
-    public function __construct(protected FileService $fileService)
-    {
+    public function __construct(
+        protected FileService $fileService,
+        protected ProductDeletionService $productDeletionService,
+    ) {
     }
 
     public function index(ProductIndexRequest $request): View
@@ -32,6 +36,7 @@ class ProductController extends Controller
 
         $query = Product::query()
             ->with(['category', 'images'])
+            ->withCount('orderDetails')
             ->latest();
 
         if (! empty($validated['q'])) {
@@ -155,17 +160,40 @@ class ProductController extends Controller
             ->with('success', 'Ürün başarıyla güncellendi.');
     }
 
-    public function destroy(int $id): RedirectResponse
+    public function deactivate(int $id): RedirectResponse
     {
         $product = Product::query()->findOrFail($id);
 
-        foreach ($product->images as $image) {
-            $this->fileService->imageDelete($image->id, ContentType::PRODUCT);
+        $this->productDeletionService->deactivate($product);
+
+        return redirect()
+            ->route('admin.productList')
+            ->with('success', 'Ürün pasife alındı. Vitrinde görünmez; mevcut sipariş kayıtları korunur.');
+    }
+
+    public function destroy(int $id): RedirectResponse
+    {
+        $product = Product::query()
+            ->with(['images'])
+            ->findOrFail($id);
+
+        if ($this->productDeletionService->hasOrderHistory($product)) {
+            return redirect()
+                ->route('admin.productList')
+                ->with('error', 'Bu ürün siparişlerde kullanıldığı için silinemez. Pasife alarak vitrinden kaldırabilirsiniz.');
         }
 
-        $product->delete();
+        try {
+            $this->productDeletionService->deleteFully($product);
+        } catch (RuntimeException $exception) {
+            return redirect()
+                ->route('admin.productList')
+                ->with('error', $exception->getMessage());
+        }
 
-        return redirect()->route('admin.productList')->with('success', 'Ürün başarıyla silindi.');
+        return redirect()
+            ->route('admin.productList')
+            ->with('success', 'Ürün ve tüm bağlantıları kalıcı olarak silindi.');
     }
 
     public function imageDelete(int $imageId): RedirectResponse

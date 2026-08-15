@@ -161,11 +161,21 @@
         </button>
 
         @if ($user->id !== auth('admin')->id())
-        <a href="{{ route('admin.userDelete', $user->id) }}"
-           onclick="return confirm('Bu kullanıcıyı ve tüm sipariş, adres, sepet, yorum ve ödeme kayıtlarını kalıcı olarak silmek istediğinize emin misiniz?')"
-           class="inline-flex w-full items-center justify-center rounded-lg border border-danger/30 px-5 py-3 font-body text-[13px] font-bold uppercase tracking-[0.06em] text-danger transition-colors hover:bg-danger/5">
-          Kullanıcıyı Sil
-        </a>
+          @if ($user->orders_count > 0)
+            @if ($user->status?->value === 'active')
+              <a href="{{ route('admin.userDeactivate', $user->id) }}"
+                 onclick="return confirm('Bu kullanıcı pasife alınacak. Giriş yapamaz; sepeti silinir ve yorumları gizlenir. Sipariş kayıtları korunur. Emin misiniz?')"
+                 class="inline-flex w-full items-center justify-center rounded-lg border border-warning/40 px-5 py-3 font-body text-[13px] font-bold uppercase tracking-[0.06em] text-warning transition-colors hover:bg-warning/5">
+                Pasife Al
+              </a>
+            @endif
+          @else
+            <a href="{{ route('admin.userDelete', $user->id) }}"
+               onclick="return confirm('Bu kullanıcı kalıcı olarak silinecek (adres, sepet, yorumlar dahil). Emin misiniz?')"
+               class="inline-flex w-full items-center justify-center rounded-lg border border-danger/30 px-5 py-3 font-body text-[13px] font-bold uppercase tracking-[0.06em] text-danger transition-colors hover:bg-danger/5">
+              Kullanıcıyı Sil
+            </a>
+          @endif
         @endif
       </div>
     </form>
