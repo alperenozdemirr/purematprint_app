@@ -6,6 +6,7 @@ namespace App\Http\Controllers\User\Order;
 
 use App\Enums\PaymentProvider;
 use App\Enums\Status;
+use App\Http\Services\Exceptions\ExchangeRateUnavailableException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\User\CheckoutStoreRequest;
 use App\Http\Requests\User\OrderCustomerFileUploadRequest;
@@ -214,7 +215,16 @@ class OrderController extends Controller
                 ->with('error', 'Ödeme yapabilmek için en az bir teslimat adresi ekleyin.');
         }
 
-        $summary = $this->pricingService->calculate($cartItems, $user);
+        $selectedAddressId = (int) old('address_id', $addresses->first()?->id);
+        $selectedAddress = $addresses->firstWhere('id', $selectedAddressId) ?? $addresses->first();
+
+        $pricingByAddress = [];
+        foreach ($addresses as $address) {
+            $pricingByAddress[(string) $address->id] = $this->pricingService->calculate($cartItems, $user, $address);
+        }
+
+        $summary = $pricingByAddress[(string) $selectedAddress->id]
+            ?? $this->pricingService->calculate($cartItems, $user, $selectedAddress);
 
         $resolvedByCartId = [];
         foreach ($cartItems as $item) {
@@ -226,6 +236,7 @@ class OrderController extends Controller
             'addresses' => $addresses,
             'user' => $user,
             'resolvedByCartId' => $resolvedByCartId,
+            'pricingByAddress' => $pricingByAddress,
             ...$summary,
         ]);
     }
@@ -270,14 +281,18 @@ class OrderController extends Controller
             }
         }
 
-        $summary = $this->pricingService->calculate($cartItems, $user);
-
         $address = Address::query()
             ->with(['city', 'county'])
             ->where('user_id', $user->id)
             ->findOrFail($addressId);
 
+        $summary = $this->pricingService->calculate($cartItems, $user, $address);
+
         if ($address->isInternational()) {
+            if (! empty($summary['exchangeRateUnavailable'])) {
+                return back()->with('error', (new ExchangeRateUnavailableException())->getMessage());
+            }
+
             return $this->checkoutWithStripe($request, $user, $address, $cartItems, $summary, $addressId, $note, $invoiceAttributes, $designType);
         }
 

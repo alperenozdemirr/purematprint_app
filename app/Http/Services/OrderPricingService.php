@@ -7,6 +7,8 @@ namespace App\Http\Services;
 use App\Enums\DiscountScope;
 use App\Enums\DiscountType;
 use App\Enums\ShippingMode;
+use App\Http\Services\Exceptions\ExchangeRateUnavailableException;
+use App\Models\Address;
 use App\Models\Order;
 use App\Models\Setting;
 use App\Models\ShoppingCart;
@@ -15,11 +17,13 @@ use Illuminate\Validation\ValidationException;
 
 class OrderPricingService
 {
-    public function __construct(protected ProductPropertySelectionService $propertySelection)
-    {
+    public function __construct(
+        protected ProductPropertySelectionService $propertySelection,
+        protected CurrencyConversionService $currencyConversion,
+    ) {
     }
 
-    public function calculate(iterable $cartItems, ?User $user = null): array
+    public function calculate(iterable $cartItems, ?User $user = null, ?Address $address = null): array
     {
         $settings = Setting::current();
 
@@ -54,10 +58,19 @@ class OrderPricingService
 
         $discountedSubtotal = max(0, $subtotal - $discountAmount);
 
-        $shipping = $this->calculateShipping($settings, $subtotal, $totalQty > 0);
+        $isInternational = $address?->isInternational() ?? false;
+
+        $shipping = $this->calculateShipping(
+            $settings,
+            $subtotal,
+            $totalQty > 0,
+            $isInternational,
+            $user,
+        );
+
         $total = $discountedSubtotal + $shipping['shippingCost'];
 
-        return [
+        $result = [
             'subtotal' => $subtotal,
             'discountApplied' => $discountApplied,
             'discountType' => $discountType?->value,
@@ -69,7 +82,29 @@ class OrderPricingService
             'shippingRemaining' => $shipping['shippingRemaining'],
             'totalQty' => $totalQty,
             'total' => $total,
+            'isInternational' => $isInternational,
         ];
+
+        if ($isInternational) {
+            try {
+                $fxRate = $this->currencyConversion->eurPerTry();
+
+                $result['chargeCurrency'] = 'EUR';
+                $result['fxRate'] = $fxRate;
+                $result['eurToTry'] = $this->currencyConversion->eurToTry();
+                $result['chargeSubtotal'] = $this->currencyConversion->tryToEur($discountedSubtotal);
+                $result['chargeShippingCost'] = $this->currencyConversion->tryToEur($shipping['shippingCost']);
+                $result['chargeTotal'] = $this->currencyConversion->quoteCartEurTotal(
+                    $cartItems,
+                    $result,
+                    fn ($item) => $this->unitPriceForCartItem($item),
+                );
+            } catch (ExchangeRateUnavailableException) {
+                $result['exchangeRateUnavailable'] = true;
+            }
+        }
+
+        return $result;
     }
 
     public function unitPriceForCartItem(ShoppingCart $item): float
@@ -97,12 +132,45 @@ class OrderPricingService
     /**
      * @return array{shippingFree: bool, shippingCost: float, shippingRemaining: float}
      */
-    private function calculateShipping(Setting $settings, float $subtotal, bool $hasItems): array
-    {
+    private function calculateShipping(
+        Setting $settings,
+        float $subtotal,
+        bool $hasItems,
+        bool $isInternational,
+        ?User $user,
+    ): array {
         if (! $hasItems) {
             return [
                 'shippingFree' => true,
                 'shippingCost' => 0.0,
+                'shippingRemaining' => 0.0,
+            ];
+        }
+
+        if ($settings->shipping_first_order_free && $user !== null) {
+            $hasPreviousOrder = Order::query()->where('user_id', $user->id)->exists();
+
+            if (! $hasPreviousOrder) {
+                return [
+                    'shippingFree' => true,
+                    'shippingCost' => 0.0,
+                    'shippingRemaining' => 0.0,
+                ];
+            }
+        }
+
+        if ($isInternational) {
+            if ($settings->international_shipping_mode === ShippingMode::FREE) {
+                return [
+                    'shippingFree' => true,
+                    'shippingCost' => 0.0,
+                    'shippingRemaining' => 0.0,
+                ];
+            }
+
+            return [
+                'shippingFree' => false,
+                'shippingCost' => (float) $settings->international_shipping_fee,
                 'shippingRemaining' => 0.0,
             ];
         }

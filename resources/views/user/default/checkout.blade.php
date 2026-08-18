@@ -231,33 +231,45 @@
           </div>
 
           @if ($shippingFree)
-          <div class="mb-6 p-4 bg-bg border-[3px] border-ink text-xs font-semibold uppercase tracking-[0.04em] text-accent">Ücretsiz kargo kazandınız!</div>
+          <div id="checkout-shipping-banner" class="mb-6 p-4 bg-bg border-[3px] border-ink text-xs font-semibold uppercase tracking-[0.04em] text-accent">Ücretsiz kargo kazandınız!</div>
           @elseif ($shippingRemaining > 0)
-          <div class="mb-6 p-4 bg-bg border-[3px] border-ink text-xs font-semibold uppercase tracking-[0.04em]">Ücretsiz kargo için {{ number_format($shippingRemaining, 0, ',', '.') }} ₺ daha ekleyin</div>
+          <div id="checkout-shipping-banner" class="mb-6 p-4 bg-bg border-[3px] border-ink text-xs font-semibold uppercase tracking-[0.04em]">Ücretsiz kargo için {{ number_format($shippingRemaining, 0, ',', '.') }} ₺ daha ekleyin</div>
+          @else
+          <div id="checkout-shipping-banner" class="mb-6 hidden"></div>
           @endif
 
           <div class="flex justify-between gap-4 text-sm mb-3 text-muted">
             <span>Ara Toplam</span>
-            <span>{{ number_format($subtotal, 0, ',', '.') }} ₺</span>
+            <span id="checkout-subtotal">{{ number_format($subtotal, 0, ',', '.') }} ₺</span>
           </div>
           @if ($discountApplied)
-          <div class="flex justify-between gap-4 text-sm mb-3 text-accent">
+          <div id="checkout-discount-row" class="flex justify-between gap-4 text-sm mb-3 text-accent">
             <span>İndirim</span>
-            <span>-{{ number_format($discountAmount, 0, ',', '.') }} ₺</span>
+            <span id="checkout-discount">-{{ number_format($discountAmount, 0, ',', '.') }} ₺</span>
           </div>
+          @else
+          <div id="checkout-discount-row" class="hidden"></div>
           @endif
           <div class="flex justify-between gap-4 text-sm mb-3 text-muted">
             <span>Kargo</span>
-            <span>{{ $shippingFree ? 'Ücretsiz' : number_format($shippingCost, 0, ',', '.').' ₺' }}</span>
+            <span id="checkout-shipping">{{ $shippingFree ? 'Ücretsiz' : number_format($shippingCost, 0, ',', '.').' ₺' }}</span>
           </div>
           <div class="flex justify-between gap-4 font-body text-xl font-bold mt-4 pt-4 border-t-[3px] border-ink">
-            <span>Toplam</span>
-            <span>{{ number_format($total, 0, ',', '.') }} ₺</span>
+            <span>Toplam (TRY)</span>
+            <span id="checkout-total">{{ number_format($total, 0, ',', '.') }} ₺</span>
+          </div>
+          <div id="checkout-charge-row" class="@if (empty($chargeTotal)) hidden @endif mt-3 rounded-lg border border-ink/20 bg-bg p-3 text-sm">
+            <div class="flex justify-between gap-4 font-semibold text-ink">
+              <span>Stripe ödemesi (EUR)</span>
+              <span id="checkout-charge-total">@if (! empty($chargeTotal)){{ number_format($chargeTotal, 2, ',', '.') }} €@endif</span>
+            </div>
+            <p class="mt-1 text-xs text-muted">Güncel kur ile hesaplanır; ödeme Stripe üzerinde euro olarak alınır.</p>
           </div>
 
-          <button type="submit" id="checkout-submit" data-i5="checkout-submit" class="mt-6 w-full inline-flex items-center justify-center gap-2 px-6 py-3.5 font-body text-[13px] font-bold uppercase tracking-[0.06em] border-[3px] border-ink bg-action text-on-dark shadow-brutal hover:bg-action-hover hover:-translate-x-0.5 hover:-translate-y-0.5 transition-[transform,box-shadow,background-color]">
+          <button type="submit" id="checkout-submit" data-i5="checkout-submit" class="mt-6 w-full inline-flex items-center justify-center gap-2 px-6 py-3.5 font-body text-[13px] font-bold uppercase tracking-[0.06em] border-[3px] border-ink bg-action text-on-dark shadow-brutal hover:bg-action-hover hover:-translate-x-0.5 hover:-translate-y-0.5 transition-[transform,box-shadow,background-color] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-x-0 disabled:hover:translate-y-0">
             {{ $isInternationalCheckout ? 'Stripe ile Öde' : 'iyzico ile Öde' }}
           </button>
+          <p id="checkout-rate-error" class="mt-3 hidden text-sm font-semibold text-announce" role="alert"></p>
           <a href="{{ route('cart') }}" class="block text-center mt-4 text-[13px] font-semibold text-muted underline underline-offset-[3px] hover:text-accent">Sepete Dön</a>
         </aside>
       </form>
@@ -446,16 +458,79 @@
   const paymentIyzico = document.getElementById('checkout-payment-iyzico');
   const paymentStripe = document.getElementById('checkout-payment-stripe');
   const submitButton = document.getElementById('checkout-submit');
+  const pricingByAddress = @json($pricingByAddress);
+
+  const formatTry = (amount) => new Intl.NumberFormat('tr-TR', { maximumFractionDigits: 0 }).format(amount) + ' ₺';
+  const formatEur = (amount) => new Intl.NumberFormat('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(amount) + ' €';
+
+  const checkoutRateError = document.getElementById('checkout-rate-error');
+  const rateUnavailableMessage = 'Güncel döviz kuru alınamadı. Yurt dışı ödeme şu an gerçekleştirilemiyor. Lütfen daha sonra tekrar deneyin.';
+
+  const updateCheckoutSummary = (summary) => {
+    const banner = document.getElementById('checkout-shipping-banner');
+    const subtotalEl = document.getElementById('checkout-subtotal');
+    const shippingEl = document.getElementById('checkout-shipping');
+    const totalEl = document.getElementById('checkout-total');
+    const chargeRow = document.getElementById('checkout-charge-row');
+    const chargeTotalEl = document.getElementById('checkout-charge-total');
+
+    subtotalEl && (subtotalEl.textContent = formatTry(summary.subtotal));
+    shippingEl && (shippingEl.textContent = summary.shippingFree ? 'Ücretsiz' : formatTry(summary.shippingCost));
+    totalEl && (totalEl.textContent = formatTry(summary.total));
+
+    if (banner) {
+      if (summary.shippingFree && summary.isInternational) {
+        banner.classList.remove('hidden');
+        banner.className = 'mb-6 p-4 bg-bg border-[3px] border-ink text-xs font-semibold uppercase tracking-[0.04em] text-accent';
+        banner.textContent = 'Yurt dışı kargo ücretsiz!';
+      } else if (summary.shippingFree) {
+        banner.classList.remove('hidden');
+        banner.className = 'mb-6 p-4 bg-bg border-[3px] border-ink text-xs font-semibold uppercase tracking-[0.04em] text-accent';
+        banner.textContent = 'Ücretsiz kargo kazandınız!';
+      } else if (!summary.isInternational && summary.shippingRemaining > 0) {
+        banner.classList.remove('hidden');
+        banner.className = 'mb-6 p-4 bg-bg border-[3px] border-ink text-xs font-semibold uppercase tracking-[0.04em]';
+        banner.textContent = 'Ücretsiz kargo için ' + new Intl.NumberFormat('tr-TR', { maximumFractionDigits: 0 }).format(summary.shippingRemaining) + ' ₺ daha ekleyin';
+      } else {
+        banner.classList.add('hidden');
+        banner.textContent = '';
+      }
+    }
+
+    if (chargeRow && chargeTotalEl) {
+      if (summary.chargeTotal) {
+        chargeRow.classList.remove('hidden');
+        chargeTotalEl.textContent = formatEur(summary.chargeTotal);
+      } else {
+        chargeRow.classList.add('hidden');
+        chargeTotalEl.textContent = '';
+      }
+    }
+
+    const rateUnavailable = Boolean(summary.exchangeRateUnavailable);
+    if (submitButton) {
+      submitButton.disabled = rateUnavailable;
+    }
+    if (checkoutRateError) {
+      checkoutRateError.textContent = rateUnavailable ? rateUnavailableMessage : '';
+      checkoutRateError.classList.toggle('hidden', !rateUnavailable);
+    }
+  };
 
   const togglePaymentMethod = () => {
     const selected = document.querySelector('.checkout-address-input:checked');
     const isInternational = selected?.dataset.scope === 'international';
+    const addressId = selected?.value;
 
     paymentIyzico?.classList.toggle('hidden', !!isInternational);
     paymentStripe?.classList.toggle('hidden', !isInternational);
 
     if (submitButton) {
       submitButton.textContent = isInternational ? 'Stripe ile Öde' : 'iyzico ile Öde';
+    }
+
+    if (addressId && pricingByAddress[addressId]) {
+      updateCheckoutSummary(pricingByAddress[addressId]);
     }
   };
 

@@ -93,6 +93,9 @@
             </div>
             <div class="text-right" data-i5="order-card__side">
               <p class="font-body text-lg font-bold mb-2.5" data-i5="order-card__total">{{ number_format((float) $order->total, 0, ',', '.') }} ₺</p>
+              @if ($order->hasForeignAmount())
+              <p class="font-body text-[13px] font-semibold text-muted mb-2.5">{{ $order->formattedForeignAmount() }}</p>
+              @endif
               <div class="flex flex-wrap gap-2 justify-end" data-i5="order-card__actions">
                 @if ($pendingReviewCount > 0)
                 <a data-i5="order-card__btn--review" href="{{ route('orderShow', $order->code) }}#order-review" class="font-body text-[11px] font-bold uppercase tracking-[0.04em] px-3.5 py-2 border-[3px] border-ink shadow-brutal-sm transition-colors bg-surface text-ink hover:bg-hover">Değerlendir ({{ $pendingReviewCount }})</a>

@@ -111,6 +111,12 @@
           </div>
         </div>
 
+        <label class="flex items-center gap-3 cursor-pointer">
+          <input type="hidden" name="shipping_first_order_free" value="0">
+          <input type="checkbox" id="shipping_first_order_free" name="shipping_first_order_free" value="1" class="h-4 w-4 accent-accent" @checked(old('shipping_first_order_free', $setting->shipping_first_order_free))>
+          <span class="font-body text-[14px] text-ink">İlk siparişte kargo ücretsiz (yurt içi ve yurt dışı)</span>
+        </label>
+
         <div class="grid gap-5 md:grid-cols-2">
           <div>
             <label for="shipping_duration_text" class="mb-1.5 block font-body text-[13px] font-bold text-ink">Kargolama Süresi Metni</label>
@@ -129,6 +135,32 @@
             <p class="mt-1.5 font-body text-[12px] text-muted">Ürün detay sayfasındaki teslimat rozeti metni.</p>
             @error('delivery_time_text') <p class="mt-1.5 font-body text-[12px] font-medium text-danger">{{ $message }}</p> @enderror
           </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="overflow-hidden rounded-xl bg-surface shadow-card">
+      <div class="border-b border-ink/10 px-5 py-4">
+        <h3 class="font-heading text-[16px] font-bold text-ink">Yurt Dışı Kargo Ayarları</h3>
+        <p class="mt-1 font-body text-[12px] text-muted">Yurt dışı teslimat adresi seçildiğinde uygulanır. Varsayılan: ücretli.</p>
+      </div>
+      <div class="grid gap-5 p-5">
+        <div>
+          <label for="international_shipping_mode" class="mb-1.5 block font-body text-[13px] font-bold text-ink">Yurt Dışı Kargo Modu</label>
+          <select id="international_shipping_mode" name="international_shipping_mode" class="w-full rounded-lg border border-ink/10 bg-cream px-3.5 py-2.5 font-body text-[14px] text-ink outline-none focus:border-accent focus:ring-2 focus:ring-accent/15">
+            @foreach ($shippingModes as $mode)
+              <option value="{{ $mode->value }}" @selected(old('international_shipping_mode', $setting->international_shipping_mode?->value ?? 'paid') === $mode->value)>{{ $mode->label() }}</option>
+            @endforeach
+          </select>
+          @error('international_shipping_mode') <p class="mt-1.5 font-body text-[12px] font-medium text-danger">{{ $message }}</p> @enderror
+        </div>
+
+        <div id="international-shipping-paid-fields">
+          <label for="international_shipping_fee" class="mb-1.5 block font-body text-[13px] font-bold text-ink">Yurt Dışı Kargo Ücreti (₺)</label>
+          <input type="number" step="0.01" min="0" id="international_shipping_fee" name="international_shipping_fee" value="{{ old('international_shipping_fee', $setting->international_shipping_fee) }}"
+                 class="w-full rounded-lg border border-ink/10 bg-cream px-3.5 py-2.5 font-body text-[14px] text-ink outline-none focus:border-accent focus:ring-2 focus:ring-accent/15">
+          <p class="mt-1.5 font-body text-[12px] text-muted">Checkout özetinde TRY olarak gösterilir; Stripe ödemesi TCMB satış kuru ile EUR'a çevrilir.</p>
+          @error('international_shipping_fee') <p class="mt-1.5 font-body text-[12px] font-medium text-danger">{{ $message }}</p> @enderror
         </div>
       </div>
     </section>
@@ -416,6 +448,8 @@
     const discountValueHint = document.getElementById('discount_value_hint');
     const shippingMode = document.getElementById('shipping_mode');
     const shippingPaidFields = document.getElementById('shipping-paid-fields');
+    const internationalShippingMode = document.getElementById('international_shipping_mode');
+    const internationalShippingPaidFields = document.getElementById('international-shipping-paid-fields');
     const freeLimitEnabled = document.getElementById('shipping_free_limit_enabled');
     const freeLimitInput = document.getElementById('shipping_free_limit');
 
@@ -447,6 +481,11 @@
       shippingPaidFields.style.display = shippingMode.value === 'paid' ? 'grid' : 'none';
     }
 
+    function toggleInternationalShippingFields() {
+      if (!internationalShippingMode || !internationalShippingPaidFields) return;
+      internationalShippingPaidFields.style.display = internationalShippingMode.value === 'paid' ? 'block' : 'none';
+    }
+
     function toggleFreeLimitInput() {
       if (!freeLimitEnabled || !freeLimitInput) return;
       freeLimitInput.disabled = !freeLimitEnabled.checked;
@@ -457,11 +496,13 @@
     discountType?.addEventListener('change', toggleDiscountValueLimit);
     discountValue?.addEventListener('input', toggleDiscountValueLimit);
     shippingMode?.addEventListener('change', toggleShippingFields);
+    internationalShippingMode?.addEventListener('change', toggleInternationalShippingFields);
     freeLimitEnabled?.addEventListener('change', toggleFreeLimitInput);
 
     toggleDiscountFields();
     toggleDiscountValueLimit();
     toggleShippingFields();
+    toggleInternationalShippingFields();
     toggleFreeLimitInput();
   })();
 </script>

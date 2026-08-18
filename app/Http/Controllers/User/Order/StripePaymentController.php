@@ -108,12 +108,26 @@ class StripePaymentController extends Controller
             return $this->redirectToCheckout($stockError);
         }
 
+        $totalTry = (float) $draft['summary']['total'];
+        $foreignAmount = $this->stripeService->paidAmount($session);
+
+        if ($foreignAmount <= 0) {
+            $foreignAmount = (float) ($draft['summary']['chargeTotal'] ?? 0);
+        }
+
+        $fxRate = app(\App\Http\Services\CurrencyConversionService::class)
+            ->impliedEurPerTry($totalTry, $foreignAmount)
+            ?? (isset($draft['summary']['fxRate']) ? (float) $draft['summary']['fxRate'] : null);
+
         $order = $this->completionService->completeFromDraft(
             $draft,
             $provider,
             $sessionId,
             $this->stripeService->paymentReference($session),
-            $this->stripeService->paidAmount($session) ?: (float) $draft['summary']['total'],
+            $totalTry,
+            $this->stripeService->paidCurrency($session),
+            $foreignAmount > 0 ? $foreignAmount : null,
+            $fxRate,
         );
 
         $pendingFiles = is_array($draft['files'] ?? null) ? $draft['files'] : [];

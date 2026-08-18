@@ -125,7 +125,7 @@
   </head>
 <body class="font-body text-base leading-[1.55] text-ink bg-bg antialiased pt-announce overflow-x-hidden selection:bg-action-muted selection:text-on-dark" data-pmp-site @if ($siteSetting->whatsappDigits()) data-whatsapp="{{ $siteSetting->whatsappDigits() }}" @endif data-site-logo="{{ $siteLogoUrl }}">
   <!-- Site chrome — index5.js: duyuru, header, mobil menü, arama -->
-  <div class="pmp-announce fixed inset-x-0 top-0 z-[300] flex min-h-[44px] items-center justify-center border-b-[3px] border-ink bg-announce px-5 text-center font-body text-[13px] font-semibold uppercase tracking-wide text-on-dark">
+  <div class="pmp-announce fixed inset-x-0 top-0 z-[300] flex min-h-[44px] items-center justify-center border-b-[3px] border-ink bg-announce px-3 text-center font-body text-[10px] font-semibold uppercase leading-snug tracking-[0.04em] text-on-dark min-[768px]:px-5 min-[768px]:text-[13px] min-[768px]:leading-normal min-[768px]:tracking-wide">
     @if ($shippingPromoText)
     {{ $shippingPromoText }} — <a class="underline underline-offset-[3px]" href="{{ route('shops') }}">Alışverişe Başla</a>
     @else
@@ -139,8 +139,8 @@
         <button type="button" class="flex w-16 shrink-0 items-center justify-center border-r-[3px] border-ink bg-transparent text-on-dark transition-colors hover:bg-header-hover min-[1040px]:hidden" id="i5-burger" aria-label="Menü">
           <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
         </button>
-        <a href="{{ route('index') }}" class="pmp-header-logo flex flex-1 items-center justify-center border-r-[3px] border-ink px-5 min-[1040px]:col-start-1 min-[1040px]:row-start-1 min-[1040px]:min-h-16 min-[1040px]:flex-none min-[1040px]:justify-start min-[1040px]:px-7">
-          @include('user.partials.site-logo', ['invertOnDark' => true])
+        <a href="{{ route('index') }}" class="pmp-header-logo flex flex-1 items-center justify-center border-r-[3px] border-ink bg-on-dark px-5 transition-colors hover:bg-cream min-[1040px]:col-start-1 min-[1040px]:row-start-1 min-[1040px]:min-h-16 min-[1040px]:flex-none min-[1040px]:justify-start min-[1040px]:px-7">
+          @include('user.partials.site-logo', ['invertOnDark' => false])
         </a>
         <div class="ml-auto flex items-stretch min-[1040px]:col-start-3 min-[1040px]:row-start-1 min-[1040px]:ml-0">
           <button type="button" class="flex h-full w-16 items-center justify-center bg-transparent text-on-dark transition-colors hover:bg-header-hover min-[1040px]:hidden" id="i5-search-open-mobile" aria-label="Ara">

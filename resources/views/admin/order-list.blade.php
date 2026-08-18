@@ -60,7 +60,8 @@
             <th>Sipariş</th>
             <th>Müşteri</th>
             <th>Tarih</th>
-            <th>Tutar</th>
+            <th>Tutar (₺)</th>
+            <th>Döviz</th>
             <th>Durum</th>
             <th>Kanal</th>
             <th>Kargo</th>
@@ -90,7 +91,14 @@
                 <p class="font-body text-[12px] text-muted">{{ $order->user?->email }}</p>
               </td>
               <td class="font-body text-[13px] text-ink">{{ $order->created_at?->format('d.m.Y H:i') }}</td>
-              <td class="font-body text-[14px] font-bold text-ink">{{ number_format((float) $order->total, 2, ',', '.') }}₺</td>
+              <td class="font-body text-[14px] font-bold text-ink">{{ number_format((float) $order->total, 2, ',', '.') }} ₺</td>
+              <td class="font-body text-[13px] text-muted">
+                @if ($order->hasForeignAmount())
+                  {{ $order->formattedForeignAmount() }}
+                @else
+                  —
+                @endif
+              </td>
               <td>
                 <span class="inline-flex rounded-md px-2.5 py-1 font-body text-[11px] font-bold {{ $statusClass }}">
                   {{ $order->status?->label() }}

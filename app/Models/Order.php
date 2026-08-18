@@ -25,6 +25,10 @@ class Order extends Model
         'user_id',
         'code',
         'total',
+        'currency',
+        'foreign_amount',
+        'foreign_currency',
+        'fx_rate',
         'subtotal',
         'is_discount_applied',
         'discount_type',
@@ -66,6 +70,8 @@ class Order extends Model
 
     protected $casts = [
         'total' => 'decimal:2',
+        'foreign_amount' => 'decimal:2',
+        'fx_rate' => 'decimal:6',
         'subtotal' => 'decimal:2',
         'discount_amount' => 'decimal:2',
         'discount_type' => DiscountType::class,
@@ -194,6 +200,35 @@ class Order extends Model
     public function isInternationalShipment(): bool
     {
         return $this->address?->isInternational() ?? false;
+    }
+
+    public function ledgerCurrency(): string
+    {
+        return filled($this->currency) ? strtoupper((string) $this->currency) : 'TRY';
+    }
+
+    public function hasForeignAmount(): bool
+    {
+        return $this->foreign_amount !== null
+            && (float) $this->foreign_amount > 0
+            && filled($this->foreign_currency);
+    }
+
+    public function formattedTotalTry(): string
+    {
+        return number_format((float) $this->total, 2, ',', '.').' ₺';
+    }
+
+    public function formattedForeignAmount(): ?string
+    {
+        if (! $this->hasForeignAmount()) {
+            return null;
+        }
+
+        $currency = strtoupper((string) $this->foreign_currency);
+        $symbol = $currency === 'EUR' ? '€' : ' '.$currency;
+
+        return number_format((float) $this->foreign_amount, 2, ',', '.').$symbol;
     }
 
     public function hasShipinkShipment(): bool

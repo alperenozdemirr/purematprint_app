@@ -93,6 +93,11 @@ class StripePaymentService
         return round(((int) $session->amount_total) / 100, 2);
     }
 
+    public function paidCurrency(Session $session): string
+    {
+        return strtoupper((string) ($session->currency ?? config('stripe.international_currency', 'eur')));
+    }
+
     public function paymentReference(Session $session): ?string
     {
         if (is_string($session->payment_intent)) {
@@ -123,7 +128,7 @@ class StripePaymentService
 
             return PaymentRefundResult::ok(
                 'stripe_refund',
-                'Ödeme Stripe üzerinden iade edildi ('.number_format($amount, 2, ',', '.').' ₺).',
+                'Ödeme Stripe üzerinden iade edildi.',
             );
         } catch (\Throwable $exception) {
             report($exception);
@@ -158,7 +163,12 @@ class StripePaymentService
      */
     private function buildLineItems(iterable $cartItems, array $summary): array
     {
-        $currency = strtolower((string) config('stripe.currency', 'try'));
+        $chargeInEur = ($summary['chargeCurrency'] ?? null) === 'EUR';
+        $currency = $chargeInEur
+            ? strtolower((string) config('stripe.international_currency', 'eur'))
+            : strtolower((string) config('stripe.currency', 'try'));
+        $fxRate = (float) ($summary['fxRate'] ?? 0);
+
         $subtotal = (float) $summary['subtotal'];
         $discountFactor = $subtotal > 0 && ($summary['discountApplied'] ?? false)
             ? max(0, ($subtotal - (float) $summary['discountAmount']) / $subtotal)
@@ -167,9 +177,10 @@ class StripePaymentService
         $lineItems = [];
 
         foreach ($cartItems as $item) {
-            $unitAmount = (int) round(
-                $this->pricingService->unitPriceForCartItem($item) * $discountFactor * 100
-            );
+            $tryUnitPrice = $this->pricingService->unitPriceForCartItem($item) * $discountFactor;
+            $unitAmount = $chargeInEur && $fxRate > 0
+                ? (int) round($tryUnitPrice * $fxRate * 100)
+                : (int) round($tryUnitPrice * 100);
 
             $lineItems[] = [
                 'price_data' => [
@@ -184,13 +195,18 @@ class StripePaymentService
         }
 
         if (! ($summary['shippingFree'] ?? true) && (float) ($summary['shippingCost'] ?? 0) > 0) {
+            $shippingTry = (float) $summary['shippingCost'];
+            $shippingMinor = $chargeInEur && $fxRate > 0
+                ? (int) round($shippingTry * $fxRate * 100)
+                : (int) round($shippingTry * 100);
+
             $lineItems[] = [
                 'price_data' => [
                     'currency' => $currency,
                     'product_data' => [
                         'name' => 'Shipping',
                     ],
-                    'unit_amount' => (int) round((float) $summary['shippingCost'] * 100),
+                    'unit_amount' => $shippingMinor,
                 ],
                 'quantity' => 1,
             ];

@@ -591,9 +591,21 @@
             </span>
           </div>
           <div class="flex justify-between border-t border-ink/10 pt-3 text-[16px] font-bold text-ink">
-            <span>Genel Toplam</span>
+            <span>Genel Toplam (TRY)</span>
             <span>{{ number_format((float) $order->total, 2, ',', '.') }}₺</span>
           </div>
+          @if ($order->hasForeignAmount())
+          <div class="flex justify-between pt-2 text-[14px] text-ink">
+            <span class="text-muted">Ödenen ({{ strtoupper($order->foreign_currency) }})</span>
+            <span class="font-semibold">{{ $order->formattedForeignAmount() }}</span>
+          </div>
+          @if ($order->fx_rate)
+          <div class="flex justify-between pt-1 text-[12px] text-muted">
+            <span>Kur</span>
+            <span>1 € = {{ number_format(1 / (float) $order->fx_rate, 2, ',', '.') }} ₺</span>
+          </div>
+          @endif
+          @endif
         </div>
       </section>
     </aside>

@@ -45,6 +45,7 @@ class SettingController extends Controller
 
         $discountEnabled = (bool) ($validated['discount_enabled'] ?? false);
         $shippingMode = ShippingMode::from($validated['shipping_mode']);
+        $internationalShippingMode = ShippingMode::from($validated['international_shipping_mode']);
         $freeLimitEnabled = (bool) ($validated['shipping_free_limit_enabled'] ?? false);
 
         $setting = Setting::current()->load([
@@ -76,6 +77,11 @@ class SettingController extends Controller
             'shipping_free_limit' => $shippingMode === ShippingMode::PAID && $freeLimitEnabled
                 ? ($validated['shipping_free_limit'] ?? null)
                 : null,
+            'international_shipping_mode' => $internationalShippingMode->value,
+            'international_shipping_fee' => $internationalShippingMode === ShippingMode::PAID
+                ? ($validated['international_shipping_fee'] ?? 0)
+                : 0,
+            'shipping_first_order_free' => (bool) ($validated['shipping_first_order_free'] ?? false),
             'shipping_duration_text' => filled($validated['shipping_duration_text'] ?? null)
                 ? trim((string) $validated['shipping_duration_text'])
                 : null,

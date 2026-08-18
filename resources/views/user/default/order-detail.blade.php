@@ -405,9 +405,21 @@
             </div>
             @endif
             <div class="flex justify-between gap-3 pt-4 mt-2 border-t-[3px] border-ink font-body text-lg font-bold" data-i5="order-summary__total">
-              <span>Toplam</span>
+              <span>Toplam (TRY)</span>
               <span>{{ number_format((float) $order->total, 0, ',', '.') }} ₺</span>
             </div>
+            @if ($order->hasForeignAmount())
+            <div class="flex justify-between gap-3 pt-3 text-sm text-muted" data-i5="order-summary__foreign">
+              <span>Ödenen ({{ strtoupper($order->foreign_currency) }})</span>
+              <strong>{{ $order->formattedForeignAmount() }}</strong>
+            </div>
+            @if ($order->fx_rate)
+            <div class="flex justify-between gap-3 pt-1 text-xs text-muted">
+              <span>Kur</span>
+              <span>1 € = {{ number_format(1 / (float) $order->fx_rate, 2, ',', '.') }} ₺</span>
+            </div>
+            @endif
+            @endif
             <div class="mt-5 pt-5 border-t-[3px] border-ink text-[13px] text-muted leading-normal [&_a]:inline-block [&_a]:mt-2 [&_a]:font-bold [&_a]:text-accent [&_a]:underline [&_a]:underline-offset-[3px] hover:[&_a]:text-ink" data-i5="order-summary__support">
               Sorularınız mı var?
               @if ($waLink)

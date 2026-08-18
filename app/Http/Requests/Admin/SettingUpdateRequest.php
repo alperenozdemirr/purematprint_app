@@ -24,6 +24,7 @@ class SettingUpdateRequest extends FormRequest
             'site_open' => $this->boolean('site_open'),
             'discount_enabled' => $this->boolean('discount_enabled'),
             'shipping_free_limit_enabled' => $this->boolean('shipping_free_limit_enabled'),
+            'shipping_first_order_free' => $this->boolean('shipping_first_order_free'),
             'show_real_homepage_reviews' => $this->boolean('show_real_homepage_reviews'),
         ]);
     }
@@ -50,6 +51,9 @@ class SettingUpdateRequest extends FormRequest
             'shipping_fee' => ['nullable', 'numeric', 'min:0', 'required_if:shipping_mode,paid'],
             'shipping_free_limit_enabled' => ['boolean'],
             'shipping_free_limit' => ['nullable', 'numeric', 'min:0', 'required_if:shipping_free_limit_enabled,1'],
+            'international_shipping_mode' => ['required', Rule::enum(ShippingMode::class)],
+            'international_shipping_fee' => ['nullable', 'numeric', 'min:0', 'required_if:international_shipping_mode,paid'],
+            'shipping_first_order_free' => ['boolean'],
             'shipping_duration_text' => ['nullable', 'string', 'max:120'],
             'delivery_time_text' => ['nullable', 'string', 'max:120'],
             'email' => ['nullable', 'email', 'max:255'],

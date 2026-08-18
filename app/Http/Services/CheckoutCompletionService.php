@@ -47,9 +47,21 @@ class CheckoutCompletionService
         PaymentProvider $provider,
         string $providerToken,
         ?string $providerPaymentId,
-        float $paidAmount,
+        float $paidAmountTry,
+        ?string $foreignCurrency = null,
+        ?float $foreignAmount = null,
+        ?float $fxRate = null,
     ): Order {
-        return DB::transaction(function () use ($draft, $provider, $providerToken, $providerPaymentId, $paidAmount) {
+        return DB::transaction(function () use (
+            $draft,
+            $provider,
+            $providerToken,
+            $providerPaymentId,
+            $paidAmountTry,
+            $foreignCurrency,
+            $foreignAmount,
+            $fxRate,
+        ): Order {
             $summary = $draft['summary'];
             $invoice = $draft['invoice'];
 
@@ -64,6 +76,10 @@ class CheckoutCompletionService
                 'shipping_is_free' => $summary['shippingFree'],
                 'shipping_price' => $summary['shippingCost'],
                 'total' => $summary['total'],
+                'currency' => 'TRY',
+                'foreign_currency' => $foreignCurrency ?? ($summary['chargeCurrency'] ?? null),
+                'foreign_amount' => $foreignAmount ?? ($summary['chargeTotal'] ?? null),
+                'fx_rate' => $fxRate ?? ($summary['fxRate'] ?? null),
                 'address_id' => $draft['address_id'],
                 'invoice_address_id' => $draft['address_id'],
                 'note' => $draft['note'] ?? null,
@@ -98,7 +114,11 @@ class CheckoutCompletionService
             Payment::create([
                 'user_id' => $draft['user_id'],
                 'order_id' => $order->id,
-                'paid_amount' => $paidAmount,
+                'paid_amount' => $paidAmountTry,
+                'paid_currency' => 'TRY',
+                'paid_amount_foreign' => $foreignAmount ?? ($summary['chargeTotal'] ?? null),
+                'foreign_currency' => $foreignCurrency ?? ($summary['chargeCurrency'] ?? null),
+                'fx_rate' => $fxRate ?? ($summary['fxRate'] ?? null),
                 'status' => PaymentStatus::COMPLETED,
                 'provider' => $provider,
                 'provider_payment_id' => $providerPaymentId,

@@ -18,6 +18,10 @@ class Payment extends Model
         'user_id',
         'order_id',
         'paid_amount',
+        'paid_currency',
+        'paid_amount_foreign',
+        'foreign_currency',
+        'fx_rate',
         'status',
         'provider',
         'provider_payment_id',
@@ -27,6 +31,8 @@ class Payment extends Model
 
     protected $casts = [
         'paid_amount' => 'decimal:2',
+        'paid_amount_foreign' => 'decimal:2',
+        'fx_rate' => 'decimal:6',
         'status' => PaymentStatus::class,
         'provider' => PaymentProvider::class,
         'refunded_at' => 'datetime',
