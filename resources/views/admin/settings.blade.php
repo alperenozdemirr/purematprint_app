@@ -157,6 +157,44 @@
 
     <section class="overflow-hidden rounded-xl bg-surface shadow-card">
       <div class="border-b border-ink/10 px-5 py-4">
+        <h3 class="font-heading text-[16px] font-bold text-ink">Anasayfa — Giriş</h3>
+        <p class="mt-1 font-body text-[12px] text-muted">Hero alanındaki arka plan görseli, başlık ve açıklama metni. Boş bırakılırsa varsayılan içerik gösterilir.</p>
+      </div>
+      <div class="grid gap-5 p-5 md:grid-cols-2">
+        <div class="md:col-span-2">
+          @if ($setting->hasCustomIntroImage())
+            <div class="mb-4 flex items-center gap-4">
+              <img src="{{ $setting->introImageUrl() }}" alt="Giriş görseli" class="h-24 w-auto max-w-[280px] rounded-lg border border-ink/10 bg-cream object-cover p-1">
+              <p class="font-body text-[13px] text-muted">Mevcut görsel yüklü. Yeni dosya seçerseniz eskisi silinir.</p>
+            </div>
+          @else
+            <p class="mb-4 font-body text-[13px] text-muted">Görsel yüklenmemiş — varsayılan hero görseli kullanılır.</p>
+          @endif
+          <label for="intro_image" class="mb-1.5 block font-body text-[13px] font-bold text-ink">Giriş Görseli</label>
+          <input type="file" id="intro_image" name="intro_image" accept="{{ \App\Support\ImageUploadRules::acceptAttribute() }}"
+                 class="w-full rounded-lg border border-ink/10 bg-cream px-3.5 py-2.5 font-body text-[14px] text-ink outline-none focus:border-accent focus:ring-2 focus:ring-accent/15">
+          @error('intro_image') <p class="mt-1.5 font-body text-[12px] font-medium text-danger">{{ $message }}</p> @enderror
+        </div>
+        <div class="md:col-span-2">
+          <label for="intro_title" class="mb-1.5 block font-body text-[13px] font-bold text-ink">Giriş Başlık</label>
+          <textarea id="intro_title" name="intro_title" rows="2"
+                    class="w-full rounded-lg border border-ink/10 bg-cream px-3.5 py-2.5 font-body text-[14px] text-ink outline-none focus:border-accent focus:ring-2 focus:ring-accent/15"
+                    placeholder="{{ str_replace("\n", ' / ', \App\Models\Setting::DEFAULT_INTRO_TITLE) }}">{{ old('intro_title', $setting->intro_title) }}</textarea>
+          <p class="mt-1.5 font-body text-[12px] text-muted">İkinci satır için Enter ile alt satıra geçin (ör. Markanı / yükselt.).</p>
+          @error('intro_title') <p class="mt-1.5 font-body text-[12px] font-medium text-danger">{{ $message }}</p> @enderror
+        </div>
+        <div class="md:col-span-2">
+          <label for="intro_description" class="mb-1.5 block font-body text-[13px] font-bold text-ink">Giriş Açıklama</label>
+          <textarea id="intro_description" name="intro_description" rows="3"
+                    class="w-full rounded-lg border border-ink/10 bg-cream px-3.5 py-2.5 font-body text-[14px] text-ink outline-none focus:border-accent focus:ring-2 focus:ring-accent/15"
+                    placeholder="{{ \App\Models\Setting::DEFAULT_INTRO_DESCRIPTION }}">{{ old('intro_description', $setting->intro_description) }}</textarea>
+          @error('intro_description') <p class="mt-1.5 font-body text-[12px] font-medium text-danger">{{ $message }}</p> @enderror
+        </div>
+      </div>
+    </section>
+
+    <section class="overflow-hidden rounded-xl bg-surface shadow-card">
+      <div class="border-b border-ink/10 px-5 py-4">
         <h3 class="font-heading text-[16px] font-bold text-ink">Anasayfa — Spotlight</h3>
         <p class="mt-1 font-body text-[12px] text-muted">Görsel, alıntı metni ve sağ alt marka yazısı. Boş bırakılırsa varsayılan içerik gösterilir.</p>
       </div>

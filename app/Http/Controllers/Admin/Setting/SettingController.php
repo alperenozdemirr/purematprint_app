@@ -25,6 +25,7 @@ class SettingController extends Controller
     {
         $setting = Setting::current()->load([
             'logo',
+            'introImage',
             'spotlightImage',
             'bandImage',
             'teamNoteImage',
@@ -48,6 +49,7 @@ class SettingController extends Controller
 
         $setting = Setting::current()->load([
             'logo',
+            'introImage',
             'spotlightImage',
             'bandImage',
             'teamNoteImage',
@@ -90,6 +92,12 @@ class SettingController extends Controller
             'facebook_url' => $validated['facebook_url'] ?? null,
             'whatsapp_phone' => $validated['whatsapp_phone'] ?? null,
             'short_info' => $validated['short_info'] ?? null,
+            'intro_title' => filled($validated['intro_title'] ?? null)
+                ? trim((string) $validated['intro_title'])
+                : null,
+            'intro_description' => filled($validated['intro_description'] ?? null)
+                ? trim((string) $validated['intro_description'])
+                : null,
             'spotlight_title' => filled($validated['spotlight_title'] ?? null)
                 ? trim((string) $validated['spotlight_title'])
                 : null,
@@ -117,6 +125,16 @@ class SettingController extends Controller
             );
 
             $attributes['logo_id'] = $fileRecord->id;
+        }
+
+        $introImageId = $this->syncSettingImage(
+            $request,
+            'intro_image',
+            $setting->intro_image_id,
+            5,
+        );
+        if ($introImageId !== null) {
+            $attributes['intro_image_id'] = $introImageId;
         }
 
         $spotlightImageId = $this->syncSettingImage(

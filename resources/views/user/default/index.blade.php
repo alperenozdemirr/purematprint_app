@@ -3,19 +3,26 @@
 @section('metaDescription', 'PureMatPrint — tabela, dijital baskı ve kurumsal kimlik stüdyosu. Kartvizitten dev tabelaya online sipariş, hızlı üretim ve güvenilir teslimat.')
 @section('canonicalUrl', route('index'))
 @section('content')
+@php
+  $introTitleLines = $siteSetting->introTitleLines();
+@endphp
  <!-- Hero -->
   <section data-i5="hero--cover" data-i5-tags="hero hero--cover" class="relative overflow-hidden border-b-[3px] border-ink">
     <div class="absolute inset-0 z-0 bg-dark" aria-hidden="true" data-i5="hero__media">
-      <img src="{{asset('user')}}/assets/foto.jpeg" alt="" class="h-full w-full object-cover object-center">
+      <img src="{{ $siteSetting->introImageUrl() }}" alt="" class="h-full w-full object-cover object-center">
       <div class="pointer-events-none absolute inset-0 z-[1] bg-gradient-to-b from-ink/45 via-ink/55 to-ink/80" aria-hidden="true"></div>
     </div>
     <div class="relative z-[2] flex min-h-[clamp(440px,72vh,760px)] w-full items-end py-14 pb-16 min-[768px]:py-[72px] min-[768px]:pb-20" data-i5="hero__overlay">
       <div class="w-full max-w-site mx-auto px-5 lg:px-8" data-i5="container">
         <div class="max-w-[560px]" data-i5="hero__copy">
-          <h1 class="mb-5 font-heading text-hero-title font-bold leading-[0.98] tracking-[-0.03em] text-white normal-case" data-i5="hero__title">Markanı<span class="block text-white opacity-90">yükselt.</span></h1>
-          <p class="mb-7 max-w-[480px] text-[17px] text-[rgba(255,252,247,0.88)]" data-i5="hero__desc">Ajanslar ve tabelacılar için cesur baskı çözümleri. Kartvizitten dev tabelaya — her detay düşünülmüş, her proje kusursuz.</p>
+          <h1 class="mb-5 font-heading text-hero-title font-bold leading-[0.98] tracking-[-0.03em] text-white normal-case" data-i5="hero__title">
+            @foreach ($introTitleLines as $index => $line)
+              @if ($index === 0){{ $line }}@else<span class="block text-white opacity-90">{{ $line }}</span>@endif
+            @endforeach
+          </h1>
+          <p class="mb-7 max-w-[480px] text-[17px] text-[rgba(255,252,247,0.88)]" data-i5="hero__desc">{{ $siteSetting->introDescriptionLabel() }}</p>
           <div class="flex flex-wrap gap-3" data-i5="hero__actions">
-            <a data-i5="btn--fill" data-i5-tags="btn btn--fill" href="{{ route('collectionList') }}" class="inline-flex items-center gap-2 px-6 py-3.5 font-body text-[13px] font-bold uppercase tracking-[0.06em] border-[3px] border-ink transition-[transform,box-shadow,background-color] bg-action text-on-dark shadow-brutal hover:bg-action-hover hover:-translate-x-0.5 hover:-translate-y-0.5">Koleksiyonu Keşfet →</a>
+            <a data-i5="btn--fill" data-i5-tags="btn btn--fill" href="{{ route('collectionList') }}" class="inline-flex items-center gap-2 px-6 py-3.5 font-body text-[13px] font-bold uppercase tracking-[0.06em] border-[3px] border-ink transition-[transform,box-shadow,background-color] bg-action text-on-dark shadow-brutal hover:bg-action-hover hover:-translate-x-0.5 hover:-translate-y-0.5">Koleksiyonları Keşfet →</a>
             <a data-i5="btn--light" data-i5-tags="btn btn--outline btn--light" href="{{ route('shops', ['siralama' => 'featured']) }}" class="inline-flex items-center gap-2 px-6 py-3.5 font-body text-[13px] font-bold uppercase tracking-[0.06em] border-[3px] border-white bg-transparent text-white shadow-none hover:bg-white/10">Çok Satanlar</a>
           </div>
         </div>

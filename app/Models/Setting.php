@@ -16,6 +16,12 @@ class Setting extends Model
 
     public const DEFAULT_LOGO = 'shared_directory/logo.avif';
 
+    public const DEFAULT_INTRO_TITLE = "Markanı\nyükselt.";
+
+    public const DEFAULT_INTRO_DESCRIPTION = 'Ajanslar ve tabelacılar için cesur baskı çözümleri. Kartvizitten dev tabelaya — her detay düşünülmüş, her proje kusursuz.';
+
+    public const DEFAULT_INTRO_IMAGE = 'user/assets/foto.jpeg';
+
     public const DEFAULT_SPOTLIGHT_TITLE = 'İşlevsel, minimal ve oyunbaz baskı ürünleri';
 
     public const DEFAULT_SPOTLIGHT_SUBTITLE = 'DESIGN';
@@ -54,6 +60,9 @@ class Setting extends Model
         'short_info',
         'show_real_homepage_reviews',
         'logo_id',
+        'intro_title',
+        'intro_description',
+        'intro_image_id',
         'spotlight_title',
         'spotlight_subtitle',
         'spotlight_image_id',
@@ -87,6 +96,7 @@ class Setting extends Model
         'shipping_free_limit' => 'decimal:2',
         'show_real_homepage_reviews' => 'boolean',
         'logo_id' => 'integer',
+        'intro_image_id' => 'integer',
         'spotlight_image_id' => 'integer',
         'band_image_id' => 'integer',
         'team_note_image_id' => 'integer',
@@ -100,6 +110,11 @@ class Setting extends Model
     public function logo(): BelongsTo
     {
         return $this->belongsTo(File::class, 'logo_id');
+    }
+
+    public function introImage(): BelongsTo
+    {
+        return $this->belongsTo(File::class, 'intro_image_id');
     }
 
     public function spotlightImage(): BelongsTo
@@ -122,6 +137,41 @@ class Setting extends Model
         return filled($this->spotlight_title)
             ? (string) $this->spotlight_title
             : self::DEFAULT_SPOTLIGHT_TITLE;
+    }
+
+    /**
+     * @return list<string>
+     */
+    public function introTitleLines(): array
+    {
+        $text = filled($this->intro_title)
+            ? (string) $this->intro_title
+            : self::DEFAULT_INTRO_TITLE;
+
+        $lines = preg_split("/\r\n|\n|\r/", $text) ?: [];
+
+        return collect($lines)
+            ->map(fn (string $line) => trim($line))
+            ->filter()
+            ->values()
+            ->all();
+    }
+
+    public function introDescriptionLabel(): string
+    {
+        return filled($this->intro_description)
+            ? (string) $this->intro_description
+            : self::DEFAULT_INTRO_DESCRIPTION;
+    }
+
+    public function introImageUrl(): string
+    {
+        return $this->introImage?->url ?? asset(self::DEFAULT_INTRO_IMAGE);
+    }
+
+    public function hasCustomIntroImage(): bool
+    {
+        return $this->intro_image_id !== null && $this->introImage !== null;
     }
 
     public function spotlightSubtitleLabel(): string
