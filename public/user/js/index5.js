@@ -27,6 +27,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initSearchOverlay();
   initScrollReveal();
   initTicker();
+  initHeroIntro();
   initProductCarousels();
   initTestimonialsCarousel();
   initProductGridPagination();
@@ -329,6 +330,52 @@ function initTicker() {
     if (wrap) observer.observe(wrap);
   } else {
     window.addEventListener('resize', onResize);
+  }
+}
+
+/**
+ * Anasayfa hero giriş görseli — varsayılan: tam genişlik, doğal yükseklik.
+ * Görsel metin alanına yetmezse hero-intro--cover ile object-cover devreye girer.
+ */
+function initHeroIntro() {
+  const root = document.querySelector('[data-hero-intro]');
+  const img = root?.querySelector('[data-hero-intro-img]');
+  const overlay = root?.querySelector('[data-hero-intro-overlay]');
+
+  if (!root || !img || !overlay) return;
+
+  const sync = () => {
+    const width = root.offsetWidth;
+    const naturalWidth = img.naturalWidth;
+    const naturalHeight = img.naturalHeight;
+
+    if (!width || !naturalWidth || !naturalHeight) return;
+
+    const displayHeight = (naturalHeight / naturalWidth) * width;
+    const overlayHeight = overlay.offsetHeight;
+    const needsCover = displayHeight < overlayHeight + 32;
+
+    root.classList.toggle('hero-intro--cover', needsCover);
+  };
+
+  const schedule = () => requestAnimationFrame(sync);
+
+  if (img.complete) {
+    schedule();
+  } else {
+    img.addEventListener('load', schedule, { once: true });
+  }
+
+  let resizeTimer;
+  window.addEventListener('resize', () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(schedule, 120);
+  });
+
+  if ('ResizeObserver' in window) {
+    const observer = new ResizeObserver(schedule);
+    observer.observe(overlay);
+    observer.observe(root);
   }
 }
 

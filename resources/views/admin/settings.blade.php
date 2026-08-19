@@ -205,6 +205,7 @@
           <label for="intro_image" class="mb-1.5 block font-body text-[13px] font-bold text-ink">Giriş Görseli</label>
           <input type="file" id="intro_image" name="intro_image" accept="{{ \App\Support\ImageUploadRules::acceptAttribute() }}"
                  class="w-full rounded-lg border border-ink/10 bg-cream px-3.5 py-2.5 font-body text-[14px] text-ink outline-none focus:border-accent focus:ring-2 focus:ring-accent/15">
+          <p class="mt-1.5 font-body text-[12px] text-muted">{{ \App\Support\ImageUploadRules::humanList() }} — en fazla 100MB. Anasayfada tam genişlikte gösterilir.</p>
           @error('intro_image') <p class="mt-1.5 font-body text-[12px] font-medium text-danger">{{ $message }}</p> @enderror
         </div>
         <div class="md:col-span-2">
