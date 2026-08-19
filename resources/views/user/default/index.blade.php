@@ -18,7 +18,15 @@
         src="{{ $siteSetting->introImageUrl() }}"
         alt=""
         data-hero-intro-img
-        class="block h-auto w-full max-w-full"
+        class="hidden h-auto w-full max-w-full min-[768px]:block"
+        decoding="async"
+        fetchpriority="high"
+      >
+      <img
+        src="{{ $siteSetting->introImageMobileUrl() }}"
+        alt=""
+        data-hero-intro-img
+        class="block h-auto w-full max-w-full min-[768px]:hidden"
         decoding="async"
         fetchpriority="high"
       >

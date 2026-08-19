@@ -26,6 +26,7 @@ class SettingController extends Controller
         $setting = Setting::current()->load([
             'logo',
             'introImage',
+            'introImageMobile',
             'spotlightImage',
             'bandImage',
             'teamNoteImage',
@@ -51,6 +52,7 @@ class SettingController extends Controller
         $setting = Setting::current()->load([
             'logo',
             'introImage',
+            'introImageMobile',
             'spotlightImage',
             'bandImage',
             'teamNoteImage',
@@ -141,6 +143,16 @@ class SettingController extends Controller
         );
         if ($introImageId !== null) {
             $attributes['intro_image_id'] = $introImageId;
+        }
+
+        $introMobileImageId = $this->syncSettingImage(
+            $request,
+            'intro_image_mobile',
+            $setting->intro_image_mobile_id,
+            6,
+        );
+        if ($introMobileImageId !== null) {
+            $attributes['intro_image_mobile_id'] = $introMobileImageId;
         }
 
         $spotlightImageId = $this->syncSettingImage(

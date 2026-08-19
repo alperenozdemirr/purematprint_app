@@ -39,6 +39,7 @@ class UserLayoutComposer
         $setting = Setting::current()->loadMissing([
             'logo',
             'introImage',
+            'introImageMobile',
             'spotlightImage',
             'bandImage',
             'teamNoteImage',

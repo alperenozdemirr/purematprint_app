@@ -66,6 +66,7 @@ class Setting extends Model
         'intro_title',
         'intro_description',
         'intro_image_id',
+        'intro_image_mobile_id',
         'spotlight_title',
         'spotlight_subtitle',
         'spotlight_image_id',
@@ -103,6 +104,7 @@ class Setting extends Model
         'show_real_homepage_reviews' => 'boolean',
         'logo_id' => 'integer',
         'intro_image_id' => 'integer',
+        'intro_image_mobile_id' => 'integer',
         'spotlight_image_id' => 'integer',
         'band_image_id' => 'integer',
         'team_note_image_id' => 'integer',
@@ -121,6 +123,11 @@ class Setting extends Model
     public function introImage(): BelongsTo
     {
         return $this->belongsTo(File::class, 'intro_image_id');
+    }
+
+    public function introImageMobile(): BelongsTo
+    {
+        return $this->belongsTo(File::class, 'intro_image_mobile_id');
     }
 
     public function spotlightImage(): BelongsTo
@@ -175,9 +182,23 @@ class Setting extends Model
         return $this->introImage?->url ?? asset(self::DEFAULT_INTRO_IMAGE);
     }
 
+    public function introImageMobileUrl(): string
+    {
+        if ($this->intro_image_mobile_id !== null && $this->introImageMobile !== null) {
+            return $this->introImageMobile->url;
+        }
+
+        return $this->introImageUrl();
+    }
+
     public function hasCustomIntroImage(): bool
     {
         return $this->intro_image_id !== null && $this->introImage !== null;
+    }
+
+    public function hasCustomIntroImageMobile(): bool
+    {
+        return $this->intro_image_mobile_id !== null && $this->introImageMobile !== null;
     }
 
     public function spotlightSubtitleLabel(): string

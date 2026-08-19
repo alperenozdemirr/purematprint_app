@@ -339,17 +339,23 @@ function initTicker() {
  */
 function initHeroIntro() {
   const root = document.querySelector('[data-hero-intro]');
-  const img = root?.querySelector('[data-hero-intro-img]');
+  const imgs = root?.querySelectorAll('[data-hero-intro-img]');
   const overlay = root?.querySelector('[data-hero-intro-overlay]');
 
-  if (!root || !img || !overlay) return;
+  if (!root || !imgs?.length || !overlay) return;
 
   const sync = () => {
     const width = root.offsetWidth;
+    const overlay = root.querySelector('[data-hero-intro-overlay]');
+    const imgs = root.querySelectorAll('[data-hero-intro-img]');
+    const img = Array.from(imgs).find((candidate) => candidate.offsetWidth > 0);
+
+    if (!width || !overlay || !img) return;
+
     const naturalWidth = img.naturalWidth;
     const naturalHeight = img.naturalHeight;
 
-    if (!width || !naturalWidth || !naturalHeight) return;
+    if (!naturalWidth || !naturalHeight) return;
 
     const displayHeight = (naturalHeight / naturalWidth) * width;
     const overlayHeight = overlay.offsetHeight;
@@ -360,11 +366,13 @@ function initHeroIntro() {
 
   const schedule = () => requestAnimationFrame(sync);
 
-  if (img.complete) {
-    schedule();
-  } else {
-    img.addEventListener('load', schedule, { once: true });
-  }
+  imgs.forEach((img) => {
+    if (img.complete) {
+      schedule();
+    } else {
+      img.addEventListener('load', schedule, { once: true });
+    }
+  });
 
   let resizeTimer;
   window.addEventListener('resize', () => {
