@@ -30,7 +30,7 @@
         decoding="async"
         fetchpriority="high"
       >
-      <div class="pointer-events-none absolute inset-0 z-[1] bg-gradient-to-b from-ink/45 via-ink/55 to-ink/80" aria-hidden="true"></div>
+      <div class="pointer-events-none absolute inset-0 z-[1] bg-gradient-to-b from-ink/35 via-ink/45 to-ink/70" aria-hidden="true"></div>
       <div class="absolute inset-x-0 bottom-0 z-[2] flex w-full items-end py-14 pb-16 min-[768px]:py-[72px] min-[768px]:pb-20" data-hero-intro-overlay data-i5="hero__overlay">
         <div class="w-full max-w-site mx-auto px-5 lg:px-8" data-i5="container">
           <div class="max-w-[560px]" data-hero-intro-copy data-i5="hero__copy">
