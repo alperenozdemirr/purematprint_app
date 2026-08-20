@@ -408,6 +408,15 @@ class ShipinkShipmentService
             return;
         }
 
+        $existingOrder = $this->findExistingShipinkOrder($order);
+
+        if ($existingOrder !== null) {
+            $order->shipink_order_id = (string) ($existingOrder['id'] ?? '');
+            $order->save();
+
+            return;
+        }
+
         try {
             $shipinkOrder = $this->api->createOrder($this->buildOrderPayload($order));
             $order->shipink_order_id = (string) ($shipinkOrder['id'] ?? '');
@@ -424,7 +433,7 @@ class ShipinkShipmentService
 
         if ($existingOrder === null) {
             throw new RuntimeException(
-                'Shipink\'te bu sipariş kodu için kayıt zaten var, ancak mevcut sipariş bulunamadı. Shipink panelinden kontrol edip tekrar deneyin.'
+                'Shipink\'te bu sipariş kodu ('.$order->code.') için kayıt zaten var, ancak mevcut sipariş bulunamadı. Shipink panelinde aynı sipariş numarasını arayıp tekrar deneyin.'
             );
         }
 
@@ -441,7 +450,7 @@ class ShipinkShipmentService
         $channelId = (string) ($salesChannel['id'] ?? '');
         $reference = (string) $order->code;
 
-        for ($page = 1; $page <= 20; $page++) {
+        for ($page = 1; $page <= 30; $page++) {
             $orders = $this->api->listOrders($page, 100);
 
             if ($orders === []) {
@@ -453,16 +462,7 @@ class ShipinkShipmentService
                     continue;
                 }
 
-                $salesChannelData = is_array($shipinkOrder['sales_channel'] ?? null)
-                    ? $shipinkOrder['sales_channel']
-                    : [];
-
-                $matchesChannel = $channelId === ''
-                    || (string) ($salesChannelData['id'] ?? '') === $channelId;
-                $matchesReference = (string) ($salesChannelData['order_id'] ?? '') === $reference
-                    || (string) ($salesChannelData['order_number'] ?? '') === $reference;
-
-                if ($matchesChannel && $matchesReference) {
+                if ($this->matchesShipinkOrderReference($shipinkOrder, $reference, $channelId)) {
                     return $shipinkOrder;
                 }
             }
@@ -473,6 +473,42 @@ class ShipinkShipmentService
         }
 
         return null;
+    }
+
+    /**
+     * @param  array<string, mixed>  $shipinkOrder
+     */
+    private function matchesShipinkOrderReference(array $shipinkOrder, string $reference, string $channelId): bool
+    {
+        $salesChannelData = is_array($shipinkOrder['sales_channel'] ?? null)
+            ? $shipinkOrder['sales_channel']
+            : [];
+
+        $matchesReference = (string) ($salesChannelData['order_id'] ?? '') === $reference
+            || (string) ($salesChannelData['order_number'] ?? '') === $reference;
+
+        if (! $matchesReference) {
+            return false;
+        }
+
+        if ($channelId === '') {
+            return true;
+        }
+
+        $orderChannelId = (string) ($salesChannelData['id'] ?? '');
+
+        return $orderChannelId === '' || $orderChannelId === $channelId;
+    }
+
+    private function isDuplicateRecordError(\Throwable $exception): bool
+    {
+        $message = strtolower($exception->getMessage());
+
+        if (str_contains($message, 'duplicate')) {
+            return true;
+        }
+
+        return preg_match('/record\s+(?:already|alredy)\s+exists/u', $message) === 1;
     }
 
     /**
@@ -490,14 +526,6 @@ class ShipinkShipmentService
         }
 
         return $normalized->last();
-    }
-
-    private function isDuplicateRecordError(\Throwable $exception): bool
-    {
-        $message = strtolower($exception->getMessage());
-
-        return str_contains($message, 'already exists')
-            || str_contains($message, 'duplicate');
     }
 
     private function isCarrierCancelledStatus(string $status): bool

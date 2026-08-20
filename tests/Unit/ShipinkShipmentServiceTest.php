@@ -219,6 +219,7 @@ class ShipinkShipmentServiceTest extends TestCase
         ];
 
         $api = Mockery::mock(ShipinkApiService::class);
+        $api->shouldReceive('listOrders')->once()->with(1, 100)->andReturn([]);
         $api->shouldReceive('listCarrierAccounts')->once()->andReturn([$carrierAccount]);
         $api->shouldReceive('createOrder')->once()->andReturn(['id' => 'order-new']);
         $api->shouldReceive('createShipment')
@@ -256,6 +257,23 @@ class ShipinkShipmentServiceTest extends TestCase
         $this->assertTrue($result['success']);
     }
 
+    public function test_duplicate_record_error_matches_shipink_typo(): void
+    {
+        $service = new ShipinkShipmentService(
+            Mockery::mock(ShipinkApiService::class),
+            app(ShipinkConfigService::class),
+            Mockery::mock(ShipinkWarehouseService::class),
+            app(OrderPackageCalculator::class),
+        );
+
+        $method = new \ReflectionMethod(ShipinkShipmentService::class, 'isDuplicateRecordError');
+        $method->setAccessible(true);
+
+        $this->assertTrue($method->invoke($service, new \RuntimeException('Record alredy exists')));
+        $this->assertTrue($method->invoke($service, new \RuntimeException('Record already exists')));
+        $this->assertFalse($method->invoke($service, new \RuntimeException('Invalid address')));
+    }
+
     public function test_create_recovers_existing_shipink_order_when_duplicate_record_exists(): void
     {
         config([
@@ -274,7 +292,6 @@ class ShipinkShipmentServiceTest extends TestCase
         ]);
 
         $api = Mockery::mock(ShipinkApiService::class);
-        $api->shouldReceive('createOrder')->once()->andThrow(new \RuntimeException('Record already exists'));
         $api->shouldReceive('listOrders')->once()->with(1, 100)->andReturn([
             [
                 'id' => 'order-existing',
@@ -288,6 +305,7 @@ class ShipinkShipmentServiceTest extends TestCase
                 ],
             ],
         ]);
+        $api->shouldNotReceive('createOrder');
         $api->shouldReceive('getOrder')->once()->with('order-existing')->andReturn([
             'id' => 'order-existing',
             'shipments' => [

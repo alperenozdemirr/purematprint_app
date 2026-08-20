@@ -246,6 +246,12 @@ class ShipinkApiService
             return [$data];
         }
 
+        foreach (['items', 'orders', 'results', 'records'] as $key) {
+            if (isset($data[$key]) && is_array($data[$key]) && array_is_list($data[$key])) {
+                return $data[$key];
+            }
+        }
+
         return [];
     }
 
@@ -310,7 +316,7 @@ class ShipinkApiService
             return 'Aras Kargo sevk adresi bulunamadı. Shipink panelinden kendi Aras sözleşmenizi eklemeniz veya Aras\'ta sevk adresinizi tanımlamanız gerekir.';
         }
 
-        if (str_contains(strtolower($message), 'already exists')) {
+        if (preg_match('/record\s+(?:already|alredy)\s+exists/i', $message) === 1) {
             return 'Shipink\'te bu sipariş için kayıt zaten mevcut. Sistem mevcut kaydı eşleştirmeyi deneyecek; devam etmezse Shipink panelinden kontrol edin.';
         }
 
