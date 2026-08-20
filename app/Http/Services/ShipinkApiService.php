@@ -22,6 +22,25 @@ class ShipinkApiService
     }
 
     /**
+     * @return list<array<string, mixed>>
+     */
+    public function listOrders(int $page = 1, int $limit = 100): array
+    {
+        $limit = max(1, min(100, $limit));
+        $page = max(1, $page);
+
+        $data = $this->unwrapData(
+            $this->client()->get('/orders', [
+                'page' => $page,
+                'limit' => $limit,
+            ]),
+            'Shipink sipariş listesi alınamadı.'
+        );
+
+        return $this->normalizeList($data);
+    }
+
+    /**
      * @return array<string, mixed>
      */
     public function createOrder(array $payload): array
@@ -289,6 +308,10 @@ class ShipinkApiService
             && str_contains($details, 'Sevk adresi bulunamadı')
         ) {
             return 'Aras Kargo sevk adresi bulunamadı. Shipink panelinden kendi Aras sözleşmenizi eklemeniz veya Aras\'ta sevk adresinizi tanımlamanız gerekir.';
+        }
+
+        if (str_contains(strtolower($message), 'already exists')) {
+            return 'Shipink\'te bu sipariş için kayıt zaten mevcut. Sistem mevcut kaydı eşleştirmeyi deneyecek; devam etmezse Shipink panelinden kontrol edin.';
         }
 
         return $message;

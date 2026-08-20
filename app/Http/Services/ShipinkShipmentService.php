@@ -117,10 +117,12 @@ class ShipinkShipmentService
                     return ['success' => true, 'message' => "{$carrierLabel} gönderisi mevcut Shipink kaydından geri yüklendi."];
                 }
 
-                if (! filled($lockedOrder->shipink_order_id)) {
-                    $shipinkOrder = $this->api->createOrder($this->buildOrderPayload($lockedOrder));
-                    $lockedOrder->shipink_order_id = (string) ($shipinkOrder['id'] ?? '');
-                    $lockedOrder->save();
+                $this->ensureShipinkOrderId($lockedOrder);
+
+                if ($this->recoverExistingShipment($lockedOrder)) {
+                    $carrierLabel = $lockedOrder->shippingCarrierLabel() ?? 'Kargo';
+
+                    return ['success' => true, 'message' => "{$carrierLabel} gönderisi mevcut Shipink kaydından geri yüklendi."];
                 }
 
                 if (! filled($lockedOrder->shipink_order_id)) {
@@ -130,9 +132,20 @@ class ShipinkShipmentService
                 $this->warehouseService->ensureReady($this->config->warehouseId());
 
                 $carrierAccount = $this->resolveCarrierAccount();
-                $shipment = $this->api->createShipment(
-                    $this->buildShipmentPayload($lockedOrder, $carrierAccount, $packageOverride)
-                );
+
+                try {
+                    $shipment = $this->api->createShipment(
+                        $this->buildShipmentPayload($lockedOrder, $carrierAccount, $packageOverride)
+                    );
+                } catch (\Throwable $exception) {
+                    if ($this->isDuplicateRecordError($exception) && $this->recoverExistingShipment($lockedOrder)) {
+                        $carrierLabel = $lockedOrder->shippingCarrierLabel() ?? 'Kargo';
+
+                        return ['success' => true, 'message' => "{$carrierLabel} gönderisi mevcut Shipink kaydından geri yüklendi."];
+                    }
+
+                    throw $exception;
+                }
 
                 $this->applyShipmentData($lockedOrder, $shipment);
                 $lockedOrder->shipping_carrier = (string) ($carrierAccount['carrier_id'] ?? $this->config->carrierId());
@@ -362,7 +375,7 @@ class ShipinkShipmentService
         }
 
         $shipments = is_array($shipinkOrder['shipments'] ?? null) ? $shipinkOrder['shipments'] : [];
-        $latestShipment = $shipments[0] ?? null;
+        $latestShipment = $this->resolveLatestShipment($shipments);
 
         if (! is_array($latestShipment) || ! filled($latestShipment['id'] ?? null)) {
             return false;
@@ -387,6 +400,104 @@ class ShipinkShipmentService
         $order->save();
 
         return true;
+    }
+
+    private function ensureShipinkOrderId(Order $order): void
+    {
+        if (filled($order->shipink_order_id)) {
+            return;
+        }
+
+        try {
+            $shipinkOrder = $this->api->createOrder($this->buildOrderPayload($order));
+            $order->shipink_order_id = (string) ($shipinkOrder['id'] ?? '');
+            $order->save();
+
+            return;
+        } catch (\Throwable $exception) {
+            if (! $this->isDuplicateRecordError($exception)) {
+                throw $exception;
+            }
+        }
+
+        $existingOrder = $this->findExistingShipinkOrder($order);
+
+        if ($existingOrder === null) {
+            throw new RuntimeException(
+                'Shipink\'te bu sipariş kodu için kayıt zaten var, ancak mevcut sipariş bulunamadı. Shipink panelinden kontrol edip tekrar deneyin.'
+            );
+        }
+
+        $order->shipink_order_id = (string) ($existingOrder['id'] ?? '');
+        $order->save();
+    }
+
+    /**
+     * @return array<string, mixed>|null
+     */
+    private function findExistingShipinkOrder(Order $order): ?array
+    {
+        $salesChannel = $this->config->salesChannel();
+        $channelId = (string) ($salesChannel['id'] ?? '');
+        $reference = (string) $order->code;
+
+        for ($page = 1; $page <= 20; $page++) {
+            $orders = $this->api->listOrders($page, 100);
+
+            if ($orders === []) {
+                break;
+            }
+
+            foreach ($orders as $shipinkOrder) {
+                if (! is_array($shipinkOrder) || ! filled($shipinkOrder['id'] ?? null)) {
+                    continue;
+                }
+
+                $salesChannelData = is_array($shipinkOrder['sales_channel'] ?? null)
+                    ? $shipinkOrder['sales_channel']
+                    : [];
+
+                $matchesChannel = $channelId === ''
+                    || (string) ($salesChannelData['id'] ?? '') === $channelId;
+                $matchesReference = (string) ($salesChannelData['order_id'] ?? '') === $reference
+                    || (string) ($salesChannelData['order_number'] ?? '') === $reference;
+
+                if ($matchesChannel && $matchesReference) {
+                    return $shipinkOrder;
+                }
+            }
+
+            if (count($orders) < 100) {
+                break;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * @param  list<mixed>  $shipments
+     * @return array<string, mixed>|null
+     */
+    private function resolveLatestShipment(array $shipments): ?array
+    {
+        $normalized = collect($shipments)
+            ->filter(fn ($shipment) => is_array($shipment) && filled($shipment['id'] ?? null))
+            ->values();
+
+        if ($normalized->isEmpty()) {
+            return null;
+        }
+
+        return $normalized->last();
+    }
+
+    private function isDuplicateRecordError(\Throwable $exception): bool
+    {
+        $message = strtolower($exception->getMessage());
+
+        return str_contains($message, 'already exists')
+            || str_contains($message, 'duplicate');
     }
 
     private function isCarrierCancelledStatus(string $status): bool

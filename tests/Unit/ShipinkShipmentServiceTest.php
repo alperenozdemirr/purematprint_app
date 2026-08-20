@@ -255,4 +255,69 @@ class ShipinkShipmentServiceTest extends TestCase
 
         $this->assertTrue($result['success']);
     }
+
+    public function test_create_recovers_existing_shipink_order_when_duplicate_record_exists(): void
+    {
+        config([
+            'shipink.username' => 'test-user',
+            'shipink.password' => 'test-pass',
+        ]);
+
+        \App\Models\Setting::saveSingleton([
+            'shipink_warehouse_id' => '11111111-1111-1111-1111-111111111111',
+            'shipink_carrier_account_id' => '22222222-2222-2222-2222-222222222222',
+            'shipink_carrier_provider' => 'own',
+        ]);
+
+        $order = $this->createDomesticOrder([
+            'status' => OrderStatus::PREPARING,
+        ]);
+
+        $api = Mockery::mock(ShipinkApiService::class);
+        $api->shouldReceive('createOrder')->once()->andThrow(new \RuntimeException('Record already exists'));
+        $api->shouldReceive('listOrders')->once()->with(1, 100)->andReturn([
+            [
+                'id' => 'order-existing',
+                'sales_channel' => [
+                    'id' => 'api',
+                    'order_id' => $order->code,
+                    'order_number' => $order->code,
+                ],
+                'shipments' => [
+                    ['id' => 'shipment-existing'],
+                ],
+            ],
+        ]);
+        $api->shouldReceive('getOrder')->once()->with('order-existing')->andReturn([
+            'id' => 'order-existing',
+            'shipments' => [
+                ['id' => 'shipment-existing'],
+            ],
+        ]);
+        $api->shouldReceive('getShipment')->once()->with('shipment-existing')->andReturn([
+            'id' => 'shipment-existing',
+            'carrier' => ['carrier_id' => 'aras'],
+            'tracking' => ['status' => 'created'],
+        ]);
+        $api->shouldNotReceive('createShipment');
+        $api->shouldNotReceive('listCarrierAccounts');
+
+        $warehouse = Mockery::mock(ShipinkWarehouseService::class);
+        $warehouse->shouldNotReceive('ensureReady');
+
+        $service = new ShipinkShipmentService(
+            $api,
+            app(ShipinkConfigService::class),
+            $warehouse,
+            app(OrderPackageCalculator::class),
+        );
+
+        $result = $service->createShipmentForOrder($order->fresh());
+
+        $this->assertTrue($result['success']);
+        $order->refresh();
+        $this->assertSame('order-existing', $order->shipink_order_id);
+        $this->assertSame('shipment-existing', $order->shipink_shipment_id);
+        $this->assertSame(OrderStatus::SHIPPED, $order->status);
+    }
 }
