@@ -183,6 +183,11 @@
             @foreach ($editableGroups as $group)
               @php
                 $selected = $currentSelections[$group->id] ?? [];
+                $hasDefault = $group->items->contains(fn ($item) => (bool) $item->is_default);
+                $showNoneOption = $group->type === \App\Enums\ProductPropertyGroupType::SINGLE
+                    && ! $hasDefault
+                    && $group->items->isNotEmpty();
+                $noneChecked = $showNoneOption && $selected === [];
               @endphp
               <fieldset class="border-[3px] border-ink bg-bg p-4" data-property-group data-group-title="{{ $group->title }}" @if($group->is_required && $group->type === \App\Enums\ProductPropertyGroupType::MULTIPLE) data-required-multiple="1" @endif>
                 <legend class="px-2 font-body text-[12px] font-bold uppercase tracking-[0.04em] text-ink">
@@ -190,6 +195,16 @@
                   @if ($group->is_required)<span class="text-announce">*</span>@endif
                 </legend>
                 <div class="grid gap-2 mt-2">
+                  @if ($showNoneOption)
+                    @php $noneInputId = 'cart-'.$item->id.'-prop-'.$group->id.'-none'; @endphp
+                    <label for="{{ $noneInputId }}" class="flex items-center justify-between gap-3 border-2 border-ink/15 bg-surface px-3 py-2.5 cursor-pointer hover:border-ink has-[:checked]:border-ink has-[:checked]:bg-hover">
+                      <span class="inline-flex items-center gap-2.5 min-w-0">
+                        <input type="radio" id="{{ $noneInputId }}" name="properties[{{ $group->id }}]" value=""
+                               @checked($noneChecked) class="accent-accent shrink-0">
+                        <span class="font-body text-[13px] font-semibold text-muted truncate">Seçim Yok</span>
+                      </span>
+                    </label>
+                  @endif
                   @foreach ($group->items as $propItem)
                     @php
                       $inputId = 'cart-'.$item->id.'-prop-'.$group->id.'-'.$propItem->id;
@@ -200,7 +215,7 @@
                         @if ($group->type === \App\Enums\ProductPropertyGroupType::SINGLE)
                           <input type="radio" id="{{ $inputId }}" name="properties[{{ $group->id }}]" value="{{ $propItem->id }}"
                                  data-property-price="{{ (float) $propItem->price }}" data-property-title="{{ $propItem->title }}"
-                                 @checked($isChecked) @required($group->is_required) class="accent-accent shrink-0">
+                                 @checked($isChecked) @required($group->is_required && ! $showNoneOption) class="accent-accent shrink-0">
                         @else
                           <input type="checkbox" id="{{ $inputId }}" name="properties[{{ $group->id }}][]" value="{{ $propItem->id }}"
                                  data-property-price="{{ (float) $propItem->price }}" data-property-title="{{ $propItem->title }}"

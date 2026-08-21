@@ -73,7 +73,7 @@
             <p class="hero-intro-body mb-7 max-w-[480px] text-[17px] leading-[1.55]" data-i5="hero__desc">{{ $siteSetting->introDescriptionLabel() }}</p>
             <div class="flex flex-wrap gap-3" data-i5="hero__actions">
               <a data-i5="btn--fill" data-i5-tags="btn btn--fill" href="{{ route('collectionList') }}" class="inline-flex items-center gap-2 px-6 py-3.5 font-body text-[13px] font-bold uppercase tracking-[0.06em] border-[3px] border-white bg-announce text-on-dark shadow-brutal transition-[transform,box-shadow,background-color,filter] hover:brightness-110 hover:-translate-x-0.5 hover:-translate-y-0.5">Koleksiyonları Keşfet →</a>
-              <a data-i5="btn--light" data-i5-tags="btn btn--outline btn--light" href="{{ route('shops', ['siralama' => 'featured']) }}" class="inline-flex items-center gap-2 px-6 py-3.5 font-body text-[13px] font-bold uppercase tracking-[0.06em] border-[3px] border-white bg-on-dark/90 text-announce shadow-brutal-sm hover:bg-on-dark">Çok Satanlar</a>
+              <a data-i5="btn--light" data-i5-tags="btn btn--outline btn--light" href="{{ route('shops') }}" class="inline-flex items-center gap-2 px-6 py-3.5 font-body text-[13px] font-bold uppercase tracking-[0.06em] border-[3px] border-white bg-on-dark/90 text-announce shadow-brutal-sm hover:bg-on-dark">Tüm Ürünler</a>
             </div>
           </div>
         </div>

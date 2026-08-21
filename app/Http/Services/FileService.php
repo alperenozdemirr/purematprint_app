@@ -8,6 +8,7 @@ use App\Enums\ContentType;
 use App\Enums\FileType;
 use App\Models\File;
 use App\Support\MediaPath;
+use App\Support\RandomFileName;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -80,7 +81,7 @@ class FileService
         ?int $userId = null,
     ): File {
         $extension = strtolower(pathinfo($originalName, PATHINFO_EXTENSION) ?: pathinfo($localRelativePath, PATHINFO_EXTENSION));
-        $fileName = Str::uuid()->toString().($extension !== '' ? '.'.$extension : '');
+        $fileName = RandomFileName::generate($extension);
         $relativePath = MediaPath::ORDER_FILE.'/'.$fileName;
 
         $absolutePath = Storage::disk('local')->path($localRelativePath);
@@ -110,7 +111,7 @@ class FileService
             $userId,
             $orderId,
             $number,
-            $originalName,
+            $fileName,
         );
     }
 
@@ -177,7 +178,7 @@ class FileService
         }
 
         $extension = strtolower(pathinfo($originalName, PATHINFO_EXTENSION) ?: pathinfo($localRelativePath, PATHINFO_EXTENSION));
-        $fileName = Str::uuid()->toString().($extension !== '' ? '.'.$extension : '');
+        $fileName = RandomFileName::generate($extension);
         $relativePath = MediaPath::ORDER_DESIGN.'/'.$fileName;
 
         $absolutePath = Storage::disk('local')->path($localRelativePath);
@@ -207,7 +208,7 @@ class FileService
             $userId,
             $orderId,
             1,
-            $originalName,
+            $fileName,
         );
     }
 

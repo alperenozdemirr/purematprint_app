@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Services;
 
+use App\Support\RandomFileName;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
 
 class CheckoutOrderFileService
 {
@@ -38,7 +38,7 @@ class CheckoutOrderFileService
                 continue;
             }
 
-            $safeName = Str::uuid()->toString().'.'.$extension;
+            $safeName = RandomFileName::generate($extension);
             $path = $file->storeAs($directory, $safeName, 'local');
 
             if (! is_string($path) || $path === '') {
@@ -47,7 +47,7 @@ class CheckoutOrderFileService
 
             $stored[] = [
                 'path' => $path,
-                'original_name' => (string) $file->getClientOriginalName(),
+                'original_name' => $safeName,
                 'extension' => $extension,
                 'size' => (int) $file->getSize(),
             ];

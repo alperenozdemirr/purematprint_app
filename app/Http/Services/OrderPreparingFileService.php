@@ -15,6 +15,7 @@ use App\Jobs\UploadOrderDesignJob;
 use App\Models\File;
 use App\Models\Order;
 use App\Models\OrderDesignRequest;
+use App\Support\RandomFileName;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -53,7 +54,7 @@ class OrderPreparingFileService
         }
 
         $directory = self::TEMP_ROOT.'/'.$kind.'/'.$orderId.'/'.Str::uuid()->toString();
-        $safeName = Str::uuid()->toString().'.'.$extension;
+        $safeName = RandomFileName::generate($extension);
         $path = $file->storeAs($directory, $safeName, 'local');
 
         if (! is_string($path) || $path === '') {
@@ -64,7 +65,7 @@ class OrderPreparingFileService
 
         return [
             'path' => $path,
-            'original_name' => (string) $file->getClientOriginalName(),
+            'original_name' => $safeName,
             'extension' => $extension,
             'size' => (int) $file->getSize(),
         ];
