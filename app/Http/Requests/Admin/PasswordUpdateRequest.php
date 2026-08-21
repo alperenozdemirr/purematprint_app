@@ -16,7 +16,7 @@ class PasswordUpdateRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'current_password' => ['required', 'current_password'],
+            'current_password' => ['required', 'current_password:admin'],
             'password' => ['required', 'string', 'min:6', 'confirmed'],
         ];
     }
@@ -26,6 +26,13 @@ class PasswordUpdateRequest extends FormRequest
         return [
             'current_password' => 'mevcut şifre',
             'password' => 'yeni şifre',
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'current_password.current_password' => 'Mevcut şifre hatalı.',
         ];
     }
 }
