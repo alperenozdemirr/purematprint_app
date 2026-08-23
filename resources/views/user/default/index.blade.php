@@ -6,38 +6,6 @@
 @php
   $introTitleLines = $siteSetting->introTitleLines();
 @endphp
-@once
-<style>
-  [data-hero-intro-copy] .hero-intro-heading {
-    color: #b61d0f;
-    -webkit-text-stroke: 2px #fffdf8;
-    paint-order: stroke fill;
-    text-shadow:
-      0 0 12px rgba(255, 253, 248, 0.55),
-      2px 0 0 #fffdf8,
-      -2px 0 0 #fffdf8,
-      0 2px 0 #fffdf8,
-      0 -2px 0 #fffdf8;
-  }
-
-  [data-hero-intro-copy] .hero-intro-body {
-    color: #b61d0f;
-    -webkit-text-stroke: 0.65px #fffdf8;
-    paint-order: stroke fill;
-    text-shadow:
-      0 0 6px rgba(255, 253, 248, 0.35),
-      1px 0 0 rgba(255, 253, 248, 0.85),
-      -1px 0 0 rgba(255, 253, 248, 0.85),
-      0 1px 0 rgba(255, 253, 248, 0.85);
-  }
-
-  @media (min-width: 768px) {
-    [data-hero-intro-copy] .hero-intro-heading {
-      -webkit-text-stroke-width: 2.5px;
-    }
-  }
-</style>
-@endonce
  <!-- Hero -->
   <section
     data-hero-intro
@@ -62,18 +30,19 @@
         decoding="async"
         fetchpriority="high"
       >
+      <div class="pointer-events-none absolute inset-0 z-[1] bg-gradient-to-b from-ink/45 via-ink/55 to-ink/80" aria-hidden="true"></div>
       <div class="absolute inset-x-0 bottom-0 z-[2] flex w-full items-end py-14 pb-16 min-[768px]:py-[72px] min-[768px]:pb-20" data-hero-intro-overlay data-i5="hero__overlay">
         <div class="w-full max-w-site mx-auto px-5 lg:px-8" data-i5="container">
           <div class="max-w-[560px]" data-hero-intro-copy data-i5="hero__copy">
-            <h1 class="hero-intro-heading mb-5 font-heading text-hero-title font-bold leading-[0.98] tracking-[-0.03em] normal-case" data-i5="hero__title">
+            <h1 class="mb-5 font-heading text-hero-title font-bold leading-[0.98] tracking-[-0.03em] text-white normal-case" data-i5="hero__title">
               @foreach ($introTitleLines as $index => $line)
-                @if ($index === 0){{ $line }}@else<span class="block">{{ $line }}</span>@endif
+                @if ($index === 0){{ $line }}@else<span class="block text-white opacity-90">{{ $line }}</span>@endif
               @endforeach
             </h1>
-            <p class="hero-intro-body mb-7 max-w-[480px] text-[17px] leading-[1.55]" data-i5="hero__desc">{{ $siteSetting->introDescriptionLabel() }}</p>
+            <p class="mb-7 max-w-[480px] text-[17px] text-[rgba(255,252,247,0.88)]" data-i5="hero__desc">{{ $siteSetting->introDescriptionLabel() }}</p>
             <div class="flex flex-wrap gap-3" data-i5="hero__actions">
-              <a data-i5="btn--fill" data-i5-tags="btn btn--fill" href="{{ route('collectionList') }}" class="inline-flex items-center gap-2 px-6 py-3.5 font-body text-[13px] font-bold uppercase tracking-[0.06em] border-[3px] border-white bg-announce text-on-dark shadow-brutal transition-[transform,box-shadow,background-color,filter] hover:brightness-110 hover:-translate-x-0.5 hover:-translate-y-0.5">Koleksiyonları Keşfet →</a>
-              <a data-i5="btn--light" data-i5-tags="btn btn--outline btn--light" href="{{ route('shops') }}" class="inline-flex items-center gap-2 px-6 py-3.5 font-body text-[13px] font-bold uppercase tracking-[0.06em] border-[3px] border-white bg-on-dark/90 text-announce shadow-brutal-sm hover:bg-on-dark">Tüm Ürünler</a>
+              <a data-i5="btn--fill" data-i5-tags="btn btn--fill" href="{{ route('collectionList') }}" class="inline-flex items-center gap-2 px-6 py-3.5 font-body text-[13px] font-bold uppercase tracking-[0.06em] border-[3px] border-ink transition-[transform,box-shadow,background-color] bg-action text-on-dark shadow-brutal hover:bg-action-hover hover:-translate-x-0.5 hover:-translate-y-0.5">Koleksiyonları Keşfet →</a>
+              <a data-i5="btn--light" data-i5-tags="btn btn--outline btn--light" href="{{ route('shops') }}" class="inline-flex items-center gap-2 px-6 py-3.5 font-body text-[13px] font-bold uppercase tracking-[0.06em] border-[3px] border-white bg-transparent text-white shadow-none hover:bg-white/10">Tüm Ürünler</a>
             </div>
           </div>
         </div>
@@ -221,23 +190,23 @@
       <div class="grid gap-0 border-[3px] border-ink shadow-brutal min-[768px]:grid-cols-2 min-[1024px]:grid-cols-4" data-i5="process__grid">
         <div data-i5="reveal" data-i5-tags="process__step reveal" class="p-7 bg-surface border-b-[3px] border-ink min-[768px]:border-b-0 min-[768px]:border-r-[3px] hover:bg-hover opacity-0 translate-y-6 transition-all duration-700 [&.is-revealed]:opacity-100 [&.is-revealed]:translate-y-0">
           <div class="font-body text-[56px] font-bold leading-none text-accent mb-3" data-i5="process__num">01</div>
-          <h3 class="font-heading text-base font-bold uppercase tracking-tight mb-2">Brief & Tasarım</h3>
+          <h3 class="font-heading text-base font-bold uppercase tracking-tight mb-2">Tasarım</h3>
           <p class="text-sm text-muted leading-relaxed">İhtiyacınızı dinliyor, dosyalarınızı kontrol ediyoruz.</p>
         </div>
         <div data-i5="reveal" data-i5-tags="process__step reveal" class="p-7 bg-surface border-b-[3px] border-ink min-[768px]:border-b-0 min-[768px]:border-r-[3px] hover:bg-hover opacity-0 translate-y-6 transition-all duration-700 [&.is-revealed]:opacity-100 [&.is-revealed]:translate-y-0">
           <div class="font-body text-[56px] font-bold leading-none text-accent mb-3" data-i5="process__num">02</div>
-          <h3 class="font-heading text-base font-bold uppercase tracking-tight mb-2">Prova & Onay</h3>
-          <p class="text-sm text-muted leading-relaxed">Dijital prova gönderiyor, onayınızı alıyoruz.</p>
+          <h3 class="font-heading text-base font-bold uppercase tracking-tight mb-2">Onay</h3>
+          <p class="text-sm text-muted leading-relaxed">Üretim öncesi son onayınızı alıyoruz.</p>
         </div>
         <div data-i5="reveal" data-i5-tags="process__step reveal" class="p-7 bg-surface border-b-[3px] border-ink min-[768px]:border-b-0 min-[768px]:border-r-[3px] hover:bg-hover opacity-0 translate-y-6 transition-all duration-700 [&.is-revealed]:opacity-100 [&.is-revealed]:translate-y-0">
           <div class="font-body text-[56px] font-bold leading-none text-accent mb-3" data-i5="process__num">03</div>
           <h3 class="font-heading text-base font-bold uppercase tracking-tight mb-2">Üretim</h3>
-          <p class="text-sm text-muted leading-relaxed">CNC kesim, UV baskı ve el işçiliği.</p>
+          <p class="text-sm text-muted leading-relaxed">Dijital baskı, lazer kesim ve el işçiliği ile siparişinizi üretiyoruz.</p>
         </div>
         <div data-i5="reveal" data-i5-tags="process__step reveal" class="p-7 bg-surface border-b-[3px] border-ink min-[768px]:border-b-0 min-[768px]:border-r-[3px] hover:bg-hover opacity-0 translate-y-6 transition-all duration-700 [&.is-revealed]:opacity-100 [&.is-revealed]:translate-y-0">
           <div class="font-body text-[56px] font-bold leading-none text-accent mb-3" data-i5="process__num">04</div>
           <h3 class="font-heading text-base font-bold uppercase tracking-tight mb-2">Teslimat</h3>
-          <p class="text-sm text-muted leading-relaxed">Kargo veya profesyonel montaj ekibi.</p>
+          <p class="text-sm text-muted leading-relaxed">Sunduğumuz opsiyonlu teslimat seçenekleri ile ürün size teslim edilir.</p>
         </div>
       </div>
     </div>

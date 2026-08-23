@@ -188,7 +188,7 @@
             <a href="{{ route('loginPage', ['redirect' => $loginRedirect]) }}"
                data-pdp-login-cta
                class="inline-flex items-center justify-center gap-2 w-full px-6 py-3.5 font-body text-[13px] font-bold uppercase tracking-[0.06em] text-center border-[3px] border-ink bg-action text-on-dark shadow-brutal hover:bg-action-hover hover:-translate-x-0.5 hover:-translate-y-0.5" data-i5="btn--fill">
-              Giriş Yapıp Sepete Ekle
+              Sepete Ekle
             </a>
           @endif
 
@@ -220,7 +220,6 @@
             @endif
             <ul class="mt-4 space-y-2 list-disc pl-4">
               <li>Ürün kodu: {{ $product->code }}</li>
-              <li>Stok: {{ $product->stock_count }} adet</li>
             </ul>
           </div>
         </section>
