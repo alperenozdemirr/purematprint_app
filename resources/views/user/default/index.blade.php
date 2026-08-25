@@ -213,6 +213,12 @@
   </section>
 
   <!-- Müşteri yorumları -->
+  @php
+    $useRealReviews = $showRealReviews && $homepageReviews->isNotEmpty();
+    $useDemoReviews = ! $useRealReviews && $homepageDemoReviews->isNotEmpty();
+    $reviewPlaceholder = asset('user/assets/foto5.jpeg');
+  @endphp
+  @if ($useRealReviews || $useDemoReviews)
   <section class="py-16 bg-bg border-t border-ink/12 min-[768px]:py-[88px]" id="yorumlar" aria-labelledby="yorumlar-baslik" data-i5="testimonials">
     <div class="w-full max-w-site mx-auto px-5 lg:px-8" data-i5="container">
       <div data-i5="reveal" data-i5-tags="testimonials__head reveal" class="flex items-center justify-center gap-4 mb-10 min-[768px]:gap-6 min-[768px]:mb-12 opacity-0 translate-y-6 transition-all duration-700 [&.is-revealed]:opacity-100 [&.is-revealed]:translate-y-0">
@@ -226,10 +232,6 @@
       </div>
       <div data-i5="reveal" data-i5-tags="testimonials__slider reveal" class="relative opacity-0 translate-y-6 transition-all duration-700 [&.is-revealed]:opacity-100 [&.is-revealed]:translate-y-0" data-i5-testimonials>
         <div class="grid relative" data-i5="testimonials__slides">
-          @php
-            $useRealReviews = $showRealReviews && $homepageReviews->isNotEmpty();
-            $reviewPlaceholder = asset('user/assets/foto5.jpeg');
-          @endphp
           @if ($useRealReviews)
             @foreach ($homepageReviews as $index => $review)
               @php
@@ -250,51 +252,27 @@
               </article>
             @endforeach
           @else
-          <article class="col-start-1 row-start-1 grid gap-8 items-center opacity-0 invisible transition-[opacity,visibility] duration-[450ms] ease-out pointer-events-none min-[900px]:grid-cols-[1fr_minmax(280px,0.85fr)] min-[900px]:gap-x-16 min-[900px]:gap-y-12 is-active [&.is-active]:opacity-100 [&.is-active]:visible [&.is-active]:pointer-events-auto [&.is-active]:z-[1]" data-i5="testimonials__slide">
-            <div >
-              <div class="text-[#c9a227] text-lg tracking-[0.12em] mb-5" aria-hidden="true" data-i5="testimonials__stars">★★★★★</div>
-              <blockquote class="font-heading mb-6 text-[clamp(1.35rem,3.2vw,2.25rem)] font-bold leading-[1.15] tracking-[-0.02em] text-balance" data-i5="testimonials__quote">İşlerine gerçekten özen gösteriyorlar. Mağazamızın varlığını müşteriler içeri girmeden yükseltiyor.</blockquote>
-              <p class="m-0 text-sm text-muted tracking-[0.02em]" data-i5="testimonials__author">— Elif Yılmaz, Studio Noir</p>
-            </div>
-            <div class="aspect-[4/3] overflow-hidden bg-surface" data-i5="testimonials__media">
-              <img src="{{asset('user')}}/assets/foto1.jpeg" alt="LED lightbox vitrin uygulaması" loading="lazy">
-            </div>
-          </article>
-          <article class="col-start-1 row-start-1 grid gap-8 items-center opacity-0 invisible transition-[opacity,visibility] duration-[450ms] ease-out pointer-events-none min-[900px]:grid-cols-[1fr_minmax(280px,0.85fr)] min-[900px]:gap-x-16 min-[900px]:gap-y-12 [&.is-active]:opacity-100 [&.is-active]:visible [&.is-active]:pointer-events-auto [&.is-active]:z-[1]" data-i5="testimonials__slide">
-            <div >
-              <div class="text-[#c9a227] text-lg tracking-[0.12em] mb-5" aria-hidden="true" data-i5="testimonials__stars">★★★★★</div>
-              <blockquote class="font-heading mb-6 text-[clamp(1.35rem,3.2vw,2.25rem)] font-bold leading-[1.15] tracking-[-0.02em] text-balance" data-i5="testimonials__quote">Zamansız sadelik ve profesyonellik bir arada. Her projede güvenle yönlendiriyorum.</blockquote>
-              <p class="m-0 text-sm text-muted tracking-[0.02em]" data-i5="testimonials__author">— Can Demir, Demir Mimarlık</p>
-            </div>
-            <div class="aspect-[4/3] overflow-hidden bg-surface" data-i5="testimonials__media">
-              <img src="{{asset('user')}}/assets/WhatsApp Image 2026-06-27 at 00.28.44.jpeg" alt="Açık hava tabela uygulaması" loading="lazy">
-            </div>
-          </article>
-          <article class="col-start-1 row-start-1 grid gap-8 items-center opacity-0 invisible transition-[opacity,visibility] duration-[450ms] ease-out pointer-events-none min-[900px]:grid-cols-[1fr_minmax(280px,0.85fr)] min-[900px]:gap-x-16 min-[900px]:gap-y-12 [&.is-active]:opacity-100 [&.is-active]:visible [&.is-active]:pointer-events-auto [&.is-active]:z-[1]" data-i5="testimonials__slide">
-            <div >
-              <div class="text-[#c9a227] text-lg tracking-[0.12em] mb-5" aria-hidden="true" data-i5="testimonials__stars">★★★★★</div>
-              <blockquote class="font-heading mb-6 text-[clamp(1.35rem,3.2vw,2.25rem)] font-bold leading-[1.15] tracking-[-0.02em] text-balance" data-i5="testimonials__quote">Yoğun dönemlerde PureMatPrint'e güveniyoruz. Hızlı prova, kusursuz teslimat.</blockquote>
-              <p class="m-0 text-sm text-muted tracking-[0.02em]" data-i5="testimonials__author">— Zeynep Kaya, Kaya Coffee</p>
-            </div>
-            <div class="aspect-[4/3] overflow-hidden bg-surface" data-i5="testimonials__media">
-              <img src="{{asset('user')}}/assets/foto2.jpeg" alt="Roll-up banner ve display uygulaması" loading="lazy">
-            </div>
-          </article>
-          <article class="col-start-1 row-start-1 grid gap-8 items-center opacity-0 invisible transition-[opacity,visibility] duration-[450ms] ease-out pointer-events-none min-[900px]:grid-cols-[1fr_minmax(280px,0.85fr)] min-[900px]:gap-x-16 min-[900px]:gap-y-12 [&.is-active]:opacity-100 [&.is-active]:visible [&.is-active]:pointer-events-auto [&.is-active]:z-[1]" data-i5="testimonials__slide">
-            <div >
-              <div class="text-[#c9a227] text-lg tracking-[0.12em] mb-5" aria-hidden="true" data-i5="testimonials__stars">★★★★★</div>
-              <blockquote class="font-heading mb-6 text-[clamp(1.35rem,3.2vw,2.25rem)] font-bold leading-[1.15] tracking-[-0.02em] text-balance" data-i5="testimonials__quote">Marka kimliğimizi mekâna taşıyan güvenilir bir ortak. Detaylara verdikleri önem fark yaratıyor.</blockquote>
-              <p class="m-0 text-sm text-muted tracking-[0.02em]" data-i5="testimonials__author">— Selin Arslan, Atlas Reklam</p>
-            </div>
-            <div class="aspect-[4/3] overflow-hidden bg-surface" data-i5="testimonials__media">
-              <img src="{{asset('user')}}/assets/foto3.jpeg" alt="Kafe tezgâhı display uygulaması" loading="lazy">
-            </div>
-          </article>
+            @foreach ($homepageDemoReviews as $index => $demoReview)
+              @php
+                $stars = (int) max(1, min(5, (int) $demoReview->stars));
+              @endphp
+              <article class="col-start-1 row-start-1 grid gap-8 items-center opacity-0 invisible transition-[opacity,visibility] duration-[450ms] ease-out pointer-events-none min-[900px]:grid-cols-[1fr_minmax(280px,0.85fr)] min-[900px]:gap-x-16 min-[900px]:gap-y-12 {{ $index === 0 ? 'is-active' : '' }} [&.is-active]:opacity-100 [&.is-active]:visible [&.is-active]:pointer-events-auto [&.is-active]:z-[1]" data-i5="testimonials__slide">
+                <div>
+                  <div class="text-[#c9a227] text-lg tracking-[0.12em] mb-5" aria-hidden="true" data-i5="testimonials__stars">{{ str_repeat('★', $stars) }}{{ str_repeat('☆', 5 - $stars) }}</div>
+                  <blockquote class="font-heading mb-6 text-[clamp(1.35rem,3.2vw,2.25rem)] font-bold leading-[1.15] tracking-[-0.02em] text-balance" data-i5="testimonials__quote">{{ $demoReview->quote }}</blockquote>
+                  <p class="m-0 text-sm text-muted tracking-[0.02em]" data-i5="testimonials__author">— {{ $demoReview->author }}</p>
+                </div>
+                <div class="aspect-[4/3] overflow-hidden bg-surface border-[3px] border-ink" data-i5="testimonials__media">
+                  <img src="{{ $demoReview->image?->url ?? $reviewPlaceholder }}" alt="{{ $demoReview->author }}" class="w-full h-full object-cover" loading="lazy">
+                </div>
+              </article>
+            @endforeach
           @endif
         </div>
       </div>
     </div>
   </section>
+  @endif
 
   <!-- Team Note -->
   <section class="py-[72px] border-b border-ink/12 bg-bg min-[768px]:py-[88px]" id="ekip-notu" data-i5="note">

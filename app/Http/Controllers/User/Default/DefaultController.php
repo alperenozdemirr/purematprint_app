@@ -10,6 +10,7 @@ use App\Models\Banner;
 use App\Models\Comment;
 use App\Models\Company;
 use App\Models\Faq;
+use App\Models\HomepageDemoReview;
 use App\Models\Product;
 use App\Models\Setting;
 use Illuminate\Support\Collection;
@@ -48,6 +49,9 @@ class DefaultController extends Controller
         $homepageReviews = $showRealReviews
             ? $this->visibleHomepageReviews()
             : collect();
+        $homepageDemoReviews = $showRealReviews
+            ? collect()
+            : HomepageDemoReview::visibleOrdered()->with('image')->get();
 
         $homepageFaqs = Faq::query()
             ->fixed()
@@ -60,6 +64,7 @@ class DefaultController extends Controller
             'tickerCompanies',
             'showRealReviews',
             'homepageReviews',
+            'homepageDemoReviews',
             'homepageFaqs',
         ));
     }

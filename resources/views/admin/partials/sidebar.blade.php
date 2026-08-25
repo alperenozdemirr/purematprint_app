@@ -93,6 +93,10 @@
       <svg width="19" height="19" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 21h18M5 21V7l8-4 8 4v14M9 21v-6h6v6"/></svg>
       <span class="admin-nav-text">Referans Firmalar</span>
     </a>
+    <a href="{{ route('admin.homepageDemoReviewList') }}" title="Demo Yorumlar" class="{{ $navLink }} {{ request()->routeIs('admin.homepageDemoReview*') ? $navLinkActive : '' }}">
+      <svg width="19" height="19" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      <span class="admin-nav-text">Demo Yorumlar</span>
+    </a>
 
     <p class="{{ $navLabel }}">Sistem</p>
     <a href="{{ route('admin.account') }}" title="Hesabım" class="{{ $navLink }} {{ request()->routeIs('admin.account*') ? $navLinkActive : '' }}">

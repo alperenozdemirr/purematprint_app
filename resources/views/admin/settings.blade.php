@@ -27,6 +27,9 @@
           <input type="checkbox" name="show_real_homepage_reviews" value="1" class="h-4 w-4 accent-accent" @checked(old('show_real_homepage_reviews', $setting->show_real_homepage_reviews))>
           <span class="font-body text-[14px] text-ink">Anasayfada gerçek müşteri yorumlarını göster (kapalıysa demo yorumlar görünür)</span>
         </label>
+        <p class="font-body text-[12px] text-muted">
+          Demo yorumları <a href="{{ route('admin.homepageDemoReviewList') }}" class="font-semibold text-accent underline underline-offset-2">Demo Yorumlar</a> bölümünden yönetebilirsiniz.
+        </p>
       </div>
     </section>
 

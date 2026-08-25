@@ -10,6 +10,7 @@ enum ContentType: string
     case COLLECTION = 'collection';
     case BLOG = 'blog';
     case COMMENT = 'comment';
+    case HOMEPAGE_DEMO_REVIEW = 'homepage_demo_review';
     case ORDER_FILE = 'order_file';
     case ORDER_INVOICE = 'order_invoice';
     case ORDER_DESIGN = 'order_design';

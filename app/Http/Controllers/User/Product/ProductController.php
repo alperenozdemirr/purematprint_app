@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\User\Product;
 
 use App\Enums\Status;
+use App\Enums\UserType;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\User\ProductIndexRequest;
 use App\Http\Services\FlexSearchService;
@@ -12,6 +13,7 @@ use App\Models\Category;
 use App\Models\Collection;
 use App\Models\Faq;
 use App\Models\Product;
+use App\Models\ShoppingCart;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -88,6 +90,15 @@ class ProductController extends Controller
             ->ordered()
             ->get();
 
+        $cartOtherItemsCount = 0;
+        $user = auth()->user();
+        if ($user && $user->type === UserType::USER && $user->status === Status::ACTIVE) {
+            $cartOtherItemsCount = ShoppingCart::query()
+                ->where('user_id', $user->id)
+                ->where('product_id', '!=', $product->id)
+                ->count();
+        }
+
         return view('user.shop-detail', compact(
             'product',
             'categoryFilter',
@@ -95,6 +106,7 @@ class ProductController extends Controller
             'productReviews',
             'defaultPropertySelections',
             'homepageFaqs',
+            'cartOtherItemsCount',
         ));
     }
 

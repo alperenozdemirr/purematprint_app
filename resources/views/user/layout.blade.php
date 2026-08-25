@@ -372,7 +372,9 @@
       </div>
     </div>
   </footer>
+  @include('user.partials.ui-dialog')
   @stack('scripts')
+  <script src="{{ asset('user/js/ui-dialog.js') }}"></script>
   <script src="{{ asset('user/js/search.js') }}"></script>
   <!-- index5.js (menü, carousel, ticker) -->
   <script src="{{asset('user')}}/js/index5.js"></script>

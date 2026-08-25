@@ -32,6 +32,7 @@ use App\Http\Controllers\Admin\Setting\SettingController as AdminSettingControll
 use App\Http\Controllers\Admin\Setting\ShipinkSettingController as AdminShipinkSettingController;
 use App\Http\Controllers\Admin\Blog\BlogController as AdminBlogController;
 use App\Http\Controllers\Admin\Company\CompanyController as AdminCompanyController;
+use App\Http\Controllers\Admin\HomepageDemoReview\HomepageDemoReviewController as AdminHomepageDemoReviewController;
 use App\Http\Controllers\Admin\Account\AccountController as AdminAccountController;
 use App\Http\Controllers\Admin\Newsletter\NewsletterController as AdminNewsletterController;
 use App\Http\Controllers\Admin\Notification\NotificationController as AdminNotificationController;
@@ -227,6 +228,13 @@ Route::group(['prefix' => 'admin/', 'middleware' => 'admin'], function () {
     Route::post('companies/update', [AdminCompanyController::class, 'update'])->name('admin.companyUpdate');
     Route::get('companies/{id}/delete', [AdminCompanyController::class, 'destroy'])->name('admin.companyDelete');
     Route::get('companies/{id}', [AdminCompanyController::class, 'show'])->name('admin.companyEditPage');
+
+    Route::get('homepage-demo-reviews', [AdminHomepageDemoReviewController::class, 'index'])->name('admin.homepageDemoReviewList');
+    Route::get('homepage-demo-reviews/create', [AdminHomepageDemoReviewController::class, 'storePage'])->name('admin.homepageDemoReviewStorePage');
+    Route::post('homepage-demo-reviews/store', [AdminHomepageDemoReviewController::class, 'store'])->name('admin.homepageDemoReviewStore');
+    Route::post('homepage-demo-reviews/update', [AdminHomepageDemoReviewController::class, 'update'])->name('admin.homepageDemoReviewUpdate');
+    Route::get('homepage-demo-reviews/{id}/delete', [AdminHomepageDemoReviewController::class, 'destroy'])->name('admin.homepageDemoReviewDelete');
+    Route::get('homepage-demo-reviews/{id}', [AdminHomepageDemoReviewController::class, 'show'])->name('admin.homepageDemoReviewEditPage');
 
     Route::get('faq-groups', [AdminFaqGroupController::class, 'index'])->name('admin.faqGroupList');
     Route::get('faq-groups/create', [AdminFaqGroupController::class, 'storePage'])->name('admin.faqGroupStorePage');

@@ -20,6 +20,7 @@ class CartStoreRequest extends FormRequest
             'quantity' => ['nullable', 'integer', 'min:1', 'max:999'],
             'properties' => ['nullable', 'array'],
             'properties.*' => ['nullable'],
+            'after_action' => ['nullable', 'in:cart,checkout'],
         ];
     }
 

@@ -46,6 +46,9 @@ class FileService
         } elseif ($contentType == ContentType::COMMENT) {
             $baseDirectory = MediaPath::COMMENT;
             $contentType = ContentType::COMMENT;
+        } elseif ($contentType == ContentType::HOMEPAGE_DEMO_REVIEW) {
+            $baseDirectory = MediaPath::HOMEPAGE_DEMO_REVIEW;
+            $contentType = ContentType::HOMEPAGE_DEMO_REVIEW;
         }
 
         if ($baseDirectory === null) {

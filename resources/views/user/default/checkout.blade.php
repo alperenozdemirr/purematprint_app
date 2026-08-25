@@ -176,10 +176,6 @@
                     <p class="text-xs text-muted leading-relaxed">Yurt içi teslimat adreslerinde iyzico ödeme sayfasına yönlendirilirsiniz.</p>
                   </div>
                 </div>
-                <div class="p-4 border-[3px] border-dashed border-ink bg-bg text-xs text-muted leading-relaxed">
-                  <p class="font-bold text-ink mb-2">Sandbox test kartı</p>
-                  <p>Kart No: <strong>5528 7900 0000 0000</strong> · SKT: <strong>12/30</strong> · CVV: <strong>123</strong></p>
-                </div>
               </div>
 
               <div id="checkout-payment-stripe" class="grid gap-4 {{ $isInternationalCheckout ? '' : 'hidden' }}">
@@ -189,10 +185,6 @@
                     <p class="font-body text-sm font-bold uppercase tracking-[0.04em] mb-1">Stripe ile Güvenli Ödeme</p>
                     <p class="text-xs text-muted leading-relaxed">Yurt dışı teslimat adreslerinde Stripe ödeme sayfasına yönlendirilirsiniz.</p>
                   </div>
-                </div>
-                <div class="p-4 border-[3px] border-dashed border-ink bg-bg text-xs text-muted leading-relaxed">
-                  <p class="font-bold text-ink mb-2">Stripe test kartı</p>
-                  <p>Kart No: <strong>4242 4242 4242 4242</strong> · SKT: gelecekte herhangi bir tarih · CVV: herhangi 3 hane</p>
                 </div>
               </div>
             </div>

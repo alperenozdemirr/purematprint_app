@@ -20,6 +20,8 @@ class MediaPath
 
     public const COMMENT = 'shared_directory/images/comments';
 
+    public const HOMEPAGE_DEMO_REVIEW = 'shared_directory/images/homepage_demo_reviews';
+
     public const ORDER_FILE = 'shared_directory/files/order_files';
 
     public const ORDER_INVOICE = 'shared_directory/files/order_invoices';
@@ -40,6 +42,7 @@ class MediaPath
             ContentType::COLLECTION->value => self::COLLECTION,
             ContentType::BLOG->value => self::BLOG,
             ContentType::COMMENT->value => self::COMMENT,
+            ContentType::HOMEPAGE_DEMO_REVIEW->value => self::HOMEPAGE_DEMO_REVIEW,
             ContentType::ORDER_FILE->value => self::ORDER_FILE,
             ContentType::ORDER_INVOICE->value => self::ORDER_INVOICE,
             ContentType::ORDER_DESIGN->value => self::ORDER_DESIGN,

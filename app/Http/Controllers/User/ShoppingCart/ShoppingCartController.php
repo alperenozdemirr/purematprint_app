@@ -97,9 +97,11 @@ class ShoppingCartController extends Controller
             ]);
         }
 
+        $afterAction = $data['after_action'] ?? 'cart';
+
         return redirect()
-            ->route('cart')
-            ->with('success', 'Ürün sepete eklendi.');
+            ->route($afterAction === 'checkout' ? 'checkout' : 'cart')
+            ->with('success', $afterAction === 'checkout' ? 'Ürün sepete eklendi, ödemeye yönlendiriliyorsunuz.' : 'Ürün sepete eklendi.');
     }
 
     public function update(CartUpdateRequest $request): RedirectResponse

@@ -272,13 +272,11 @@ function initPdpBandCarousels() {
     const root = slider.closest('[data-pdp-properties]') || slider.parentElement;
     const prev = root?.querySelector('[data-pdp-band-prev]');
     const next = root?.querySelector('[data-pdp-band-next]');
-    const fadeLeft = slider.querySelector('[data-pdp-band-fade-left]');
     const fadeRight = slider.querySelector('[data-pdp-band-fade-right]');
     const desktopQuery = window.matchMedia('(min-width: 960px)');
 
     const syncFades = () => {
       if (!desktopQuery.matches) {
-        fadeLeft?.classList.add('hidden');
         fadeRight?.classList.add('hidden');
         prev?.setAttribute('disabled', 'disabled');
         next?.setAttribute('disabled', 'disabled');
@@ -287,7 +285,6 @@ function initPdpBandCarousels() {
 
       const maxScroll = track.scrollWidth - track.clientWidth;
       if (maxScroll <= 4) {
-        fadeLeft?.classList.add('hidden');
         fadeRight?.classList.add('hidden');
         prev?.setAttribute('disabled', 'disabled');
         next?.setAttribute('disabled', 'disabled');
@@ -296,7 +293,6 @@ function initPdpBandCarousels() {
 
       const atStart = track.scrollLeft <= 4;
       const atEnd = track.scrollLeft >= maxScroll - 4;
-      fadeLeft?.classList.toggle('hidden', atStart);
       fadeRight?.classList.toggle('hidden', atEnd);
       prev?.toggleAttribute('disabled', atStart);
       next?.toggleAttribute('disabled', atEnd);

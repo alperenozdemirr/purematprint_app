@@ -49,7 +49,7 @@
   $waLink = $siteSetting->whatsappLink('Merhaba, "' . $product->title . '" ürünü için teklif almak istiyorum.');
   $propertyGroups = $product->propertyGroups->filter(fn ($g) => $g->items->isNotEmpty());
   $descriptionPlain = trim(strip_tags(html_entity_decode($product->description ?? '', ENT_QUOTES | ENT_HTML5, 'UTF-8')));
-  $descriptionExcerptLimit = 280;
+  $descriptionExcerptLimit = 110;
   $descriptionExcerpt = $descriptionPlain !== '' ? \Illuminate\Support\Str::limit($descriptionPlain, $descriptionExcerptLimit) : '';
   $hasFullDescription = $descriptionPlain !== '';
   $showDescriptionTeaser = $hasFullDescription && (strlen($descriptionPlain) > $descriptionExcerptLimit || str_contains($product->description ?? '', '<'));
@@ -83,7 +83,7 @@
             && auth()->user()->status === \App\Enums\Status::ACTIVE;
         $loginRedirect = parse_url(route('shopDetail', $product->slug), PHP_URL_PATH) ?: '/';
       @endphp
-      <form method="post" action="{{ route('cartStore') }}" data-pdp-cart-form data-product-form data-product-id="{{ $product->id }}"
+      <form method="post" action="{{ route('cartStore') }}" data-pdp-cart-form data-product-form data-product-id="{{ $product->id }}" data-cart-other-count="{{ $cartOtherItemsCount ?? 0 }}"
             class="grid grid-cols-1 gap-10 min-[960px]:grid-cols-2 min-[960px]:gap-x-14 min-[960px]:gap-y-4 min-[960px]:items-start" data-i5="product-page__grid">
         @csrf
         <input type="hidden" name="product_id" value="{{ $product->id }}">
@@ -149,7 +149,7 @@
 
           @if ($hasFullDescription)
             <div class="mb-8 max-w-[520px]" data-i5="pdp-info__desc">
-              <p class="m-0 text-muted leading-[1.7]">{{ $descriptionExcerpt }}</p>
+              <p class="m-0 text-muted leading-[1.7] line-clamp-1">{{ $descriptionExcerpt }}</p>
               @if ($showDescriptionTeaser)
                 <a href="#pdp-full-details"
                    data-pdp-view-all-details
@@ -161,10 +161,18 @@
             </div>
           @endif
 
-          @include('user.partials.pdp-trust-badges')
+          @include('user.partials.pdp-trust-badges', ['class' => 'mb-0 min-[960px]:hidden'])
         </div>
 
         <div class="order-4 min-w-0 max-w-full grid gap-3 mb-9 min-[960px]:order-none min-[960px]:mb-0" data-i5="pdp-actions">
+          @if ($propertyGroups->isNotEmpty())
+            @include('user.partials.pdp-property-groups', [
+              'propertyGroups' => $propertyGroups,
+              'defaultPropertySelections' => $defaultPropertySelections,
+              'layout' => 'slider',
+            ])
+          @endif
+
           @if ($propertyGroups->isNotEmpty())
             <div class="border-[3px] border-ink bg-bg p-4" data-pdp-price-summary>
               <p class="mb-3 font-body text-[11px] font-bold uppercase tracking-[0.06em] text-muted">Fiyat özeti</p>
@@ -183,12 +191,18 @@
           @endif
 
           @if ($canAddToCart)
-            <button type="submit" class="inline-flex items-center justify-center gap-2 w-full px-6 py-3.5 font-body text-[13px] font-bold uppercase tracking-[0.06em] text-center border-[3px] border-ink bg-action text-on-dark shadow-brutal hover:bg-action-hover hover:-translate-x-0.5 hover:-translate-y-0.5" data-i5="btn--fill">Sepete Ekle</button>
+            <button type="submit" name="after_action" value="cart" class="inline-flex items-center justify-center gap-2 w-full px-6 py-3.5 font-body text-[13px] font-bold uppercase tracking-[0.06em] text-center border-[3px] border-ink bg-action text-on-dark shadow-brutal hover:bg-action-hover hover:-translate-x-0.5 hover:-translate-y-0.5" data-i5="btn--fill">Sepete Ekle</button>
+            <button type="submit" name="after_action" value="checkout" data-pdp-buy-now class="inline-flex items-center justify-center gap-2 w-full px-6 py-3.5 font-body text-[13px] font-bold uppercase tracking-[0.06em] text-center border-[3px] border-ink bg-surface text-ink shadow-brutal-sm hover:bg-hover hover:-translate-x-0.5 hover:-translate-y-0.5" data-i5="btn--outline">Hemen Satın Al</button>
           @else
             <a href="{{ route('loginPage', ['redirect' => $loginRedirect]) }}"
                data-pdp-login-cta
                class="inline-flex items-center justify-center gap-2 w-full px-6 py-3.5 font-body text-[13px] font-bold uppercase tracking-[0.06em] text-center border-[3px] border-ink bg-action text-on-dark shadow-brutal hover:bg-action-hover hover:-translate-x-0.5 hover:-translate-y-0.5" data-i5="btn--fill">
               Sepete Ekle
+            </a>
+            <a href="{{ route('loginPage', ['redirect' => $loginRedirect]) }}"
+               data-pdp-login-cta
+               class="inline-flex items-center justify-center gap-2 w-full px-6 py-3.5 font-body text-[13px] font-bold uppercase tracking-[0.06em] text-center border-[3px] border-ink bg-surface text-ink shadow-brutal-sm hover:bg-hover hover:-translate-x-0.5 hover:-translate-y-0.5" data-i5="btn--outline">
+              Hemen Satın Al
             </a>
           @endif
 
@@ -200,19 +214,13 @@
         </div>
         </div>
 
-        @if ($propertyGroups->isNotEmpty())
-          <div class="order-3 min-w-0 max-w-full border-t-[3px] border-ink pt-8 min-[960px]:order-4 min-[960px]:col-span-2 min-[960px]:col-start-1 min-[960px]:row-start-3" data-pdp-properties-slot>
-            @include('user.partials.pdp-property-groups', [
-              'propertyGroups' => $propertyGroups,
-              'defaultPropertySelections' => $defaultPropertySelections,
-              'layout' => 'slider',
-            ])
+        <div class="order-5 min-w-0 max-w-full min-[960px]:col-span-2 min-[960px]:col-start-1 min-[960px]:row-start-3">
+          <div class="hidden min-[960px]:block border-t-[3px] border-ink pt-8 pb-8">
+            @include('user.partials.pdp-trust-badges', ['class' => 'mb-0'])
           </div>
-        @endif
-
-        <section class="order-5 min-w-0 max-w-full border-t-[3px] border-ink pt-8 min-[960px]:col-span-2 min-[960px]:col-start-1 min-[960px]:row-start-4" id="pdp-full-details">
-          <h2 class="mb-5 font-heading text-[18px] font-semibold text-ink normal-case scroll-mt-28">Ürün Detayları</h2>
-          <div class="text-muted text-sm leading-[1.7] [&_p]:mb-2 [&_ul]:my-2 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:my-2 [&_ol]:list-decimal [&_ol]:pl-5 [&_a]:underline [&_h2]:mb-2 [&_h2]:mt-3 [&_h2]:text-ink [&_h2]:text-base [&_h2]:font-bold [&_h3]:mb-2 [&_h3]:mt-3 [&_h3]:text-ink [&_h3]:text-sm [&_h3]:font-bold" data-i5="pdp-accordion__body">
+          <section class="border-t-[3px] border-ink pt-8" id="pdp-full-details">
+            <h2 class="mb-5 font-heading text-[18px] font-semibold text-ink normal-case scroll-mt-28">Ürün Detayları</h2>
+            <div class="text-muted text-sm leading-[1.7] [&_p]:mb-2 [&_ul]:my-2 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:my-2 [&_ol]:list-decimal [&_ol]:pl-5 [&_a]:underline [&_h2]:mb-2 [&_h2]:mt-3 [&_h2]:text-ink [&_h2]:text-base [&_h2]:font-bold [&_h3]:mb-2 [&_h3]:mt-3 [&_h3]:text-ink [&_h3]:text-sm [&_h3]:font-bold" data-i5="pdp-accordion__body">
             @if ($product->description)
               {!! $product->description !!}
             @else
@@ -221,8 +229,9 @@
             <ul class="mt-4 space-y-2 list-disc pl-4">
               <li>Ürün kodu: {{ $product->code }}</li>
             </ul>
-          </div>
-        </section>
+            </div>
+          </section>
+        </div>
       </form>
     @else
       <div class="grid gap-10 min-[960px]:grid-cols-2 min-[960px]:gap-14 min-[960px]:items-start" data-i5="product-page__grid">
@@ -285,7 +294,7 @@
 
           @if ($hasFullDescription)
             <div class="mb-8 max-w-[520px]" data-i5="pdp-info__desc">
-              <p class="m-0 text-muted leading-[1.7]">{{ $descriptionExcerpt }}</p>
+              <p class="m-0 text-muted leading-[1.7] line-clamp-1">{{ $descriptionExcerpt }}</p>
               @if ($showDescriptionTeaser)
                 <a href="#pdp-full-details"
                    data-pdp-view-all-details
@@ -515,25 +524,67 @@
       refresh();
     });
 
+    let bypassCheckoutConfirm = false;
+
+    const submitForm = (submitter) => {
+      bypassCheckoutConfirm = true;
+      if (submitter && typeof form.requestSubmit === 'function') {
+        form.requestSubmit(submitter);
+      } else {
+        form.submit();
+      }
+    };
+
     form.addEventListener('submit', (event) => {
       const groups = form.querySelectorAll('[data-required-multiple="1"]');
       for (const group of groups) {
         if (!group.querySelector('input[type="checkbox"]:checked')) {
           event.preventDefault();
           const title = (group.getAttribute('data-group-title') || 'Özellik').trim();
-          alert(title + ' için en az bir seçenek seçmelisiniz.');
+          if (window.uiDialog) {
+            window.uiDialog.alert({
+              title: 'Seçim gerekli',
+              message: title + ' için en az bir seçenek seçmelisiniz.',
+            });
+          }
           return;
         }
       }
+
+      const submitter = event.submitter;
+      const afterAction = submitter && submitter.getAttribute('name') === 'after_action'
+        ? submitter.value
+        : 'cart';
+
+      if (afterAction === 'checkout') {
+        const otherCount = parseInt(form.getAttribute('data-cart-other-count') || '0', 10) || 0;
+        if (otherCount > 0 && !bypassCheckoutConfirm) {
+          event.preventDefault();
+          if (window.uiDialog) {
+            window.uiDialog.confirm({
+              title: 'Sepetinizde başka ürünler var',
+              message: 'Bu ürünle birlikte ödeme adımına geçmek istiyor musunuz?',
+              confirmText: 'Evet, devam et',
+              cancelText: 'Vazgeç',
+            }).then((confirmed) => {
+              if (confirmed) {
+                submitForm(submitter);
+              }
+            });
+          }
+          return;
+        }
+      }
+
+      bypassCheckoutConfirm = false;
       try { sessionStorage.removeItem(storageKey); } catch (e) {}
     });
 
-    const loginCta = form.querySelector('[data-pdp-login-cta]');
-    if (loginCta) {
+    form.querySelectorAll('[data-pdp-login-cta]').forEach((loginCta) => {
       loginCta.addEventListener('click', () => {
         persistSelections();
       });
-    }
+    });
 
     restoreSelections();
     refresh();

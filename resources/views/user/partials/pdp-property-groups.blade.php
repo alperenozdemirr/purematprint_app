@@ -25,7 +25,6 @@
     </div>
 
     <div class="relative min-w-0" data-pdp-band-slider>
-      <div class="pointer-events-none absolute inset-y-0 left-0 z-[1] hidden w-10 bg-gradient-to-r from-bg to-transparent min-[960px]:block" data-pdp-band-fade-left aria-hidden="true"></div>
       <div class="pointer-events-none absolute inset-y-0 right-0 z-[1] hidden w-10 bg-gradient-to-l from-bg to-transparent min-[960px]:block" data-pdp-band-fade-right aria-hidden="true"></div>
 
       <div @class([
@@ -49,7 +48,7 @@
           <fieldset @class([
             'border-[3px] border-ink bg-bg p-4 shadow-brutal-sm min-w-0',
             'w-full' => $layout === 'stack',
-            'w-full max-[959px]:w-full min-[960px]:w-[min(100%,320px)] min-[960px]:shrink-0 min-[960px]:snap-start lg:min-w-[260px] lg:w-[calc(25%-12px)]' => $layout === 'slider',
+            'w-full max-[959px]:w-full min-[960px]:w-[min(100%,320px)] min-[960px]:shrink-0 min-[960px]:snap-start min-[960px]:min-h-0 lg:min-w-[260px] lg:w-[calc(25%-12px)]' => $layout === 'slider',
           ]) data-property-group data-group-type="{{ $group->type->value }}" data-group-title="{{ $group->title }}" @if($group->is_required && $group->type === \App\Enums\ProductPropertyGroupType::MULTIPLE) data-required-multiple="1" @endif>
             <legend class="px-2 font-body text-[12px] font-bold uppercase tracking-[0.04em] text-ink">
               {{ $group->title }}
@@ -57,7 +56,11 @@
                 <span class="text-announce">*</span>
               @endif
             </legend>
-            <div class="mt-2 grid max-h-[280px] gap-2 overflow-y-auto pr-1 [scrollbar-width:thin]">
+            <div @class([
+              'mt-2 grid gap-2 pr-1',
+              'min-[960px]:max-h-[220px] min-[960px]:min-h-0 min-[960px]:overflow-y-auto min-[960px]:overflow-x-hidden min-[960px]:[scrollbar-width:thin] min-[960px]:[scrollbar-color:theme(colors.ink)_transparent]' => $layout === 'slider',
+              'max-h-[280px] overflow-y-auto [scrollbar-width:thin]' => $layout === 'stack',
+            ])>
               @if ($showNoneOption)
                 @php $noneInputId = 'prop-'.$group->id.'-none'; @endphp
                 <label for="{{ $noneInputId }}" class="flex items-center justify-between gap-3 border-2 border-ink/15 bg-surface px-3 py-2.5 cursor-pointer hover:border-ink has-[:checked]:border-ink has-[:checked]:bg-hover">
