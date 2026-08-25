@@ -51,6 +51,7 @@ class CheckoutCompletionService
         ?string $foreignCurrency = null,
         ?float $foreignAmount = null,
         ?float $fxRate = null,
+        ?int $installmentCount = null,
     ): Order {
         return DB::transaction(function () use (
             $draft,
@@ -61,6 +62,7 @@ class CheckoutCompletionService
             $foreignCurrency,
             $foreignAmount,
             $fxRate,
+            $installmentCount,
         ): Order {
             $summary = $draft['summary'];
             $invoice = $draft['invoice'];
@@ -115,6 +117,7 @@ class CheckoutCompletionService
                 'user_id' => $draft['user_id'],
                 'order_id' => $order->id,
                 'paid_amount' => $paidAmountTry,
+                'installment_count' => $installmentCount,
                 'paid_currency' => 'TRY',
                 'paid_amount_foreign' => $foreignAmount ?? ($summary['chargeTotal'] ?? null),
                 'foreign_currency' => $foreignCurrency ?? ($summary['chargeCurrency'] ?? null),

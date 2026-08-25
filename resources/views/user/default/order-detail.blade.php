@@ -380,6 +380,12 @@
               <span>Ödeme Durumu</span>
               <strong>{{ $order->payment?->status->label() ?? '—' }}</strong>
             </div>
+            @if ($order->payment?->usesInstallments())
+            <div class="flex justify-between gap-3 text-sm py-2 text-muted" data-i5="order-summary__row">
+              <span>Taksit</span>
+              <strong>{{ (int) $order->payment->installment_count }} taksit</strong>
+            </div>
+            @endif
             <div class="flex justify-between gap-3 text-sm py-2 text-muted" data-i5="order-summary__row">
               <span>Sipariş Durumu</span>
               <strong>{{ $order->status->label() }}</strong>
@@ -408,6 +414,12 @@
               <span>Toplam (TRY)</span>
               <span>{{ number_format((float) $order->total, 0, ',', '.') }} ₺</span>
             </div>
+            @if ($order->payment?->paidAmountDiffersFromOrder())
+            <div class="flex justify-between gap-3 pt-3 text-sm text-muted" data-i5="order-summary__paid">
+              <span>Ödenen Tutar</span>
+              <strong class="text-ink">{{ $order->payment->formattedPaidAmount() }}</strong>
+            </div>
+            @endif
             @if ($order->hasForeignAmount())
             <div class="flex justify-between gap-3 pt-3 text-sm text-muted" data-i5="order-summary__foreign">
               <span>Ödenen ({{ strtoupper($order->foreign_currency) }})</span>

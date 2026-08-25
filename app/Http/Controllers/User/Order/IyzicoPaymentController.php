@@ -110,12 +110,16 @@ class IyzicoPaymentController extends Controller
             return $this->redirectToCheckout($stockError);
         }
 
+        $paidAmount = (float) ($checkoutForm->getPaidPrice() ?? $draft['summary']['total']);
+        $installmentCount = max(1, (int) ($checkoutForm->getInstallment() ?? 1));
+
         $order = $this->completionService->completeFromDraft(
             $draft,
             $provider,
             $token,
             $checkoutForm->getPaymentId(),
-            (float) ($checkoutForm->getPaidPrice() ?? $draft['summary']['total']),
+            $paidAmount,
+            installmentCount: $installmentCount > 1 ? $installmentCount : null,
         );
 
         $pendingFiles = is_array($draft['files'] ?? null) ? $draft['files'] : [];

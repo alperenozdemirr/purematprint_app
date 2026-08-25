@@ -106,27 +106,42 @@ class SeoController extends Controller
 
     public function favicon(): BinaryFileResponse|Response
     {
-        $setting = Setting::current()->loadMissing('logo');
+        $setting = Setting::current()->loadMissing('favicon');
 
-        if ($setting->logo !== null) {
-            $path = storage_path('app/public/'.$setting->logo->storagePath());
+        if ($setting->favicon !== null) {
+            $path = storage_path('app/public/'.$setting->favicon->storagePath());
 
             if (FileFacade::isFile($path)) {
                 return response()->file($path, [
+                    'Content-Type' => $this->mimeTypeForPath($path),
                     'Cache-Control' => 'public, max-age=86400',
                 ]);
             }
         }
 
-        $fallback = public_path('favicon-32.png');
-
-        if (FileFacade::isFile($fallback)) {
-            return response()->file($fallback, [
-                'Cache-Control' => 'public, max-age=86400',
-            ]);
+        foreach ([public_path('favicon-32.png'), public_path('favicon.avif'), public_path('favicon.ico')] as $fallback) {
+            if (FileFacade::isFile($fallback)) {
+                return response()->file($fallback, [
+                    'Content-Type' => $this->mimeTypeForPath($fallback),
+                    'Cache-Control' => 'public, max-age=86400',
+                ]);
+            }
         }
 
         return response('', 404);
+    }
+
+    private function mimeTypeForPath(string $path): string
+    {
+        return match (strtolower(pathinfo($path, PATHINFO_EXTENSION))) {
+            'png' => 'image/png',
+            'jpg', 'jpeg' => 'image/jpeg',
+            'webp' => 'image/webp',
+            'avif' => 'image/avif',
+            'ico' => 'image/x-icon',
+            'svg' => 'image/svg+xml',
+            default => 'image/png',
+        };
     }
 
     /**

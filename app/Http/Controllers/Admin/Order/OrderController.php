@@ -90,6 +90,7 @@ class OrderController extends Controller
                 'invoiceFile',
                 'designFile',
                 'designRequests.file',
+                'payment',
             ])
             ->where('code', $code)
             ->firstOrFail();

@@ -128,6 +128,7 @@ class StripePaymentController extends Controller
             $this->stripeService->paidCurrency($session),
             $foreignAmount > 0 ? $foreignAmount : null,
             $fxRate,
+            installmentCount: null,
         );
 
         $pendingFiles = is_array($draft['files'] ?? null) ? $draft['files'] : [];

@@ -18,6 +18,7 @@ class Payment extends Model
         'user_id',
         'order_id',
         'paid_amount',
+        'installment_count',
         'paid_currency',
         'paid_amount_foreign',
         'foreign_currency',
@@ -36,7 +37,29 @@ class Payment extends Model
         'status' => PaymentStatus::class,
         'provider' => PaymentProvider::class,
         'refunded_at' => 'datetime',
+        'installment_count' => 'integer',
     ];
+
+    public function usesInstallments(): bool
+    {
+        return $this->installment_count !== null && (int) $this->installment_count > 1;
+    }
+
+    public function paidAmountDiffersFromOrder(): bool
+    {
+        $order = $this->relationLoaded('order') ? $this->order : $this->order()->first();
+
+        if ($order === null) {
+            return false;
+        }
+
+        return abs((float) $this->paid_amount - (float) $order->total) >= 0.01;
+    }
+
+    public function formattedPaidAmount(): string
+    {
+        return number_format((float) $this->paid_amount, 2, ',', '.').' ₺';
+    }
 
     public function user(): BelongsTo
     {

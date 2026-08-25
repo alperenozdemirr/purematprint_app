@@ -16,7 +16,7 @@ class AdminLayoutComposer
 
     public function compose(View $view): void
     {
-        $setting = Setting::current()->loadMissing('logo');
+        $setting = Setting::current()->loadMissing('logo', 'favicon');
 
         $payload = [
             'siteSetting' => $setting,

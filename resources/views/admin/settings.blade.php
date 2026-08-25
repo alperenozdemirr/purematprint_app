@@ -192,6 +192,29 @@
 
     <section class="overflow-hidden rounded-xl bg-surface shadow-card">
       <div class="border-b border-ink/10 px-5 py-4">
+        <h3 class="font-heading text-[16px] font-bold text-ink">Site İkonu (Favicon)</h3>
+        <p class="mt-1 font-body text-[12px] text-muted">Tarayıcı sekmesinde görünen küçük ikon. Logodan bağımsızdır; kare görsel önerilir (ör. 512×512 px).</p>
+      </div>
+      <div class="grid gap-5 p-5">
+        @if ($setting->hasCustomFavicon())
+          <div class="flex items-center gap-4">
+            <img src="{{ $setting->faviconUrl() }}" alt="Site ikonu" class="h-12 w-12 object-contain border border-ink/10 rounded-lg bg-cream p-2">
+            <p class="font-body text-[13px] text-muted">Mevcut site ikonu yüklü. Yeni dosya seçerseniz eskisi silinir.</p>
+          </div>
+        @else
+          <p class="font-body text-[13px] text-muted">Site ikonu yüklenmemiş — varsayılan ikon gösterilir.</p>
+        @endif
+        <div>
+          <label for="favicon" class="mb-1.5 block font-body text-[13px] font-bold text-ink">Site İkonu Yükle</label>
+          <input type="file" id="favicon" name="favicon" accept="{{ \App\Support\ImageUploadRules::acceptAttribute() }}"
+                 class="w-full rounded-lg border border-ink/10 bg-cream px-3.5 py-2.5 font-body text-[14px] text-ink outline-none focus:border-accent focus:ring-2 focus:ring-accent/15">
+          @error('favicon') <p class="mt-1.5 font-body text-[12px] font-medium text-danger">{{ $message }}</p> @enderror
+        </div>
+      </div>
+    </section>
+
+    <section class="overflow-hidden rounded-xl bg-surface shadow-card">
+      <div class="border-b border-ink/10 px-5 py-4">
         <h3 class="font-heading text-[16px] font-bold text-ink">Anasayfa — Giriş</h3>
         <p class="mt-1 font-body text-[12px] text-muted">Hero alanındaki arka plan görseli, başlık ve açıklama metni. Boş bırakılırsa varsayılan içerik gösterilir.</p>
       </div>

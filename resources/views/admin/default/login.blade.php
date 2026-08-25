@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="icon" href="favicon.avif" type="image/avif">
+  <link rel="icon" href="{{ route('seo.favicon') }}">
   <title>Giriş — PureMatPrint Admin</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script>

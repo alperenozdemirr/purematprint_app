@@ -25,6 +25,7 @@ class SettingController extends Controller
     {
         $setting = Setting::current()->load([
             'logo',
+            'favicon',
             'introImage',
             'introImageMobile',
             'spotlightImage',
@@ -51,6 +52,7 @@ class SettingController extends Controller
 
         $setting = Setting::current()->load([
             'logo',
+            'favicon',
             'introImage',
             'introImageMobile',
             'spotlightImage',
@@ -133,6 +135,21 @@ class SettingController extends Controller
             );
 
             $attributes['logo_id'] = $fileRecord->id;
+        }
+
+        if ($request->hasFile('favicon')) {
+            if ($setting->favicon_id) {
+                $this->fileService->imageDelete($setting->favicon_id, ContentType::OTHER);
+            }
+
+            $fileRecord = $this->fileService->imageUpload(
+                $request->file('favicon'),
+                ContentType::OTHER,
+                Setting::SINGLETON_ID,
+                7
+            );
+
+            $attributes['favicon_id'] = $fileRecord->id;
         }
 
         $introImageId = $this->syncSettingImage(

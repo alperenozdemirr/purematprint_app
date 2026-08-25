@@ -16,6 +16,8 @@ class Setting extends Model
 
     public const DEFAULT_LOGO = 'shared_directory/logo.avif';
 
+    public const DEFAULT_FAVICON = 'favicon-32.png';
+
     public const DEFAULT_INTRO_TITLE = "Markanı\nyükselt.";
 
     public const DEFAULT_INTRO_DESCRIPTION = 'Ajanslar ve tabelacılar için cesur baskı çözümleri. Kartvizitten dev tabelaya — her detay düşünülmüş, her proje kusursuz.';
@@ -63,6 +65,7 @@ class Setting extends Model
         'short_info',
         'show_real_homepage_reviews',
         'logo_id',
+        'favicon_id',
         'intro_title',
         'intro_description',
         'intro_image_id',
@@ -103,6 +106,7 @@ class Setting extends Model
         'shipping_first_order_free' => 'boolean',
         'show_real_homepage_reviews' => 'boolean',
         'logo_id' => 'integer',
+        'favicon_id' => 'integer',
         'intro_image_id' => 'integer',
         'intro_image_mobile_id' => 'integer',
         'spotlight_image_id' => 'integer',
@@ -118,6 +122,11 @@ class Setting extends Model
     public function logo(): BelongsTo
     {
         return $this->belongsTo(File::class, 'logo_id');
+    }
+
+    public function favicon(): BelongsTo
+    {
+        return $this->belongsTo(File::class, 'favicon_id');
     }
 
     public function introImage(): BelongsTo
@@ -310,6 +319,24 @@ class Setting extends Model
         }
 
         return $this->logo()->exists();
+    }
+
+    public function faviconUrl(): string
+    {
+        return $this->favicon?->url ?? asset(self::DEFAULT_FAVICON);
+    }
+
+    public function hasCustomFavicon(): bool
+    {
+        if ($this->favicon_id === null) {
+            return false;
+        }
+
+        if ($this->relationLoaded('favicon')) {
+            return $this->favicon !== null;
+        }
+
+        return $this->favicon()->exists();
     }
 
     public function whatsappDigits(): ?string

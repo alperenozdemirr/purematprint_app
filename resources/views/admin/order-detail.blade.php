@@ -594,6 +594,18 @@
             <span>Genel Toplam (TRY)</span>
             <span>{{ number_format((float) $order->total, 2, ',', '.') }}₺</span>
           </div>
+          @if ($order->payment?->paidAmountDiffersFromOrder())
+          <div class="flex justify-between pt-2 text-[14px] text-ink">
+            <span class="text-muted">Ödenen Tutar</span>
+            <span class="font-semibold">{{ $order->payment->formattedPaidAmount() }}</span>
+          </div>
+          @endif
+          @if ($order->payment?->usesInstallments())
+          <div class="flex justify-between pt-2 text-[14px] text-ink">
+            <span class="text-muted">Taksit</span>
+            <span class="font-semibold">{{ (int) $order->payment->installment_count }} taksit</span>
+          </div>
+          @endif
           @if ($order->hasForeignAmount())
           <div class="flex justify-between pt-2 text-[14px] text-ink">
             <span class="text-muted">Ödenen ({{ strtoupper($order->foreign_currency) }})</span>

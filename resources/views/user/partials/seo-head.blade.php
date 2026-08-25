@@ -14,7 +14,7 @@
   $seoOgImageSection = trim((string) $__env->yieldContent('ogImage'));
   $seoOgImage = Seo::absoluteUrl($seoOgImageSection !== '' ? $seoOgImageSection : Seo::defaultOgImage($siteSetting ?? null));
   $seoFavicon = Seo::absoluteUrl(route('seo.favicon'));
-  $seoAppleTouch = Seo::absoluteUrl('apple-touch-icon.png');
+  $seoAppleTouch = $seoFavicon;
   $seoLayoutSchema = Seo::layoutSchema($siteSetting ?? null);
 @endphp
 <meta charset="UTF-8">
