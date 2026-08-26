@@ -8,6 +8,7 @@ use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use RuntimeException;
 
 class ShipinkApiService
@@ -34,7 +35,8 @@ class ShipinkApiService
                 'page' => $page,
                 'limit' => $limit,
             ]),
-            'Shipink sipariş listesi alınamadı.'
+            'Shipink sipariş listesi alınamadı.',
+            'listOrders',
         );
 
         return $this->normalizeList($data);
@@ -45,20 +47,30 @@ class ShipinkApiService
      */
     public function createOrder(array $payload): array
     {
+        $response = $this->client()->post('/orders', $payload);
+
         return $this->unwrapData(
-            $this->client()->post('/orders', $payload),
-            'Shipink siparişi oluşturulamadı.'
+            $response,
+            'Shipink siparişi oluşturulamadı.',
+            'createOrder',
+            ['request_payload' => $payload],
         );
     }
 
     /**
      * @return array<string, mixed>
      */
-    public function createShipment(array $payload): array
+    public function createShipment(array $payload, array $logContext = []): array
     {
+        $response = $this->client()
+            ->withHeaders(['X-Language' => 'tr'])
+            ->post('/shipments', $payload);
+
         return $this->unwrapData(
-            $this->client()->withHeaders(['X-Language' => 'tr'])->post('/shipments', $payload),
-            'Shipink kargo gönderisi oluşturulamadı.'
+            $response,
+            'Shipink kargo gönderisi oluşturulamadı.',
+            'createShipment',
+            array_merge(['request_payload' => $payload], $logContext),
         );
     }
 
@@ -69,7 +81,9 @@ class ShipinkApiService
     {
         return $this->unwrapData(
             $this->client()->get('/shipments/'.$shipmentId),
-            'Shipink kargo bilgisi alınamadı.'
+            'Shipink kargo bilgisi alınamadı.',
+            'getShipment',
+            ['shipment_id' => $shipmentId],
         );
     }
 
@@ -78,6 +92,8 @@ class ShipinkApiService
         $response = $this->client()->delete('/shipments/'.$shipmentId);
 
         if (! $response->successful()) {
+            $this->logApiFailure('deleteShipment', $response, ['shipment_id' => $shipmentId]);
+
             throw new RuntimeException($this->extractErrorMessage(
                 $response,
                 'Shipink kargo gönderisi iptal edilemedi.'
@@ -92,7 +108,9 @@ class ShipinkApiService
     {
         return $this->unwrapData(
             $this->client()->get('/orders/'.$orderId),
-            'Shipink sipariş bilgisi alınamadı.'
+            'Shipink sipariş bilgisi alınamadı.',
+            'getOrder',
+            ['order_id' => $orderId],
         );
     }
 
@@ -101,9 +119,16 @@ class ShipinkApiService
      */
     public function updateOrder(string $orderId, array $payload): array
     {
+        $response = $this->client()->put('/orders/'.$orderId, $payload);
+
         return $this->unwrapData(
-            $this->client()->put('/orders/'.$orderId, $payload),
-            'Shipink siparişi güncellenemedi.'
+            $response,
+            'Shipink siparişi güncellenemedi.',
+            'updateOrder',
+            [
+                'order_id' => $orderId,
+                'request_payload' => $payload,
+            ],
         );
     }
 
@@ -114,7 +139,9 @@ class ShipinkApiService
     {
         return $this->unwrapData(
             $this->client()->get('/warehouses/'.$warehouseId),
-            'Shipink depo bilgisi alınamadı.'
+            'Shipink depo bilgisi alınamadı.',
+            'getWarehouse',
+            ['warehouse_id' => $warehouseId],
         );
     }
 
@@ -123,9 +150,16 @@ class ShipinkApiService
      */
     public function updateWarehouse(string $warehouseId, array $payload): array
     {
+        $response = $this->client()->put('/warehouses/'.$warehouseId, $payload);
+
         return $this->unwrapData(
-            $this->client()->put('/warehouses/'.$warehouseId, $payload),
-            'Shipink depo güncellenemedi.'
+            $response,
+            'Shipink depo güncellenemedi.',
+            'updateWarehouse',
+            [
+                'warehouse_id' => $warehouseId,
+                'request_payload' => $payload,
+            ],
         );
     }
 
@@ -136,7 +170,8 @@ class ShipinkApiService
     {
         $data = $this->unwrapData(
             $this->client()->get('/carrier-accounts'),
-            'Shipink kargo hesapları alınamadı.'
+            'Shipink kargo hesapları alınamadı.',
+            'listCarrierAccounts',
         );
 
         return $this->normalizeList($data);
@@ -149,7 +184,8 @@ class ShipinkApiService
     {
         $data = $this->unwrapData(
             $this->client()->get('/cards'),
-            'Shipink ödeme kartları alınamadı.'
+            'Shipink ödeme kartları alınamadı.',
+            'listCards',
         );
 
         return $this->normalizeList($data);
@@ -162,7 +198,8 @@ class ShipinkApiService
     {
         $data = $this->unwrapData(
             $this->client()->get('/warehouses'),
-            'Shipink depoları alınamadı.'
+            'Shipink depoları alınamadı.',
+            'listWarehouses',
         );
 
         return $this->normalizeList($data);
@@ -193,6 +230,11 @@ class ShipinkApiService
             ]);
 
         if (! $response->successful()) {
+            $this->logApiFailure('accessToken', $response, [
+                'username' => $this->config->username(),
+                'base_url' => $this->config->baseUrl(),
+            ]);
+
             throw new RuntimeException($this->extractErrorMessage($response, 'Shipink kimlik doğrulaması başarısız.'));
         }
 
@@ -211,9 +253,15 @@ class ShipinkApiService
     /**
      * @return array<string, mixed>
      */
-    private function unwrapData(Response $response, string $fallbackMessage): array
-    {
+    private function unwrapData(
+        Response $response,
+        string $fallbackMessage,
+        string $operation = 'shipink_api',
+        array $logContext = [],
+    ): array {
         if (! $response->successful()) {
+            $this->logApiFailure($operation, $response, $logContext);
+
             throw new RuntimeException($this->extractErrorMessage($response, $fallbackMessage));
         }
 
@@ -305,6 +353,67 @@ class ShipinkApiService
             ->implode(' ');
 
         return $details !== '' ? "{$message} ({$details})" : $message;
+    }
+
+    /**
+     * @param  array<string, mixed>  $context
+     */
+    private function logApiFailure(string $operation, Response $response, array $context = []): void
+    {
+        $jsonBody = $response->json();
+        $rawBody = $response->body();
+
+        if (isset($context['request_payload']) && is_array($context['request_payload'])) {
+            $context['request_payload'] = $this->sanitizeForLog($context['request_payload']);
+        }
+
+        Log::error('Shipink API ham hata yanıtı', array_merge([
+            'operation' => $operation,
+            'http_status' => $response->status(),
+            'response_json' => is_array($jsonBody) ? $jsonBody : null,
+            'response_raw' => $this->truncateForLog($rawBody),
+            'parsed_message' => $this->extractErrorMessage($response, ''),
+            'response_headers' => $response->headers(),
+        ], $context));
+    }
+
+    /**
+     * @param  array<string, mixed>  $payload
+     * @return array<string, mixed>
+     */
+    private function sanitizeForLog(array $payload): array
+    {
+        $sanitized = [];
+
+        foreach ($payload as $key => $value) {
+            if ($this->isSensitiveLogKey((string) $key)) {
+                $sanitized[$key] = '[redacted]';
+                continue;
+            }
+
+            if (is_array($value)) {
+                $sanitized[$key] = $this->sanitizeForLog($value);
+                continue;
+            }
+
+            $sanitized[$key] = $value;
+        }
+
+        return $sanitized;
+    }
+
+    private function isSensitiveLogKey(string $key): bool
+    {
+        return (bool) preg_match('/password|secret|token|authorization|api[_-]?key|card/i', $key);
+    }
+
+    private function truncateForLog(string $value, int $limit = 12000): string
+    {
+        if (mb_strlen($value) <= $limit) {
+            return $value;
+        }
+
+        return mb_substr($value, 0, $limit).'…[truncated]';
     }
 
     private function humanizeShipinkError(string $message, string $details): string

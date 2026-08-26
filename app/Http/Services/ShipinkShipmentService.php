@@ -135,7 +135,13 @@ class ShipinkShipmentService
 
                 try {
                     $shipment = $this->api->createShipment(
-                        $this->buildShipmentPayload($lockedOrder, $carrierAccount, $packageOverride)
+                        $this->buildShipmentPayload($lockedOrder, $carrierAccount, $packageOverride),
+                        [
+                            'order_code' => $lockedOrder->code,
+                            'shipink_order_id' => $lockedOrder->shipink_order_id,
+                            'carrier_account_id' => $carrierAccount['id'] ?? null,
+                            'carrier_id' => $carrierAccount['carrier_id'] ?? null,
+                        ],
                     );
                 } catch (\Throwable $exception) {
                     if ($this->isDuplicateRecordError($exception) && $this->recoverExistingShipment($lockedOrder)) {
