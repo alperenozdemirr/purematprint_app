@@ -1,23 +1,16 @@
 /**
  * loader.js — Açılış splash ekranı
  *
- * NE YAPAR:
- *   data-pmp-site olan sayfalarda kısa yükleme animasyonu gösterir.
- *   Sayfa gerçekten yüklenene kadar açık kalır; yüklendiyse en az ~250ms gösterir.
- *
- * NE YAPMAZ:
- *   Yüklendikten sonra ekstra uzun süre tutmaz.
- *   prefers-reduced-motion açıksa hiç çalışmaz.
+ * Yükleme çubuğu, sayfa kaynaklarının gerçek ilerlemesine göre dolar (akıcı interpolasyon).
  */
 (function initSiteLoader() {
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
-  const MIN_VISIBLE_MS = 250;
   const SAFETY_MAX_MS = 12000;
   const MESSAGE_INTERVAL_MS = 450;
   const MESSAGE_FADE_MS = 160;
+  const PROGRESS_LERP = 0.1;
 
-  /** Baskı stüdyosu temalı durum mesajları — sırayla döner */
   const LOADER_MESSAGES = [
     'Baskı hazırlanıyor…',
     'Tasarım yapılıyor…',
@@ -27,9 +20,11 @@
     'Son kontroller yapılıyor…',
   ];
 
-  let startedAt = 0;
   let finished = false;
   let stopMessages = null;
+  let stopProgress = null;
+  let pageLoadComplete = false;
+  let domReady = false;
 
   function startMessageCycle(labelEl) {
     let index = 0;
@@ -47,12 +42,96 @@
     return () => window.clearInterval(intervalId);
   }
 
+  function resourceLoadRatio() {
+    const resources = performance.getEntriesByType('resource');
+
+    if (resources.length === 0) {
+      return domReady ? 0.65 : 0.2;
+    }
+
+    let loaded = 0;
+
+    for (const entry of resources) {
+      const done = entry.responseEnd > 0
+        || (entry.transferSize === 0 && entry.duration >= 0);
+
+      if (done) {
+        loaded += 1;
+      }
+    }
+
+    return loaded / resources.length;
+  }
+
+  function computeTargetProgress() {
+    if (pageLoadComplete) {
+      return 1;
+    }
+
+    let target = 0.08;
+
+    if (document.readyState === 'loading') {
+      target = Math.max(target, 0.12);
+    }
+
+    if (domReady || document.readyState === 'interactive' || document.readyState === 'complete') {
+      target = Math.max(target, 0.32);
+    }
+
+    const ratio = resourceLoadRatio();
+    target = Math.max(target, 0.28 + ratio * 0.62);
+
+    if (document.readyState === 'complete') {
+      target = Math.max(target, 0.9);
+    }
+
+    return Math.min(target, 0.98);
+  }
+
+  function startProgressLoop(barEl, trackEl, onFullyLoaded) {
+    let display = 0;
+    let rafId = 0;
+
+    const tick = () => {
+      const target = computeTargetProgress();
+      const delta = target - display;
+
+      if (Math.abs(delta) > 0.0005) {
+        display += delta * PROGRESS_LERP;
+      } else {
+        display = target;
+      }
+
+      if (pageLoadComplete && display < 1) {
+        display += (1 - display) * 0.14;
+      }
+
+      display = Math.max(0, Math.min(display, 1));
+
+      const percent = Math.round(display * 100);
+      barEl.style.width = `${percent}%`;
+      trackEl.setAttribute('aria-valuenow', String(percent));
+
+      if (pageLoadComplete && display >= 0.995) {
+        barEl.style.width = '100%';
+        trackEl.setAttribute('aria-valuenow', '100');
+        onFullyLoaded();
+        return;
+      }
+
+      rafId = window.requestAnimationFrame(tick);
+    };
+
+    rafId = window.requestAnimationFrame(tick);
+
+    return () => window.cancelAnimationFrame(rafId);
+  }
+
   function mount() {
     if (!document.body?.hasAttribute('data-pmp-site')) return;
     if (document.querySelector('[data-pmp-loader]')) return;
 
     const T = window.TW || {};
-    startedAt = Date.now();
     document.documentElement.classList.add('pmp-is-loading');
 
     const loader = document.createElement('div');
@@ -71,8 +150,8 @@
         </div>
         <div class="${T.loader__copy || ''}" data-i5="loader__copy">
           <p class="${T.loader__label || ''}" data-i5="loader__label" data-pmp-loader-label>${LOADER_MESSAGES[0]}</p>
-          <div class="${T.loader__track || ''}" data-i5="loader__track" aria-hidden="true">
-            <div class="${T.loader__bar || ''}" data-i5="loader__bar"></div>
+          <div class="${T.loader__track || ''}" data-i5="loader__track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-label="Sayfa yükleniyor">
+            <div class="${T.loader__bar || ''}" data-i5="loader__bar" data-pmp-loader-bar></div>
           </div>
         </div>
       </div>
@@ -81,34 +160,56 @@
     document.body.insertBefore(loader, document.body.firstChild);
 
     const labelEl = loader.querySelector('[data-pmp-loader-label]');
+    const barEl = loader.querySelector('[data-pmp-loader-bar]');
+    const trackEl = loader.querySelector('[data-i5="loader__track"]');
+
     if (labelEl) stopMessages = startMessageCycle(labelEl);
 
+    let dismissScheduled = false;
+
     const dismiss = () => {
-      if (finished) return;
+      if (finished || dismissScheduled) return;
+      dismissScheduled = true;
       finished = true;
       stopMessages?.();
       stopMessages = null;
+      stopProgress?.();
+      stopProgress = null;
 
-      const elapsed = Date.now() - startedAt;
-      const delay = Math.max(0, MIN_VISIBLE_MS - elapsed);
-
-      window.setTimeout(() => {
-        loader.classList.add('is-done');
-        loader.setAttribute('aria-busy', 'false');
-        document.documentElement.classList.remove('pmp-is-loading');
-        window.setTimeout(() => loader.remove(), 320);
-      }, delay);
+      loader.classList.add('is-done');
+      loader.setAttribute('aria-busy', 'false');
+      document.documentElement.classList.remove('pmp-is-loading');
+      window.setTimeout(() => loader.remove(), 320);
     };
 
-    // Sayfa yüklenene kadar açık kalsın; yüklendiyse min 250ms sonra kapanır.
-    if (document.readyState === 'complete') {
-      dismiss();
+    const markPageLoaded = () => {
+      pageLoadComplete = true;
+    };
+
+    if (barEl && trackEl) {
+      stopProgress = startProgressLoop(barEl, trackEl, dismiss);
     } else {
-      window.addEventListener('load', dismiss, { once: true });
+      markPageLoaded();
     }
 
-    // Aşırı durumda (load hiç gelmezse) güvenlik kapanışı
-    window.setTimeout(dismiss, SAFETY_MAX_MS);
+    if (document.readyState === 'interactive' || document.readyState === 'complete') {
+      domReady = true;
+    } else {
+      document.addEventListener('DOMContentLoaded', () => {
+        domReady = true;
+      }, { once: true });
+    }
+
+    if (document.readyState === 'complete') {
+      markPageLoaded();
+    } else {
+      window.addEventListener('load', markPageLoaded, { once: true });
+    }
+
+    window.setTimeout(() => {
+      markPageLoaded();
+      dismiss();
+    }, SAFETY_MAX_MS);
   }
 
   function tryMount() {

@@ -27,7 +27,7 @@ window.TW = {
     'font-body text-xs font-semibold tracking-[0.12em] uppercase text-ink min-h-[1.2em] py-2.5 px-4 bg-surface/95 border-2 border-ink/90 shadow-brutal-sm transition-[opacity,transform] duration-200 ease-out motion-reduce:transition-none [&.is-changing]:opacity-55 [&.is-changing]:translate-y-px',
   loader__track: 'w-full h-[14px] border-[3px] border-ink bg-surface shadow-brutal-sm overflow-hidden',
   loader__bar:
-    'h-full w-0 bg-gradient-to-r from-announce to-accent animate-pmp-loader-progress motion-reduce:animate-none [.pmp-loader.is-done_&]:w-full [.pmp-loader.is-done_&]:animate-none',
+    'h-full w-0 max-w-full bg-gradient-to-r from-announce to-accent will-change-[width] [.pmp-loader.is-done_&]:!w-full',
   loader__stamps: 'flex items-center gap-2.5',
   loader__stamp:
     'w-4 h-4 border-2 border-ink bg-cream shadow-[3px_3px_0_#1a1a1a] animate-pmp-loader-stamp motion-reduce:animate-none',
