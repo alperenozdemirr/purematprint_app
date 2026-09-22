@@ -116,26 +116,10 @@
             </div>
           </section>
 
-          <section class="border-[3px] border-ink shadow-brutal-sm bg-surface overflow-hidden" data-i5="checkout-section">
-            <div class="px-5 py-4 border-b-[3px] border-ink bg-bg [&_h2]:font-body [&_h2]:text-[13px] [&_h2]:font-bold [&_h2]:uppercase [&_h2]:tracking-[0.06em]">
-              <h2>Baskı Dosyaları <span class="font-normal normal-case tracking-normal text-muted">(opsiyonel)</span></h2>
-            </div>
-            <div class="p-5 grid gap-3">
-              <p class="text-xs text-muted leading-relaxed">
-                İsterseniz baskı dosyanızı buradan yükleyin. En fazla 1 dosya, en fazla 200MB.
-                Desteklenen: .png, .pdf, .psd
-              </p>
-              <input
-                type="file"
-                id="order_files"
-                name="order_files[]"
-                accept=".png,.pdf,.psd,image/png,application/pdf"
-                class="w-full text-sm file:mr-4 file:px-4 file:py-2 file:border-[3px] file:border-ink file:bg-bg file:font-body file:text-[11px] file:font-bold file:uppercase file:tracking-[0.06em] file:cursor-pointer"
-              >
-              @error('order_files')<span class="text-xs text-announce">{{ $message }}</span>@enderror
-              @error('order_files.*')<span class="text-xs text-announce">{{ $message }}</span>@enderror
-            </div>
-          </section>
+          @php
+            $selectedDesignType = old('design_type', $preferredDesignType ?? \App\Support\CheckoutDesignPreference::get());
+            $requiresPrintFileAtCheckout = $selectedDesignType === \App\Enums\OrderDesignType::READY_FILE->value;
+          @endphp
 
           <section class="border-[3px] border-ink shadow-brutal-sm bg-surface overflow-hidden" data-i5="checkout-section">
             <div class="px-5 py-4 border-b-[3px] border-ink bg-bg [&_h2]:font-body [&_h2]:text-[13px] [&_h2]:font-bold [&_h2]:uppercase [&_h2]:tracking-[0.06em]">
@@ -147,19 +131,47 @@
                 <a href="{{ route('agreements') }}" target="_blank" rel="noopener noreferrer" class="font-semibold text-accent underline underline-offset-2">Mesafeli Satış / İade</a>
                 sayfasını inceleyebilirsiniz.
               </p>
-              @php
-                $selectedDesignType = old('design_type', \App\Enums\OrderDesignType::FROM_SCRATCH->value);
-              @endphp
-              @foreach (\App\Enums\OrderDesignType::cases() as $designType)
+              @foreach (\App\Enums\OrderDesignType::checkoutOptions() as $designType)
                 <label class="flex items-start gap-3 p-4 border-[3px] border-ink bg-bg cursor-pointer has-[:checked]:border-accent has-[:checked]:bg-accent/5">
-                  <input type="radio" name="design_type" value="{{ $designType->value }}" class="mt-1 accent-accent"
-                         @checked($selectedDesignType === $designType->value) required>
+                  <input type="radio" name="design_type" value="{{ $designType->value }}" class="mt-1 accent-accent checkout-design-type"
+                         data-design-type-option @checked($selectedDesignType === $designType->value) required>
                   <span>
                     <span class="block font-body text-sm font-bold text-ink">{{ $designType->label() }}</span>
                   </span>
                 </label>
               @endforeach
               @error('design_type')<span class="text-xs text-announce">{{ $message }}</span>@enderror
+            </div>
+          </section>
+
+          <section class="border-[3px] border-ink shadow-brutal-sm bg-surface overflow-hidden" data-i5="checkout-section" id="checkout-files-section">
+            <div class="px-5 py-4 border-b-[3px] border-ink bg-bg [&_h2]:font-body [&_h2]:text-[13px] [&_h2]:font-bold [&_h2]:uppercase [&_h2]:tracking-[0.06em]">
+              <h2>
+                Baskı Dosyaları
+                <span id="checkout-files-optional" class="font-normal normal-case tracking-normal text-muted {{ $requiresPrintFileAtCheckout ? 'hidden' : '' }}">(opsiyonel)</span>
+                <span id="checkout-files-required" class="font-normal normal-case tracking-normal text-announce {{ $requiresPrintFileAtCheckout ? '' : 'hidden' }}">*</span>
+              </h2>
+            </div>
+            <div class="p-5 grid gap-3">
+              <p id="checkout-files-help" class="text-xs text-muted leading-relaxed m-0">
+                @if ($requiresPrintFileAtCheckout)
+                  Baskıya hazır dosya seçtiniz. Ödemeye geçmeden önce baskı dosyanızı yükleyin. En fazla 1 dosya, en fazla 200MB. Desteklenen: .png, .pdf, .psd
+                @else
+                  İsterseniz baskı dosyanızı buradan yükleyebilirsiniz. En fazla 1 dosya, en fazla 200MB. Desteklenen: .png, .pdf, .psd
+                @endif
+              </p>
+              <input
+                type="file"
+                id="order_files"
+                name="order_files[]"
+                accept=".png,.pdf,.psd,image/png,application/pdf"
+                data-ready-file-value="{{ \App\Enums\OrderDesignType::READY_FILE->value }}"
+                @if ($requiresPrintFileAtCheckout) required @endif
+                class="w-full text-sm file:mr-4 file:px-4 file:py-2 file:border-[3px] file:border-ink file:bg-bg file:font-body file:text-[11px] file:font-bold file:uppercase file:tracking-[0.06em] file:cursor-pointer"
+              >
+              @error('order_files')<span class="text-xs text-announce">{{ $message }}</span>@enderror
+              @error('order_files.0')<span class="text-xs text-announce">{{ $message }}</span>@enderror
+              @error('order_files.*')<span class="text-xs text-announce">{{ $message }}</span>@enderror
             </div>
           </section>
 
@@ -431,12 +443,63 @@
   bindNumericInvoiceInput(tcInput, validateTcField);
   bindNumericInvoiceInput(taxInput, validateTaxField);
 
+  const designTypeInputs = document.querySelectorAll('.checkout-design-type');
+  const orderFilesInput = document.getElementById('order_files');
+  const filesOptionalLabel = document.getElementById('checkout-files-optional');
+  const filesRequiredLabel = document.getElementById('checkout-files-required');
+  const filesHelp = document.getElementById('checkout-files-help');
+  const readyFileValue = orderFilesInput?.dataset.readyFileValue || 'ready_file';
+
+  const syncPrintFileRequirement = () => {
+    const selectedDesign = document.querySelector('.checkout-design-type:checked');
+    const requiresFile = selectedDesign?.value === readyFileValue;
+
+    if (filesOptionalLabel) {
+      filesOptionalLabel.classList.toggle('hidden', requiresFile);
+    }
+    if (filesRequiredLabel) {
+      filesRequiredLabel.classList.toggle('hidden', !requiresFile);
+    }
+    if (filesHelp) {
+      filesHelp.textContent = requiresFile
+        ? 'Baskıya hazır dosya seçtiniz. Ödemeye geçmeden önce baskı dosyanızı yükleyin. En fazla 1 dosya, en fazla 200MB. Desteklenen: .png, .pdf, .psd'
+        : 'İsterseniz baskı dosyanızı buradan yükleyebilirsiniz. En fazla 1 dosya, en fazla 200MB. Desteklenen: .png, .pdf, .psd';
+    }
+    if (orderFilesInput) {
+      orderFilesInput.required = requiresFile;
+      if (!requiresFile) {
+        orderFilesInput.setCustomValidity('');
+      }
+    }
+  };
+
+  designTypeInputs.forEach((input) => input.addEventListener('change', syncPrintFileRequirement));
+  syncPrintFileRequirement();
+
   checkoutForm?.addEventListener('submit', (event) => {
     const tcValid = validateTcField(true);
     const taxValid = validateTaxField(true);
+    syncPrintFileRequirement();
 
-    if (!tcValid || !taxValid) {
+    const selectedDesign = document.querySelector('.checkout-design-type:checked');
+    const requiresFile = selectedDesign?.value === readyFileValue;
+    let filesValid = true;
+
+    if (requiresFile && orderFilesInput && (!orderFilesInput.files || orderFilesInput.files.length === 0)) {
+      filesValid = false;
+      orderFilesInput.setCustomValidity('Baskıya hazır dosya seçtiniz. Ödemeye geçmeden önce bir baskı dosyası yükleyin.');
+      orderFilesInput.reportValidity();
+    } else if (orderFilesInput) {
+      orderFilesInput.setCustomValidity('');
+    }
+
+    if (!tcValid || !taxValid || !filesValid) {
       event.preventDefault();
+      if (!filesValid && orderFilesInput) {
+        orderFilesInput.focus();
+        orderFilesInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        return;
+      }
       const firstInvalid = (!tcValid && tcInput && !tcInput.disabled) ? tcInput : taxInput;
       firstInvalid?.focus();
       firstInvalid?.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -529,8 +592,10 @@
   addressInputs.forEach((input) => input.addEventListener('change', togglePaymentMethod));
   togglePaymentMethod();
 
-  const orderFilesInput = document.getElementById('order_files');
   orderFilesInput?.addEventListener('change', () => {
+    if (orderFilesInput.files && orderFilesInput.files.length > 0) {
+      orderFilesInput.setCustomValidity('');
+    }
     if (!orderFilesInput.files) {
       return;
     }

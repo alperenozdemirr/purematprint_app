@@ -26,6 +26,30 @@ enum OrderDesignType: string
 
     public static function default(): self
     {
-        return self::FROM_SCRATCH;
+        return self::ADAPT_DESIGN;
+    }
+
+    /**
+     * Ödeme öncesi işlem adımında sunulan seçenekler.
+     *
+     * @return list<self>
+     */
+    public static function checkoutOptions(): array
+    {
+        return [
+            self::ADAPT_DESIGN,
+            self::READY_FILE,
+        ];
+    }
+
+    /**
+     * @return list<string>
+     */
+    public static function checkoutOptionValues(): array
+    {
+        return array_map(
+            fn (self $type): string => $type->value,
+            self::checkoutOptions(),
+        );
     }
 }

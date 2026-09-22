@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\User;
 
+use App\Enums\OrderDesignType;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class CartStoreRequest extends FormRequest
 {
@@ -21,6 +23,7 @@ class CartStoreRequest extends FormRequest
             'properties' => ['nullable', 'array'],
             'properties.*' => ['nullable'],
             'after_action' => ['nullable', 'in:cart,checkout'],
+            'design_type' => ['nullable', Rule::in(OrderDesignType::checkoutOptionValues())],
         ];
     }
 

@@ -11,6 +11,7 @@ use App\Http\Requests\User\CartStoreRequest;
 use App\Http\Requests\User\CartUpdateRequest;
 use App\Http\Services\OrderPricingService;
 use App\Http\Services\ProductPropertySelectionService;
+use App\Support\CheckoutDesignPreference;
 use App\Models\Product;
 use App\Models\ShoppingCart;
 use Illuminate\Http\RedirectResponse;
@@ -95,6 +96,10 @@ class ShoppingCartController extends Controller
                 'selected_property_item_ids' => $resolved['item_ids'],
                 'property_signature' => $resolved['signature'],
             ]);
+        }
+
+        if (isset($data['design_type'])) {
+            CheckoutDesignPreference::set((string) $data['design_type']);
         }
 
         $afterAction = $data['after_action'] ?? 'cart';

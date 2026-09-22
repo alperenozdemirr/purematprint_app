@@ -21,6 +21,7 @@ class CheckoutStoreRequest extends FormRequest
     {
         $invoiceType = $this->input('invoice_type', InvoiceType::INDIVIDUAL->value);
         $isIndividual = $invoiceType === InvoiceType::INDIVIDUAL->value;
+        $requiresPrintFile = $this->input('design_type') === OrderDesignType::READY_FILE->value;
 
         return [
             'address_id' => [
@@ -49,23 +50,29 @@ class CheckoutStoreRequest extends FormRequest
                 'regex:/^[0-9]{10,11}$/',
             ],
             'note' => ['nullable', 'string', 'max:500'],
-            'design_type' => ['required', Rule::enum(OrderDesignType::class)],
+            'design_type' => ['required', Rule::in(OrderDesignType::checkoutOptionValues())],
             'order_files' => ['nullable', 'array', 'max:1'],
-            'order_files.*' => [
-                'file',
-                'max:204800',
-                function (string $attribute, mixed $value, \Closure $fail): void {
-                    if (! $value instanceof \Illuminate\Http\UploadedFile) {
-                        return;
-                    }
+            'order_files.0' => array_merge(
+                [
+                    Rule::requiredIf($requiresPrintFile),
+                    'nullable',
+                    'file',
+                    'max:204800',
+                ],
+                [
+                    function (string $attribute, mixed $value, \Closure $fail): void {
+                        if (! $value instanceof \Illuminate\Http\UploadedFile) {
+                            return;
+                        }
 
-                    $extension = strtolower((string) $value->getClientOriginalExtension());
+                        $extension = strtolower((string) $value->getClientOriginalExtension());
 
-                    if (! in_array($extension, \App\Http\Services\CheckoutOrderFileService::ALLOWED_EXTENSIONS, true)) {
-                        $fail('Yalnızca .png, .pdf, .psd dosyaları yüklenebilir.');
-                    }
-                },
-            ],
+                        if (! in_array($extension, \App\Http\Services\CheckoutOrderFileService::ALLOWED_EXTENSIONS, true)) {
+                            $fail('Yalnızca .png, .pdf, .psd dosyaları yüklenebilir.');
+                        }
+                    },
+                ],
+            ),
         ];
     }
 
@@ -89,8 +96,9 @@ class CheckoutStoreRequest extends FormRequest
         return [
             'tax_number.regex' => 'Vergi numarası 10 veya 11 haneli olmalıdır.',
             'order_files.max' => 'En fazla 1 dosya yükleyebilirsiniz.',
-            'order_files.*.max' => 'Dosya en fazla 200MB olabilir.',
-            'order_files.*.file' => 'Geçerli bir dosya yükleyin.',
+            'order_files.0.required' => 'Baskıya hazır dosya seçtiniz. Ödemeye geçmeden önce bir baskı dosyası yükleyin.',
+            'order_files.0.max' => 'Dosya en fazla 200MB olabilir.',
+            'order_files.0.file' => 'Geçerli bir baskı dosyası yükleyin.',
         ];
     }
 

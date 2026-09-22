@@ -173,6 +173,8 @@
             ])
           @endif
 
+          @include('user.partials.pdp-design-preference')
+
           @if ($propertyGroups->isNotEmpty())
             <div class="border-[3px] border-ink bg-bg p-4" data-pdp-price-summary>
               <p class="mb-3 font-body text-[11px] font-bold uppercase tracking-[0.06em] text-muted">Fiyat özeti</p>
@@ -428,6 +430,7 @@
     const linesEl = form.querySelector('[data-pdp-summary-lines]');
     const summaryTotalEl = form.querySelector('[data-pdp-summary-total]');
     const storageKey = 'pdp_props_' + (form.getAttribute('data-product-id') || '');
+    const designStorageKey = 'pdp_design_type_' + (form.getAttribute('data-product-id') || '');
 
     const formatTry = (value) => {
       return new Intl.NumberFormat('tr-TR', { maximumFractionDigits: 0 }).format(value) + '₺';
@@ -496,6 +499,11 @@
           }
         });
         sessionStorage.setItem(storageKey, JSON.stringify(payload));
+
+        const checkedDesign = form.querySelector('[data-pdp-design-type]:checked');
+        if (checkedDesign) {
+          sessionStorage.setItem(designStorageKey, checkedDesign.value);
+        }
       } catch (e) {}
     };
 
@@ -516,6 +524,16 @@
             if (input) input.checked = true;
           }
         });
+
+        try {
+          const savedDesign = sessionStorage.getItem(designStorageKey);
+          if (savedDesign) {
+            const designInput = form.querySelector('[data-pdp-design-type][value="' + savedDesign + '"]');
+            if (designInput) {
+              designInput.checked = true;
+            }
+          }
+        } catch (e) {}
       } catch (e) {}
     };
 

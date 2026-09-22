@@ -24,6 +24,7 @@ use App\Models\Address;
 use App\Models\File;
 use App\Models\Order;
 use App\Models\ShoppingCart;
+use App\Support\CheckoutDesignPreference;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
@@ -237,6 +238,7 @@ class OrderController extends Controller
             'user' => $user,
             'resolvedByCartId' => $resolvedByCartId,
             'pricingByAddress' => $pricingByAddress,
+            'preferredDesignType' => CheckoutDesignPreference::get(),
             ...$summary,
         ]);
     }
@@ -273,6 +275,7 @@ class OrderController extends Controller
         $addressId = (int) $request->validated('address_id');
         $note = $request->validated('note');
         $designType = (string) $request->validated('design_type');
+        CheckoutDesignPreference::set($designType);
         $invoiceAttributes = $request->invoiceAttributes();
 
         foreach ($cartItems as $item) {
