@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Enums\OrderDesignType;
+use App\Models\ShoppingCart;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Session;
 
 final class CheckoutDesignPreference
@@ -29,5 +31,21 @@ final class CheckoutDesignPreference
         }
 
         Session::put(self::SESSION_KEY, $value);
+    }
+
+    /**
+     * @param  Collection<int, ShoppingCart>|iterable<ShoppingCart>  $cartItems
+     */
+    public static function cartShowsDesignPreference(iterable $cartItems): bool
+    {
+        foreach ($cartItems as $item) {
+            $product = $item->product;
+
+            if ($product !== null && $product->showsDesignPreference()) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

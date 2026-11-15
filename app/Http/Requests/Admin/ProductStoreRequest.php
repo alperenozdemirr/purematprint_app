@@ -102,6 +102,7 @@ class ProductStoreRequest extends FormRequest
             'status' => ['required', Rule::in(Status::values())],
             'featured_status' => 'nullable|boolean',
             'introduction_status' => 'nullable|boolean',
+            'show_design_preference' => 'nullable|boolean',
             'description' => 'nullable|string',
             'shipping_weight' => 'nullable|numeric|min:0.001|max:100',
             'shipping_length' => 'nullable|integer|min:1|max:300',

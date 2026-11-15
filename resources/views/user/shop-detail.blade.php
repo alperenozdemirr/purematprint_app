@@ -173,7 +173,9 @@
             ])
           @endif
 
-          @include('user.partials.pdp-design-preference')
+          @if ($product->showsDesignPreference())
+            @include('user.partials.pdp-design-preference')
+          @endif
 
           @if ($propertyGroups->isNotEmpty())
             <div class="border-[3px] border-ink bg-bg p-4" data-pdp-price-summary>
@@ -431,6 +433,7 @@
     const summaryTotalEl = form.querySelector('[data-pdp-summary-total]');
     const storageKey = 'pdp_props_' + (form.getAttribute('data-product-id') || '');
     const designStorageKey = 'pdp_design_type_' + (form.getAttribute('data-product-id') || '');
+    const designPreferenceEnabled = Boolean(form.querySelector('[data-pdp-design-preference]'));
 
     const formatTry = (value) => {
       return new Intl.NumberFormat('tr-TR', { maximumFractionDigits: 0 }).format(value) + '₺';
@@ -500,9 +503,11 @@
         });
         sessionStorage.setItem(storageKey, JSON.stringify(payload));
 
-        const checkedDesign = form.querySelector('[data-pdp-design-type]:checked');
-        if (checkedDesign) {
-          sessionStorage.setItem(designStorageKey, checkedDesign.value);
+        if (designPreferenceEnabled) {
+          const checkedDesign = form.querySelector('[data-pdp-design-type]:checked');
+          if (checkedDesign) {
+            sessionStorage.setItem(designStorageKey, checkedDesign.value);
+          }
         }
       } catch (e) {}
     };
@@ -525,15 +530,17 @@
           }
         });
 
-        try {
-          const savedDesign = sessionStorage.getItem(designStorageKey);
-          if (savedDesign) {
-            const designInput = form.querySelector('[data-pdp-design-type][value="' + savedDesign + '"]');
-            if (designInput) {
-              designInput.checked = true;
+        if (designPreferenceEnabled) {
+          try {
+            const savedDesign = sessionStorage.getItem(designStorageKey);
+            if (savedDesign) {
+              const designInput = form.querySelector('[data-pdp-design-type][value="' + savedDesign + '"]');
+              if (designInput) {
+                designInput.checked = true;
+              }
             }
-          }
-        } catch (e) {}
+          } catch (e) {}
+        }
       } catch (e) {}
     };
 

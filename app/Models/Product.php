@@ -31,6 +31,7 @@ class Product extends Model
         'status',
         'featured_status',
         'introduction_status',
+        'show_design_preference',
     ];
 
     protected $casts = [
@@ -41,8 +42,14 @@ class Product extends Model
         'shipping_height' => 'integer',
         'featured_status' => 'boolean',
         'introduction_status' => 'boolean',
+        'show_design_preference' => 'boolean',
         'status' => Status::class,
     ];
+
+    public function showsDesignPreference(): bool
+    {
+        return (bool) ($this->show_design_preference ?? true);
+    }
 
     public function category(): BelongsTo
     {

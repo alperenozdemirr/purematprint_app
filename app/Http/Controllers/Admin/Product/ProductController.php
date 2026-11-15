@@ -89,6 +89,7 @@ class ProductController extends Controller
                 'status' => $validated['status'],
                 'featured_status' => $request->boolean('featured_status'),
                 'introduction_status' => $request->boolean('introduction_status'),
+                'show_design_preference' => $request->boolean('show_design_preference', true),
                 'description' => $validated['description'] ?? null,
             ]);
 
@@ -141,6 +142,7 @@ class ProductController extends Controller
             'status' => $validated['status'],
             'featured_status' => $request->boolean('featured_status'),
             'introduction_status' => $request->boolean('introduction_status'),
+            'show_design_preference' => $request->boolean('show_design_preference', true),
             'description' => $validated['description'] ?? null,
         ]);
 

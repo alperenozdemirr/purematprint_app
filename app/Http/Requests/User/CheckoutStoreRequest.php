@@ -6,7 +6,9 @@ namespace App\Http\Requests\User;
 
 use App\Enums\InvoiceType;
 use App\Enums\OrderDesignType;
+use App\Models\ShoppingCart;
 use App\Rules\TurkishIdentityNumber;
+use App\Support\CheckoutDesignPreference;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -17,11 +19,21 @@ class CheckoutStoreRequest extends FormRequest
         return true;
     }
 
+    protected function prepareForValidation(): void
+    {
+        if (! $this->cartShowsDesignPreference()) {
+            $this->merge([
+                'design_type' => OrderDesignType::default()->value,
+            ]);
+        }
+    }
+
     public function rules(): array
     {
         $invoiceType = $this->input('invoice_type', InvoiceType::INDIVIDUAL->value);
         $isIndividual = $invoiceType === InvoiceType::INDIVIDUAL->value;
-        $requiresPrintFile = $this->input('design_type') === OrderDesignType::READY_FILE->value;
+        $requiresPrintFile = $this->cartShowsDesignPreference()
+            && $this->input('design_type') === OrderDesignType::READY_FILE->value;
 
         return [
             'address_id' => [
@@ -122,5 +134,19 @@ class CheckoutStoreRequest extends FormRequest
             'company_name' => $data['company_name'],
             'tax_number' => $data['tax_number'],
         ];
+    }
+
+    private function cartShowsDesignPreference(): bool
+    {
+        if (! auth()->check()) {
+            return true;
+        }
+
+        $cartItems = ShoppingCart::query()
+            ->with('product')
+            ->where('user_id', auth()->id())
+            ->get();
+
+        return CheckoutDesignPreference::cartShowsDesignPreference($cartItems);
     }
 }

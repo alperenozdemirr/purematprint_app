@@ -11,6 +11,7 @@ use App\Http\Requests\User\CartStoreRequest;
 use App\Http\Requests\User\CartUpdateRequest;
 use App\Http\Services\OrderPricingService;
 use App\Http\Services\ProductPropertySelectionService;
+use App\Enums\OrderDesignType;
 use App\Support\CheckoutDesignPreference;
 use App\Models\Product;
 use App\Models\ShoppingCart;
@@ -98,8 +99,12 @@ class ShoppingCartController extends Controller
             ]);
         }
 
-        if (isset($data['design_type'])) {
-            CheckoutDesignPreference::set((string) $data['design_type']);
+        if ($product->showsDesignPreference()) {
+            if (isset($data['design_type'])) {
+                CheckoutDesignPreference::set((string) $data['design_type']);
+            }
+        } else {
+            CheckoutDesignPreference::set(OrderDesignType::default()->value);
         }
 
         $afterAction = $data['after_action'] ?? 'cart';

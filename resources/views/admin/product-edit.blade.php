@@ -177,6 +177,14 @@
               </span>
               <input type="checkbox" name="introduction_status" value="1" @checked(old('introduction_status', $product->introduction_status)) class="h-5 w-5 shrink-0 accent-accent">
             </label>
+
+            <label class="flex cursor-pointer items-center justify-between gap-3 rounded-lg bg-cream px-3.5 py-3 transition-colors hover:bg-hover">
+              <span>
+                <span class="block font-body text-[13px] font-bold text-ink">Tasarım tercihi göster</span>
+                <span class="block font-body text-[12px] text-muted">Kapalıysa ürün sayfasında ve ödemede seçim gizlenir; varsayılan: markaya uyarlama</span>
+              </span>
+              <input type="checkbox" name="show_design_preference" value="1" @checked(old('show_design_preference', $product->show_design_preference ?? true)) class="h-5 w-5 shrink-0 accent-accent">
+            </label>
           </div>
         </section>
 

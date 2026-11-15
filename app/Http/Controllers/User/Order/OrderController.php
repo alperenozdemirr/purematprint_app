@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\User\Order;
 
+use App\Enums\OrderDesignType;
 use App\Enums\PaymentProvider;
 use App\Enums\Status;
 use App\Http\Services\Exceptions\ExchangeRateUnavailableException;
@@ -232,13 +233,18 @@ class OrderController extends Controller
             $resolvedByCartId[$item->id] = $this->propertySelection->resolveFromCartItem($item);
         }
 
+        $showCheckoutDesignPreference = CheckoutDesignPreference::cartShowsDesignPreference($cartItems);
+
         return view('user.default.checkout', [
             'cartItems' => $cartItems,
             'addresses' => $addresses,
             'user' => $user,
             'resolvedByCartId' => $resolvedByCartId,
             'pricingByAddress' => $pricingByAddress,
-            'preferredDesignType' => CheckoutDesignPreference::get(),
+            'preferredDesignType' => $showCheckoutDesignPreference
+                ? CheckoutDesignPreference::get()
+                : OrderDesignType::default()->value,
+            'showCheckoutDesignPreference' => $showCheckoutDesignPreference,
             ...$summary,
         ]);
     }
@@ -274,7 +280,10 @@ class OrderController extends Controller
 
         $addressId = (int) $request->validated('address_id');
         $note = $request->validated('note');
-        $designType = (string) $request->validated('design_type');
+        $showCheckoutDesignPreference = CheckoutDesignPreference::cartShowsDesignPreference($cartItems);
+        $designType = $showCheckoutDesignPreference
+            ? (string) $request->validated('design_type')
+            : OrderDesignType::default()->value;
         CheckoutDesignPreference::set($designType);
         $invoiceAttributes = $request->invoiceAttributes();
 
